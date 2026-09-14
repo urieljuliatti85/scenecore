@@ -1,6 +1,8 @@
 class Band < ApplicationRecord
   PHOTO_CONTENT_TYPES = %w[image/png image/jpeg image/webp].freeze
   PHOTO_MAX_SIZE = 5.megabytes
+  SOCIAL_LINK_ATTRIBUTES = %i[spotify_url youtube_url instagram_url website_url].freeze
+  URL_FORMAT = %r{\Ahttps?://[^\s/$.?#].[^\s]*\z}i
 
   has_many :band_memberships, dependent: :destroy
   has_many :members, through: :band_memberships, source: :user
@@ -15,8 +17,17 @@ class Band < ApplicationRecord
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
   validate :photo_is_valid
+  validates :spotify_url, :youtube_url, :instagram_url, :website_url,
+            format: { with: URL_FORMAT, message: "must be a valid URL" }, allow_blank: true
 
   before_validation :generate_slug, on: :create
+
+  def social_links
+    SOCIAL_LINK_ATTRIBUTES.filter_map do |attribute|
+      url = public_send(attribute)
+      [ attribute, url ] if url.present?
+    end.to_h
+  end
 
   private
 

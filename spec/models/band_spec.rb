@@ -96,6 +96,49 @@ RSpec.describe Band, type: :model do
     end
   end
 
+  describe "social links" do
+    %i[spotify_url youtube_url instagram_url website_url].each do |attribute|
+      it "accepts a blank #{attribute}" do
+        band = build(:band, attribute => nil)
+
+        expect(band).to be_valid
+      end
+
+      it "accepts a valid http(s) URL for #{attribute}" do
+        band = build(:band, attribute => "https://example.com/band")
+
+        expect(band).to be_valid
+      end
+
+      it "rejects an invalid #{attribute}" do
+        band = build(:band, attribute => "not a url")
+
+        expect(band).not_to be_valid
+        expect(band.errors[attribute]).to be_present
+      end
+    end
+  end
+
+  describe "#social_links" do
+    it "only includes attributes that are present" do
+      band = build(:band, spotify_url: "https://open.spotify.com/artist/1",
+                           youtube_url: nil,
+                           instagram_url: "https://instagram.com/band",
+                           website_url: nil)
+
+      expect(band.social_links).to eq(
+        spotify_url: "https://open.spotify.com/artist/1",
+        instagram_url: "https://instagram.com/band"
+      )
+    end
+
+    it "is empty when no social links are set" do
+      band = build(:band)
+
+      expect(band.social_links).to be_empty
+    end
+  end
+
   describe ".featured" do
     it "returns the most recently approved band" do
       create(:band, :approved, name: "Older")

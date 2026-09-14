@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_121244) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_123818) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -57,10 +57,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_121244) do
   create_table "bands", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "description"
+    t.string "instagram_url"
     t.string "name", null: false
     t.string "slug", null: false
+    t.string "spotify_url"
     t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
+    t.string "website_url"
+    t.string "youtube_url"
     t.index ["slug"], name: "index_bands_on_slug", unique: true
     t.index ["status"], name: "index_bands_on_status"
   end
