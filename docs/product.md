@@ -866,77 +866,110 @@ only.*
 
 ---
 
-## 4. MVP Features
+## 4. MVP Scope
 
-### Foundation
+This section distinguishes what is mandatory for the MVP, what is optional
+and deferred, and what is explicitly excluded — per ROADMAP.md 0.4. Status
+reflects ROADMAP.md as of this writing; a feature listed as mandatory is not
+necessarily built yet (see the linked phase for build status).
 
-- Authentication
+### 4.1 Mandatory Functionality
+
+The following domains are required for the MVP (each maps to a ROADMAP.md
+phase):
+
+**Foundation** (Phase 2)
+- Authentication (registration, login, logout, session management)
 - User profiles
 
-### Bands
+**Bands** (Phase 3)
+- Create/edit band
+- Band members and band administrators
+- Band approval (pending/approved/rejected by a platform administrator)
+- Multi-band isolation (a band cannot access another band's private data)
 
-- Create band
-- Edit band
-- Band members
-- Band administrators
+**Public band pages** (Phase 4)
+- Public band page reachable by slug
+- Visible only for approved bands
 
-### Music
+**Music** (Phase 5)
+- Releases (albums) and tracks
+- Draft/published state, gating public visibility
+- Playback via Spotify embed (no self-hosted audio — see
+  `docs/architecture.md`)
 
-- Releases
-- Tracks
-- Audio player
-- Draft/published tracks
+**Followers** (Phase 6)
+- Follow/unfollow a band
 
-### Exclusive Content
+**Exclusive content** (Phase 7)
+- Posts with Public and Followers visibility (built); Subscriber visibility
+  (schema ready; not reachable until Subscriptions exists — see 4.2)
+- Media on posts: images, videos, downloads, with file validation and
+  storage (not yet built — ROADMAP.md 10.2)
 
-- Posts
-- Images
-- Videos
-- Downloads
-- Visibility rules
+**Store** (Phase 8)
+- Products, variants (only where a product needs them), inventory, cart,
+  checkout, orders (single-band cart per ADR-003)
+- Currently skipped pending a named payment provider (see Payments); not
+  removed from MVP scope.
 
-### Store
+**Payments** (Phase 9)
+- Integration with the approved payment provider (not yet named — see
+  `docs/product.md` §7 Open Questions)
+- Currently skipped; blocks Store, Subscriptions, and Events checkout.
 
-- Products
-- Variants
-- Inventory
-- Cart
-- Checkout
-- Orders
+**Subscriptions** (Phase 10)
+- Plans, recurring billing, subscriber content access
+- Not yet built; depends on Payments.
 
-### Subscriptions
+**Events and tickets** (Phase 11)
+- Events, ticket batches, QR-coded tickets, check-in/validation
+- Not yet built; depends on Payments.
 
-- Plans
-- Recurring payments
-- Subscription lifecycle
+**Platform administration** (Phase 12)
+- Band moderation, administrative audit log, admin panel (bands/users/
+  privileges)
+- Content moderation (unpublish) implemented; reported-content review is
+  deferred (see 4.2 — no reporting/flagging system is defined).
 
-### Events
+A domain being "mandatory" means it is approved MVP scope, not that it must
+be implemented before every other domain — ROADMAP.md 2.1 governs sequencing
+and 2.3 requires slicing large phases.
 
-- Events
-- Tickets
-- QR codes
-- Check-in
+### 4.2 Optional / Deferred Functionality
 
----
+Recorded as candidates, not authorized for implementation until scoped and
+approved (see ROADMAP.md §22 Future Features for the authoritative list):
 
-## 5. Out of Scope
+- Follower notifications (channel, trigger, and UI undefined)
+- Fan-facing feed of followed bands' activity (undefined scope)
+- Content moderation via user reports (no reporting/flagging system
+  defined)
+- Advanced band metrics/analytics beyond follower count
+- Band member history across bands (e.g., "played in Band A 2022–2024,
+  now in Band B")
 
-The following are NOT part of the MVP:
+### 4.3 Explicitly Excluded Functionality
+
+The following are NOT part of the MVP and must not be implemented without
+separate product validation and explicit approval (see ADR-005):
 
 - Scene-based social network or scene graph
-- Cross-band community spaces
-- Algorithmic music or band recommendations
-- Fan-to-fan messaging or generic social posting
+- Scene-level discovery by genre and location
+- Cross-band community spaces and scene participation
+- Algorithmic recommendations (bands, releases, events, or scenes)
+- Fan-to-fan messaging or generic social posting (likes, comments, feeds)
 - Scene-level feeds, follows, and moderation workflows
 - Replacing Spotify as a streaming and discovery platform
-- Requiring bands to abandon Bandcamp, Patreon, or other complementary channels
+- Requiring bands to abandon Bandcamp, Patreon, or other complementary
+  channels
+- Self-hosted audio/video streaming infrastructure
 
-Claude must not implement these features
-unless explicitly authorized.
+Claude must not implement these features unless explicitly authorized.
 
 ---
 
-## 6. Acceptance Criteria
+## 5. Acceptance Criteria
 
 ### Bands
 
@@ -956,14 +989,14 @@ unless explicitly authorized.
 
 ---
 
-## 7. Product Rules
+## 6. Product Rules
 
 - One purchase belongs to one band in the MVP.
 - [Other business rules]
 
 ---
 
-## 8. Open Questions
+## 7. Open Questions
 
 - Can a visitor start a product or ticket purchase without an account and
   create one during checkout?
