@@ -1,6 +1,16 @@
-<h1>Your profile</h1>
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-xl mx-auto">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-8">Your profile</h1>
 
-<p>Name: <%= @user.name %></p>
-<p>Email: <%= @user.email %></p>
+  <dl class="space-y-4 mb-8">
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-neutral-500">Name</dt>
+      <dd class="text-white"><%= @user.name %></dd>
+    </div>
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-neutral-500">Email</dt>
+      <dd class="text-white"><%= @user.email %></dd>
+    </div>
+  </dl>
 
-<%= link_to "Edit profile", edit_profile_path %>
+  <%= link_to "Edit profile", edit_profile_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition inline-block" %>
+</section>

@@ -1,14 +1,22 @@
-<h1><%= @band.name %></h1>
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <div class="flex items-center gap-3 mb-4">
+    <h1 class="text-3xl font-extrabold tracking-tight"><%= @band.name %></h1>
+    <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= @band.status %></span>
+  </div>
 
-<p>Status: <%= @band.status %></p>
-<p><%= @band.description %></p>
+  <% if @band.description.present? %>
+    <p class="text-neutral-300 mb-8"><%= @band.description %></p>
+  <% end %>
 
-<% if policy(@band).update? %>
-  <%= link_to "Edit", edit_band_path(@band) %>
-  <%= link_to "Members", band_band_memberships_path(@band) %>
-<% end %>
+  <div class="flex flex-wrap items-center gap-3">
+    <% if policy(@band).update? %>
+      <%= link_to "Edit", edit_band_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
+      <%= link_to "Members", band_band_memberships_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
+    <% end %>
 
-<% if policy(@band).approve? %>
-  <%= button_to "Approve", approve_band_path(@band), method: :patch %>
-  <%= button_to "Reject", reject_band_path(@band), method: :patch %>
-<% end %>
+    <% if policy(@band).approve? %>
+      <%= button_to "Approve", approve_band_path(@band), method: :patch, class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition cursor-pointer" %>
+      <%= button_to "Reject", reject_band_path(@band), method: :patch, class: "rounded-full border border-red-900 text-red-400 font-semibold px-5 py-2.5 hover:border-red-700 transition cursor-pointer" %>
+    <% end %>
+  </div>
+</section>
