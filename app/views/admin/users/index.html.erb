@@ -1,0 +1,24 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-6">Admin</h1>
+  <%= render "admin/nav" %>
+
+  <h2 class="text-xl font-semibold mb-8">Users</h2>
+
+  <% if @users.empty? %>
+    <p class="text-neutral-500">No users found.</p>
+  <% else %>
+    <ul class="space-y-3">
+      <% @users.each do |user| %>
+        <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-center justify-between">
+          <div>
+            <p class="font-semibold text-white"><%= user.name %></p>
+            <p class="text-sm text-neutral-500"><%= user.email %></p>
+          </div>
+          <% if user.platform_admin? %>
+            <span class="text-xs uppercase tracking-wide text-yellow-400 border border-yellow-900 rounded-full px-3 py-1">Platform admin</span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

@@ -12,6 +12,13 @@ Rails.application.routes.draw do
 
   resource :profile, only: [ :show, :edit, :update ], controller: "profiles"
 
+  namespace :admin do
+    resources :bands, only: [ :index ] do
+      resources :privileges, only: [ :index, :create, :update ]
+    end
+    resources :users, only: [ :index ]
+  end
+
   resources :bands, only: [ :index, :new, :create, :show, :edit, :update ] do
     member do
       patch :approve

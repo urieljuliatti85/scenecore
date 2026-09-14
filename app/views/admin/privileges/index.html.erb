@@ -1,0 +1,41 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-2">Privileges</h1>
+  <p class="text-neutral-500 mb-8"><%= @band.name %></p>
+
+  <h2 class="text-lg font-semibold text-neutral-300 mb-3">Members</h2>
+  <ul class="space-y-3 mb-10">
+    <% @memberships.each do |membership| %>
+      <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-center justify-between">
+        <div>
+          <p class="font-semibold text-white"><%= membership.user.name %></p>
+          <p class="text-sm text-neutral-500"><%= membership.user.email %></p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= membership.role %></span>
+
+          <% if membership.administrator? %>
+            <%= button_to "Demote to member", admin_band_privilege_path(@band, membership), method: :patch, params: { role: "member" }, class: "text-sm text-neutral-400 hover:text-white transition cursor-pointer" %>
+          <% else %>
+            <%= button_to "Promote to administrator", admin_band_privilege_path(@band, membership), method: :patch, params: { role: "administrator" }, class: "text-sm text-yellow-400 hover:text-yellow-300 transition cursor-pointer" %>
+          <% end %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+
+  <% if @users_without_membership.any? %>
+    <h2 class="text-lg font-semibold text-neutral-300 mb-3">Grant administrator privileges</h2>
+    <ul class="space-y-3">
+      <% @users_without_membership.each do |user| %>
+        <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-center justify-between">
+          <div>
+            <p class="font-semibold text-white"><%= user.name %></p>
+            <p class="text-sm text-neutral-500"><%= user.email %></p>
+          </div>
+          <%= button_to "Grant administrator", admin_band_privileges_path(@band), method: :post, params: { user_id: user.id }, class: "text-sm text-yellow-400 hover:text-yellow-300 transition cursor-pointer" %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

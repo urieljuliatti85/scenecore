@@ -930,6 +930,23 @@ Provide platform-level controls.
 * [x] Record timestamp (`created_at`).
 * [x] Record affected resource (`subject_type`/`subject_id`).
 
+### 12.5 Admin panel (added 2026-09-14)
+
+A dedicated `/admin` namespace, restricted to `platform_admin: true`
+(404 for anyone else, same "don't leak existence" pattern used
+elsewhere). Requested alongside this phase; not originally a roadmap
+item, added here since it's squarely Platform Administration scope.
+
+* [x] Bands — list all bands (with a status filter), linking into the
+      existing per-band management page for approve/reject/suspend.
+* [x] Users — list all users.
+* [x] Privileges — grant/revoke a band's administrator role for any
+      user, reusing `BandMembership`'s existing "a band can never be
+      left without an administrator" rule (no new rule invented).
+* [ ] Subscriptions — not built; blocked on Phase 9/10, both skipped.
+* [ ] Content moderation (albums/tracks) — not built; same blocker as
+      12.2 (no report/flag system defined).
+
 ## Exit criteria
 
 Platform administrators can perform approved administrative actions without gaining inappropriate access to unrelated user data.

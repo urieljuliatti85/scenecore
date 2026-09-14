@@ -1,0 +1,30 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-6">Admin</h1>
+  <%= render "admin/nav" %>
+
+  <div class="flex items-center justify-between mb-8">
+    <h2 class="text-xl font-semibold">Bands</h2>
+    <div class="flex items-center gap-2">
+      <%= link_to "All", admin_bands_path, class: "text-sm text-neutral-400 hover:text-white transition" %>
+      <%= link_to "Pending", admin_bands_path(status: "pending"), class: "text-sm text-neutral-400 hover:text-white transition" %>
+      <%= link_to "Approved", admin_bands_path(status: "approved"), class: "text-sm text-neutral-400 hover:text-white transition" %>
+      <%= link_to "Suspended", admin_bands_path(status: "suspended"), class: "text-sm text-neutral-400 hover:text-white transition" %>
+    </div>
+  </div>
+
+  <% if @bands.empty? %>
+    <p class="text-neutral-500">No bands found.</p>
+  <% else %>
+    <ul class="space-y-3">
+      <% @bands.each do |band| %>
+        <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <%= link_to band.name, band_path(band), class: "font-semibold text-white hover:text-yellow-400" %>
+            <%= link_to "Privileges", admin_band_privileges_path(band), class: "text-sm text-neutral-400 hover:text-white transition" %>
+          </div>
+          <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= band.status %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>
