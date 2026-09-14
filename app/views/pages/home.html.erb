@@ -1,16 +1,49 @@
-<section class="px-4 sm:px-6 py-20 sm:py-32 text-center max-w-3xl mx-auto">
-  <%= image_tag "logo.png", alt: "SceneCore", class: "h-20 sm:h-28 w-auto mx-auto mb-8" %>
+<% if @featured_band %>
+  <section class="px-4 sm:px-6 py-16 sm:py-24 max-w-7xl mx-auto">
+    <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <div>
+        <p class="text-xs sm:text-sm tracking-[0.2em] text-neutral-500 uppercase mb-4">Featured Band</p>
 
-  <p class="text-neutral-400 text-base sm:text-lg mb-10">
-    A platform for independent bands and their fans.
-  </p>
+        <h1 class="text-5xl sm:text-6xl font-extrabold tracking-tight mb-6">
+          <%= @featured_band.name %>
+        </h1>
 
-  <div class="flex items-center justify-center gap-4">
-    <% if user_signed_in? %>
-      <%= link_to "Your bands", bands_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
-    <% else %>
-      <%= link_to "Sign up", new_user_registration_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
-      <%= link_to "Sign in", new_user_session_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
-    <% end %>
-  </div>
-</section>
+        <% if @featured_band.description.present? %>
+          <p class="text-neutral-300 text-base sm:text-lg mb-10 max-w-xl">
+            <%= @featured_band.description %>
+          </p>
+        <% end %>
+
+        <div class="flex items-center gap-4">
+          <%= link_to "View band", public_band_path(@featured_band.slug), class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
+          <% unless user_signed_in? %>
+            <%= link_to "Sign up", new_user_registration_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
+          <% end %>
+        </div>
+      </div>
+
+      <% if @featured_band.photo.attached? %>
+        <div class="aspect-square lg:aspect-[4/3] rounded-3xl overflow-hidden bg-neutral-900">
+          <%= image_tag @featured_band.photo, class: "w-full h-full object-cover" %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+<% else %>
+  <section class="px-4 sm:px-6 py-20 sm:py-32 text-center max-w-3xl mx-auto">
+    <%= image_tag "logo.png", alt: "SceneCore", class: "h-20 sm:h-28 w-auto mx-auto mb-8" %>
+
+    <p class="text-neutral-400 text-base sm:text-lg mb-10">
+      A platform for independent bands and their fans.
+    </p>
+
+    <div class="flex items-center justify-center gap-4">
+      <% if user_signed_in? %>
+        <%= link_to "Your bands", bands_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
+      <% else %>
+        <%= link_to "Sign up", new_user_registration_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
+        <%= link_to "Sign in", new_user_session_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
+      <% end %>
+    </div>
+  </section>
+<% end %>
