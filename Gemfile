@@ -42,6 +42,17 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+# Pinned below 3.0: json 3.x dropped the legacy positional-opts JSON.parse
+# signature that this version of Rails' session cookie decoding still calls,
+# breaking every request with an existing session cookie.
+gem "json", "~> 2.7"
+
+# Flexible authentication solution for Rails [https://github.com/heartcombo/devise]
+gem "devise"
+
+# Object-oriented authorization for Rails applications [https://github.com/varvet/pundit]
+gem "pundit"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
@@ -68,4 +79,10 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+end
+
+group :test do
+  # System testing tools [https://guides.rubyonrails.org/testing.html#system-testing]
+  gem "capybara"
+  gem "selenium-webdriver"
 end

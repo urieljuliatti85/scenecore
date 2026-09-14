@@ -1,0 +1,23 @@
+<h1>Add member to <%= @band.name %></h1>
+
+<%= form_with model: @membership, url: band_band_memberships_path(@band) do |form| %>
+  <% if @membership.errors.any? %>
+    <ul>
+      <% @membership.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div>
+    <%= form.label :user_id, "User" %>
+    <%= form.collection_select :user_id, User.all, :id, :email %>
+  </div>
+
+  <div>
+    <%= form.label :role %>
+    <%= form.select :role, BandMembership.roles.keys %>
+  </div>
+
+  <%= form.submit "Add member" %>
+<% end %>
