@@ -495,12 +495,24 @@ Allow fans to follow bands.
 
 ## Tasks
 
-* [ ] Follow relationship.
-* [ ] Follow a band.
-* [ ] Unfollow a band.
-* [ ] Prevent duplicate follows.
-* [ ] Display following state.
-* [ ] Test authorization.
+* [x] Follow relationship (`Follow` model: `user_id`, `band_id`, unique
+      composite index).
+* [x] Follow a band (`POST /bands/:band_id/follow`, any authenticated
+      user, band must be approved).
+* [x] Unfollow a band (`DELETE /bands/:band_id/follow`).
+* [x] Prevent duplicate follows (unique index + model validation;
+      `create` is idempotent via `find_or_initialize_by`).
+* [x] Display following state (Follow/Following button and follower
+      count on the public band page).
+* [x] Test authorization (`FollowPolicy`: anonymous cannot follow, a
+      user cannot unfollow on another user's behalf, band must be
+      approved to be followed).
+
+Follower count (`Band#followers_count`) was added ahead of schedule,
+alongside this slice. Notifications and a fan-facing feed were
+requested but have no defined scope (channel, trigger, or UI aren't
+specified anywhere) — recorded under Future Features instead of
+implemented, per the roadmap's rule against speculative scope.
 
 ## Exit criteria
 
@@ -1193,6 +1205,12 @@ Features not included in the MVP should be recorded here instead of being implem
 * [ ] Feature proposal 1
 * [ ] Feature proposal 2
 * [ ] Feature proposal 3
+* [ ] Follower notifications — requested alongside Phase 6, but channel
+      (email? in-app?), trigger (new release? new post?), and UI are
+      undefined.
+* [ ] Fan-facing feed of followed bands' activity — requested alongside
+      Phase 6, but what it lists, where it lives, and its acceptance
+      criteria are undefined.
 
 Each future feature must eventually receive:
 

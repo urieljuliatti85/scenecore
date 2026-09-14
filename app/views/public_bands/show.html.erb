@@ -11,6 +11,20 @@
     </p>
   <% end %>
 
+  <div class="flex flex-wrap items-center gap-4 mb-8">
+    <% if user_signed_in? %>
+      <% if @following %>
+        <%= button_to "Following", band_follow_path(@band), method: :delete, class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition cursor-pointer" %>
+      <% else %>
+        <%= button_to "Follow", band_follow_path(@band), method: :post, class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition cursor-pointer" %>
+      <% end %>
+    <% end %>
+
+    <span class="text-neutral-400 text-sm">
+      <%= pluralize(@band.followers_count, "follower") %>
+    </span>
+  </div>
+
   <%= render "shared/social_links", band: @band %>
 
   <% if @albums.any? %>

@@ -114,6 +114,45 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).not_to include("Secret Track")
       expect(response.body).not_to include("4uLU6hMCjMI75M1A2tKUQC")
     end
+
+    it "shows the follower count" do
+      band = create(:band, :approved)
+      create_list(:follow, 2, band: band)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("2 followers")
+    end
+
+    it "does not show a follow button to an anonymous visitor" do
+      band = create(:band, :approved)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include(">Follow<")
+    end
+
+    it "shows a Follow button to an authenticated user who does not follow the band" do
+      user = create(:user)
+      band = create(:band, :approved)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include(">Follow<")
+      expect(response.body).not_to include(">Following<")
+    end
+
+    it "shows a Following button to a user who already follows the band" do
+      user = create(:user)
+      band = create(:band, :approved)
+      create(:follow, user: user, band: band)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include(">Following<")
+    end
   end
 
   describe "route precedence" do

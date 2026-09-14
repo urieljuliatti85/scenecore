@@ -139,6 +139,38 @@ RSpec.describe Band, type: :model do
     end
   end
 
+  describe "followers" do
+    it "has many followers through follows" do
+      band = create(:band)
+      user = create(:user)
+      create(:follow, band: band, user: user)
+
+      expect(band.followers).to contain_exactly(user)
+    end
+
+    it "destroys its follows when destroyed" do
+      band = create(:band)
+      create(:follow, band: band)
+
+      expect { band.destroy }.to change(Follow, :count).by(-1)
+    end
+  end
+
+  describe "#followers_count" do
+    it "returns 0 when the band has no followers" do
+      band = create(:band)
+
+      expect(band.followers_count).to eq(0)
+    end
+
+    it "returns the number of followers" do
+      band = create(:band)
+      create_list(:follow, 3, band: band)
+
+      expect(band.followers_count).to eq(3)
+    end
+  end
+
   describe ".featured" do
     it "returns the most recently approved band" do
       create(:band, :approved, name: "Older")

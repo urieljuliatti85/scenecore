@@ -38,4 +38,19 @@ RSpec.describe User, type: :model do
 
     expect(user.bands).to contain_exactly(band)
   end
+
+  it "has many follows and followed bands through them" do
+    user = create(:user)
+    band = create(:band)
+    create(:follow, user: user, band: band)
+
+    expect(user.followed_bands).to contain_exactly(band)
+  end
+
+  it "destroys its follows when destroyed" do
+    user = create(:user)
+    create(:follow, user: user)
+
+    expect { user.destroy }.to change(Follow, :count).by(-1)
+  end
 end

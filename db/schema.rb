@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_145410) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_171823) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -79,6 +79,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_145410) do
     t.index ["status"], name: "index_bands_on_status"
   end
 
+  create_table "follows", force: :cascade do |t|
+    t.bigint "band_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["band_id"], name: "index_follows_on_band_id"
+    t.index ["user_id", "band_id"], name: "index_follows_on_user_id_and_band_id", unique: true
+    t.index ["user_id"], name: "index_follows_on_user_id"
+  end
+
   create_table "tracks", force: :cascade do |t|
     t.bigint "album_id", null: false
     t.datetime "created_at", null: false
@@ -109,5 +119,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_145410) do
   add_foreign_key "albums", "bands"
   add_foreign_key "band_memberships", "bands"
   add_foreign_key "band_memberships", "users"
+  add_foreign_key "follows", "bands"
+  add_foreign_key "follows", "users"
   add_foreign_key "tracks", "albums"
 end
