@@ -60,6 +60,28 @@ RSpec.describe "Public band pages", type: :request do
 
       expect(response.body).to include("2 followers")
     end
+
+    it "shows the category filter pills" do
+      create(:category, name: "Rock")
+      create(:category, name: "Jazz")
+
+      get discover_bands_path
+
+      expect(response.body).to include("Rock")
+      expect(response.body).to include("Jazz")
+    end
+
+    it "filters bands by category" do
+      rock = create(:category, name: "Rock")
+      jazz = create(:category, name: "Jazz")
+      create(:band, :approved, name: "Rock Band", category: rock)
+      create(:band, :approved, name: "Jazz Band", category: jazz)
+
+      get discover_bands_path(category_id: rock.id)
+
+      expect(response.body).to include("Rock Band")
+      expect(response.body).not_to include("Jazz Band")
+    end
   end
 
   describe "GET /:slug" do
@@ -71,6 +93,15 @@ RSpec.describe "Public band pages", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("The Testers")
       expect(response.body).to include("A great band.")
+    end
+
+    it "shows the band's category when set" do
+      category = create(:category, name: "Rock")
+      band = create(:band, :approved, name: "The Testers", category: category)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Rock")
     end
 
     it "returns 404 for a pending band" do

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_174739) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_185954) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -76,6 +76,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_174739) do
   end
 
   create_table "bands", force: :cascade do |t|
+    t.bigint "category_id"
     t.datetime "created_at", null: false
     t.text "description"
     t.string "instagram_url"
@@ -86,8 +87,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_174739) do
     t.datetime "updated_at", null: false
     t.string "website_url"
     t.string "youtube_url"
+    t.index ["category_id"], name: "index_bands_on_category_id"
     t.index ["slug"], name: "index_bands_on_slug", unique: true
     t.index ["status"], name: "index_bands_on_status"
+  end
+
+  create_table "categories", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.bigint "parent_id"
+    t.string "slug", null: false
+    t.datetime "updated_at", null: false
+    t.index ["parent_id"], name: "index_categories_on_parent_id"
+    t.index ["slug"], name: "index_categories_on_slug", unique: true
   end
 
   create_table "follows", force: :cascade do |t|
@@ -143,6 +155,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_174739) do
   add_foreign_key "albums", "bands"
   add_foreign_key "band_memberships", "bands"
   add_foreign_key "band_memberships", "users"
+  add_foreign_key "bands", "categories"
+  add_foreign_key "categories", "categories", column: "parent_id"
   add_foreign_key "follows", "bands"
   add_foreign_key "follows", "users"
   add_foreign_key "posts", "bands"

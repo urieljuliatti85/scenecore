@@ -1,0 +1,21 @@
+<%= form_with model: [ :admin, category ], class: "flex flex-col gap-5" do |form| %>
+  <% if category.errors.any? %>
+    <ul class="rounded-xl border border-red-900 bg-red-950/40 text-red-400 text-sm p-4 space-y-1">
+      <% category.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div>
+    <%= form.label :name, class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.text_field :name, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+  </div>
+
+  <div>
+    <%= form.label :parent_id, "Parent category", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.select :parent_id, Category.roots.where.not(id: category.id).order(:name).map { |c| [ c.name, c.id ] }, { include_blank: "None (top-level category)" }, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+  </div>
+
+  <%= form.submit submit_label, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition cursor-pointer self-start" %>
+<% end %>
