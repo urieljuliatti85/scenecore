@@ -872,6 +872,14 @@ A user can purchase a ticket and the ticket can be validated exactly according t
 
 # 15. Phase 12 — Platform Administration
 
+Sliced (2026-09-14): implemented 12.1 (Band moderation) and 12.4
+(Administrative audit). 12.2 (Content moderation) is deferred — there is
+no report/flag system defined anywhere in the product docs, so "review
+reported content" has no defined scope yet (would need product input:
+who can report, what triggers a review, what "remove content" means
+across albums/tracks/posts). 12.3 (Orders and payments) is blocked on
+Phase 8/9, both skipped this round.
+
 ## Objective
 
 Provide platform-level controls.
@@ -880,30 +888,37 @@ Provide platform-level controls.
 
 ### 12.1 Band moderation
 
-* [ ] Review pending bands.
-* [ ] Approve band.
-* [ ] Reject band.
-* [ ] Suspend band when applicable.
+* [x] Review pending bands (`bands#index` already scopes to all bands
+      for a platform admin via `BandPolicy::Scope`; approve/reject/
+      suspend/reactivate controls live on each band's page).
+* [x] Approve band.
+* [x] Reject band.
+* [x] Suspend band when applicable (new `suspended` status; a
+      suspended band's public page becomes inaccessible, same as
+      pending/rejected).
 
 ### 12.2 Content moderation
 
-* [ ] Review reported content.
+* [ ] Review reported content (blocked — no reporting/flagging system
+      is defined in the product docs).
 * [ ] Remove content when authorized.
 * [ ] Record administrative action.
 
 ### 12.3 Orders and payments
 
-* [ ] View orders.
-* [ ] View payment status.
-* [ ] Process approved refunds.
-* [ ] View relevant payment events.
+* [ ] View orders (blocked on Phase 8).
+* [ ] View payment status (blocked on Phase 9).
+* [ ] Process approved refunds (blocked on Phase 9).
+* [ ] View relevant payment events (blocked on Phase 9).
 
 ### 12.4 Administrative audit
 
-* [ ] Record important administrative actions.
-* [ ] Record actor.
-* [ ] Record timestamp.
-* [ ] Record affected resource.
+* [x] Record important administrative actions (new `AdminActionLog`
+      model, polymorphic `subject`; written on approve/reject/suspend/
+      reactivate).
+* [x] Record actor.
+* [x] Record timestamp (`created_at`).
+* [x] Record affected resource (`subject_type`/`subject_id`).
 
 ## Exit criteria
 

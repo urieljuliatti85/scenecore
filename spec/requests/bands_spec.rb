@@ -202,5 +202,143 @@ RSpec.describe "Bands", type: :request do
       expect(response).to redirect_to(new_user_session_path)
       expect(band.reload.status).to eq("pending")
     end
+
+    it "records an admin action log" do
+      admin = create(:user, :platform_admin)
+      band = create(:band)
+      sign_in admin
+
+      expect {
+        patch approve_band_path(band)
+      }.to change(AdminActionLog, :count).by(1)
+
+      log = AdminActionLog.last
+      expect(log.actor).to eq(admin)
+      expect(log.action).to eq("approve_band")
+      expect(log.subject).to eq(band)
+    end
+  end
+
+  describe "PATCH /bands/:id/reject" do
+    it "records an admin action log" do
+      admin = create(:user, :platform_admin)
+      band = create(:band)
+      sign_in admin
+
+      expect {
+        patch reject_band_path(band)
+      }.to change(AdminActionLog, :count).by(1)
+
+      expect(AdminActionLog.last.action).to eq("reject_band")
+    end
+  end
+
+  describe "PATCH /bands/:id/suspend" do
+    it "allows a platform admin to suspend an approved band" do
+      admin = create(:user, :platform_admin)
+      band = create(:band, :approved)
+      sign_in admin
+
+      patch suspend_band_path(band)
+
+      expect(band.reload.status).to eq("suspended")
+    end
+
+    it "records an admin action log" do
+      admin = create(:user, :platform_admin)
+      band = create(:band, :approved)
+      sign_in admin
+
+      expect {
+        patch suspend_band_path(band)
+      }.to change(AdminActionLog, :count).by(1)
+
+      expect(AdminActionLog.last.action).to eq("suspend_band")
+    end
+
+    it "does not allow a regular user to suspend a band" do
+      user = create(:user)
+      band = create(:band, :approved)
+      sign_in user
+
+      patch suspend_band_path(band)
+
+      expect(band.reload.status).to eq("approved")
+    end
+
+    it "does not allow the band's own administrator to suspend it" do
+      user = create(:user)
+      band = create(:band, :approved)
+      create(:band_membership, :administrator, band: band, user: user)
+      sign_in user
+
+      patch suspend_band_path(band)
+
+      expect(band.reload.status).to eq("approved")
+    end
+
+    it "requires authentication" do
+      band = create(:band, :approved)
+
+      patch suspend_band_path(band)
+
+      expect(response).to redirect_to(new_user_session_path)
+      expect(band.reload.status).to eq("approved")
+    end
+
+    it "makes the band's public page inaccessible" do
+      admin = create(:user, :platform_admin)
+      band = create(:band, :approved)
+      sign_in admin
+
+      patch suspend_band_path(band)
+
+      get public_band_path(band.slug)
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
+  describe "PATCH /bands/:id/reactivate" do
+    it "allows a platform admin to reactivate a suspended band" do
+      admin = create(:user, :platform_admin)
+      band = create(:band, :suspended)
+      sign_in admin
+
+      patch reactivate_band_path(band)
+
+      expect(band.reload.status).to eq("approved")
+    end
+
+    it "records an admin action log" do
+      admin = create(:user, :platform_admin)
+      band = create(:band, :suspended)
+      sign_in admin
+
+      expect {
+        patch reactivate_band_path(band)
+      }.to change(AdminActionLog, :count).by(1)
+
+      expect(AdminActionLog.last.action).to eq("reactivate_band")
+    end
+
+    it "does not allow a regular user to reactivate a band" do
+      user = create(:user)
+      band = create(:band, :suspended)
+      sign_in user
+
+      patch reactivate_band_path(band)
+
+      expect(band.reload.status).to eq("suspended")
+    end
+
+    it "requires authentication" do
+      band = create(:band, :suspended)
+
+      patch reactivate_band_path(band)
+
+      expect(response).to redirect_to(new_user_session_path)
+      expect(band.reload.status).to eq("suspended")
+    end
   end
 end
