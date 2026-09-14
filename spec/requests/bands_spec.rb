@@ -116,6 +116,37 @@ RSpec.describe "Bands", type: :request do
     end
   end
 
+  describe "PATCH /bands/:id (photo upload)" do
+    it "attaches a valid photo" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, :administrator, band: band, user: user)
+      sign_in user
+
+      photo = fixture_file_upload("band_photo.png", "image/png")
+
+      patch band_path(band), params: { band: { photo: photo } }
+
+      expect(response).to redirect_to(band_path(band))
+      expect(band.reload.photo).to be_attached
+    end
+
+    it "rejects a non-image file and re-renders the form without erroring" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, :administrator, band: band, user: user)
+      sign_in user
+
+      invalid_file = fixture_file_upload("invalid_photo.txt", "text/plain")
+
+      patch band_path(band), params: { band: { photo: invalid_file } }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("must be a PNG, JPEG, or WebP image")
+      expect(band.reload.photo).not_to be_attached
+    end
+  end
+
   describe "PATCH /bands/:id/approve" do
     it "allows a platform admin to approve a band" do
       admin = create(:user, :platform_admin)
