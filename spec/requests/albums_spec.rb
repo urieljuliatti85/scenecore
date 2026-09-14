@@ -139,4 +139,86 @@ RSpec.describe "Albums", type: :request do
       expect(response).to redirect_to(root_path)
     end
   end
+
+  describe "PATCH /bands/:band_id/albums/:id/publish" do
+    it "publishes the album and every track that has a Spotify link" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      album = create(:album, band: band)
+      linked_track = create(:track, album: album, spotify_url: "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC")
+      unlinked_track = create(:track, album: album, spotify_url: nil)
+      sign_in user
+
+      patch publish_band_album_path(band, album)
+
+      expect(album.reload.status).to eq("published")
+      expect(linked_track.reload.status).to eq("published")
+      expect(unlinked_track.reload.status).to eq("draft")
+      expect(response).to redirect_to(band_path(band))
+    end
+
+    it "requires authentication" do
+      band = create(:band)
+      album = create(:album, band: band)
+
+      patch publish_band_album_path(band, album)
+
+      expect(album.reload.status).to eq("draft")
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it "prevents a member of another band from publishing the album" do
+      band = create(:band)
+      album = create(:album, band: band)
+      outsider = create(:user)
+      create(:band_membership, band: create(:band), user: outsider)
+      sign_in outsider
+
+      patch publish_band_album_path(band, album)
+
+      expect(album.reload.status).to eq("draft")
+      expect(response).to redirect_to(root_path)
+    end
+  end
+
+  describe "PATCH /bands/:band_id/albums/:id/unpublish" do
+    it "reverts the album and all of its tracks to draft" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      album = create(:album, :published, band: band)
+      track = create(:track, :published, album: album)
+      sign_in user
+
+      patch unpublish_band_album_path(band, album)
+
+      expect(album.reload.status).to eq("draft")
+      expect(track.reload.status).to eq("draft")
+      expect(response).to redirect_to(band_path(band))
+    end
+
+    it "requires authentication" do
+      band = create(:band)
+      album = create(:album, :published, band: band)
+
+      patch unpublish_band_album_path(band, album)
+
+      expect(album.reload.status).to eq("published")
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it "prevents a member of another band from unpublishing the album" do
+      band = create(:band)
+      album = create(:album, :published, band: band)
+      outsider = create(:user)
+      create(:band_membership, band: create(:band), user: outsider)
+      sign_in outsider
+
+      patch unpublish_band_album_path(band, album)
+
+      expect(album.reload.status).to eq("published")
+      expect(response).to redirect_to(root_path)
+    end
+  end
 end

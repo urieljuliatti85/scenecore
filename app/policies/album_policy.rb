@@ -7,6 +7,14 @@ class AlbumPolicy < ApplicationPolicy
     member?
   end
 
+  def publish?
+    member?
+  end
+
+  def unpublish?
+    member?
+  end
+
   private
 
   def member?
