@@ -55,26 +55,25 @@
   </div>
 
   <% if @albums.any? %>
-    <div class="mt-10 flex flex-col gap-8">
-      <% @albums.each do |album| %>
-        <div class="rounded-3xl bg-gradient-to-br from-neutral-900 to-black border border-neutral-800 p-5 sm:p-6">
-          <h2 class="text-lg font-semibold text-neutral-300 mb-4"><%= album.title %></h2>
-          <ul class="flex flex-col gap-2">
-            <% album.tracks.published.order(:track_number).each do |track| %>
-              <li class="flex flex-col gap-3 rounded-2xl border border-neutral-800 bg-black/30 px-4 py-3">
-                <div class="flex items-center gap-3">
-                  <span class="text-neutral-500 text-sm"><%= track.track_number %></span>
-                  <span class="text-white"><%= track.title %></span>
-                </div>
-
-                <% if track.spotify_embed_url.present? %>
-                  <iframe src="<%= track.spotify_embed_url %>" width="100%" height="152" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="Spotify player for <%= track.title %>"></iframe>
-                <% end %>
-              </li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
+    <div class="mt-10">
+      <h2 class="text-lg font-semibold text-neutral-300 mb-4">Albums</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <% @albums.each do |album| %>
+          <%= link_to public_band_album_path(@band.slug, album), class: "group rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden hover:border-neutral-600 transition" do %>
+            <div class="aspect-square bg-neutral-800 flex items-center justify-center">
+              <% if album.cover_url.present? %>
+                <%= image_tag album.cover_url, class: "w-full h-full object-cover group-hover:scale-105 transition duration-300" %>
+              <% else %>
+                <span class="text-neutral-600 text-sm">No cover</span>
+              <% end %>
+            </div>
+            <div class="p-4">
+              <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= album.title %></p>
+              <p class="text-sm text-neutral-500"><%= pluralize(album.tracks.select(&:published?).size, "track") %></p>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
     </div>
   <% end %>
 

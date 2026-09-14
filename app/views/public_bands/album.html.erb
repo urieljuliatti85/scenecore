@@ -1,0 +1,34 @@
+<section class="px-4 sm:px-6 py-10 sm:py-16 max-w-3xl mx-auto">
+  <%= link_to "← #{@band.name}", public_band_path(@band.slug), class: "text-sm text-neutral-400 hover:text-white transition mb-6 inline-block" %>
+
+  <div class="flex flex-col sm:flex-row gap-6 items-start sm:items-end mb-10">
+    <div class="w-40 h-40 rounded-2xl overflow-hidden bg-neutral-800 border border-neutral-800 shrink-0 flex items-center justify-center">
+      <% if @album.cover_url.present? %>
+        <%= image_tag @album.cover_url, class: "w-full h-full object-cover" %>
+      <% else %>
+        <span class="text-neutral-600 text-sm">No cover</span>
+      <% end %>
+    </div>
+
+    <div>
+      <p class="text-xs sm:text-sm tracking-[0.2em] text-neutral-500 uppercase mb-2">Album</p>
+      <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight"><%= @album.title %></h1>
+      <p class="text-neutral-500 mt-2"><%= pluralize(@tracks.size, "track") %></p>
+    </div>
+  </div>
+
+  <ul class="flex flex-col gap-3">
+    <% @tracks.each do |track| %>
+      <li class="flex flex-col gap-3 rounded-2xl border border-neutral-800 bg-neutral-900/60 px-4 py-3">
+        <div class="flex items-center gap-3">
+          <span class="text-neutral-500 text-sm"><%= track.track_number %></span>
+          <span class="text-white"><%= track.title %></span>
+        </div>
+
+        <% if track.spotify_embed_url.present? %>
+          <iframe src="<%= track.spotify_embed_url %>" width="100%" height="152" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="Spotify player for <%= track.title %>"></iframe>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</section>
