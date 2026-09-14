@@ -1,18 +1,23 @@
 require "rails_helper"
 
 RSpec.describe "Band member invitation", type: :system do
-  # Known CI flake: on the GitHub Actions headless Chrome runner, either the
-  # click_link "Add member" or the click_button "Add member" below has
-  # intermittently failed to reach the server at all (confirmed via
-  # log/test.log across two separate CI runs — no request logged for the
-  # click that was lost, and it wasn't the same click both times). Reliably
-  # green locally. Added an explicit `have_select(..., selected: ...)` wait
-  # below in case the browser hadn't finished processing the select's
-  # change event before the next click — untested against the real flake
-  # yet. The system-test CI job retries the suite once on failure and keeps
-  # screenshots/log as an artifact from the first attempt specifically to
-  # make this failure mode investigable if it recurs; do not mark this
-  # pending/skipped.
+  # Known CI-only flake, not yet fixed after three targeted attempts:
+  #   1. Longer Capybara.default_max_wait_time on CI (spec/rails_helper.rb)
+  #   2. Waiting for the "Member added." flash before asserting
+  #   3. An explicit have_select(..., selected: ...) wait between `select`
+  #      and the submit click, in case the change event hadn't settled
+  # None of these held up. Across CI runs, log/test.log shows a *different*
+  # click silently failing to reach the server each time (sometimes
+  # click_link "Add member", sometimes click_button "Add member") — this
+  # points at something systemic with headless Chrome on the GitHub Actions
+  # runner losing an occasional click, not a bug in one specific step of
+  # this spec. Reliably green locally, every time.
+  #
+  # Not spending more time on it for now. The system-test CI job retries
+  # the suite once on failure and keeps screenshots/log as an artifact from
+  # the first attempt specifically so the next investigation has evidence
+  # to start from. Do not mark this pending/skipped — that would just hide
+  # the flake instead of leaving a trail to it.
   it "lets an administrator add a member who can see the band but not manage its members" do
     admin = create(:user, name: "Alice")
     new_member = create(:user, name: "Bob", email: "bob@example.com")
