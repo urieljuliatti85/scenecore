@@ -368,12 +368,19 @@ Allow visitors and fans to discover bands.
 
 ### 4.1 Public band page
 
-* [ ] Band name.
-* [ ] Description.
+Minimal slice implemented ahead of the rest of Phase 4: an anonymous
+visitor can view an approved band's existing `/bands/:id` page (name,
+description, and its published albums/tracks). Pulled forward because
+Phase 5's exit criteria (a visitor can play a published track) is
+otherwise unreachable. Logo, cover, links, a friendly public URL, and
+responsive/empty/error states are still not implemented.
+
+* [x] Band name.
+* [x] Description.
 * [ ] Logo.
 * [ ] Cover.
 * [ ] Links.
-* [ ] Public status.
+* [x] Public status (approved bands are visible; pending/rejected are not).
 
 ### 4.2 Custom URL
 
@@ -439,11 +446,19 @@ file validation.
 
 ### 5.4 Publishing
 
-* [ ] Save track as draft.
-* [ ] Publish track.
-* [ ] Unpublish track.
-* [ ] Hide unpublished tracks from public users.
-* [ ] A track cannot be published without a Spotify link.
+Decision: publishing happens at the album level, not per track. Publishing
+an album publishes every track that already has a Spotify link; tracks
+without a link stay draft until one is added. Unpublishing an album
+reverts all of its tracks to draft. There is no standalone publish/unpublish
+action on a track.
+
+* [x] Save track as draft (default state; also the effective state for a
+      track with no Spotify link, even if its album is published).
+* [x] Publish album (cascades to tracks that have a Spotify link).
+* [x] Unpublish album (cascades to all tracks).
+* [x] Hide unpublished tracks from public users (see 4.1: the public band
+      page now only renders published albums/tracks to non-members).
+* [x] A track cannot be published without a Spotify link.
 
 ### 5.5 Player (Spotify embed)
 

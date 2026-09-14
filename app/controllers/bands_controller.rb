@@ -1,4 +1,5 @@
 class BandsController < ApplicationController
+  skip_before_action :authenticate_user!, only: :show
   before_action :set_band_for_member_actions, only: [ :show, :edit, :update ]
   before_action :set_band_for_admin_actions, only: [ :approve, :reject ]
 
