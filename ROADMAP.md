@@ -173,9 +173,12 @@ event ticket, Validate a ticket — each noted as not-yet-implemented there).
 
 ### 0.4 Define MVP scope
 
-* [ ] List mandatory functionality.
-* [ ] List optional future functionality.
-* [ ] List explicitly excluded functionality.
+Documented in `docs/product.md` §4 (Mandatory/Optional/Excluded), each
+mandatory domain mapped to its ROADMAP.md phase.
+
+* [x] List mandatory functionality.
+* [x] List optional future functionality.
+* [x] List explicitly excluded functionality.
 
 ### 0.5 Define product acceptance criteria
 
