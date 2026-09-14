@@ -11,9 +11,10 @@ class Band < ApplicationRecord
   has_many :follows, dependent: :destroy
   has_many :followers, through: :follows, source: :user
   has_many :posts, dependent: :destroy
+  has_many :admin_action_logs, as: :subject, dependent: :destroy
   has_one_attached :photo
 
-  enum :status, { pending: "pending", approved: "approved", rejected: "rejected" },
+  enum :status, { pending: "pending", approved: "approved", rejected: "rejected", suspended: "suspended" },
        default: :pending, validate: true
 
   scope :approved, -> { where(status: :approved) }

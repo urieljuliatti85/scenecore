@@ -36,9 +36,9 @@ RSpec.describe Band, type: :model do
     expect(create(:band).status).to eq("pending")
   end
 
-  it "restricts status to pending, approved, or rejected" do
+  it "restricts status to pending, approved, rejected, or suspended" do
     band = build(:band)
-    band.status = "suspended"
+    band.status = "banned"
 
     expect(band).not_to be_valid
   end
@@ -169,6 +169,23 @@ RSpec.describe Band, type: :model do
       create(:post, band: band)
 
       expect { band.destroy }.to change(Post, :count).by(-1)
+    end
+  end
+
+  describe "admin action logs" do
+    it "has many admin action logs as its subject" do
+      band = create(:band)
+      log = create(:admin_action_log, subject: band)
+
+      expect(band.admin_action_logs).to contain_exactly(log)
+    end
+
+    it "destroys its admin action logs when destroyed" do
+      band = create(:band)
+      create(:admin_action_log, subject: band)
+      band.band_memberships.destroy_all
+
+      expect { band.destroy }.to change(AdminActionLog, :count).by(-1)
     end
   end
 

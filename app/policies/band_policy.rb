@@ -19,6 +19,14 @@ class BandPolicy < ApplicationPolicy
     user&.platform_admin?
   end
 
+  def suspend?
+    user&.platform_admin?
+  end
+
+  def reactivate?
+    user&.platform_admin?
+  end
+
   class Scope < Scope
     def resolve
       return scope.none if user.nil?

@@ -1,6 +1,6 @@
 class BandsController < ApplicationController
   before_action :set_band_for_member_actions, only: [ :show, :edit, :update ]
-  before_action :set_band_for_admin_actions, only: [ :approve, :reject ]
+  before_action :set_band_for_admin_actions, only: [ :approve, :reject, :suspend, :reactivate ]
 
   def index
     @bands = policy_scope(Band)
@@ -41,15 +41,33 @@ class BandsController < ApplicationController
 
   def approve
     @band.update!(status: :approved)
+    log_admin_action("approve_band")
     redirect_to @band, notice: "Band approved."
   end
 
   def reject
     @band.update!(status: :rejected)
+    log_admin_action("reject_band")
     redirect_to @band, notice: "Band rejected."
   end
 
+  def suspend
+    @band.update!(status: :suspended)
+    log_admin_action("suspend_band")
+    redirect_to @band, notice: "Band suspended."
+  end
+
+  def reactivate
+    @band.update!(status: :approved)
+    log_admin_action("reactivate_band")
+    redirect_to @band, notice: "Band reactivated."
+  end
+
   private
+
+  def log_admin_action(action)
+    AdminActionLog.create!(actor: current_user, action: action, subject: @band)
+  end
 
   # show/edit/update rely on band membership (or platform admin); anyone
   # else gets a plain 404 response (not a raised exception, which upsets

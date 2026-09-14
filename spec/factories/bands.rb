@@ -11,5 +11,9 @@ FactoryBot.define do
     trait :rejected do
       status { :rejected }
     end
+
+    trait :suspended do
+      status { :suspended }
+    end
   end
 end
