@@ -1,41 +1,63 @@
 <% if @featured_band %>
-  <section class="px-4 sm:px-6 py-10 sm:py-16 max-w-7xl mx-auto">
-    <div class="rounded-[2rem] sm:rounded-[2.5rem] bg-gradient-to-br from-neutral-800 via-neutral-900 to-black p-6 sm:p-10 shadow-2xl shadow-black/40">
-      <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-        <div>
-          <p class="text-xs sm:text-sm tracking-[0.2em] text-neutral-500 uppercase mb-4">Featured Band</p>
+  <section class="relative min-h-[70vh] sm:min-h-[85vh] flex items-end overflow-hidden">
+    <% if @featured_band.photo.attached? %>
+      <%= image_tag @featured_band.photo, class: "absolute inset-0 w-full h-full object-cover" %>
+      <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20"></div>
+    <% else %>
+      <div class="absolute inset-0 bg-gradient-to-br from-neutral-800 via-neutral-900 to-black"></div>
+    <% end %>
 
-          <h1 class="text-5xl sm:text-6xl font-extrabold tracking-tight mb-6">
-            <%= @featured_band.name %>
-          </h1>
+    <div class="relative px-4 sm:px-6 pb-16 sm:pb-24 pt-32 max-w-4xl mx-auto text-center w-full">
+      <p class="text-xs sm:text-sm tracking-[0.2em] text-neutral-400 uppercase mb-4">Featured Band</p>
 
-          <% if @featured_band.description.present? %>
-            <p class="text-neutral-300 text-base sm:text-lg mb-10 max-w-xl">
-              <%= @featured_band.description %>
-            </p>
-          <% end %>
+      <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tight mb-6">
+        <%= @featured_band.name %>
+      </h1>
 
-          <div class="flex items-center gap-4 mb-8">
-            <%= link_to "View band", public_band_path(@featured_band.slug), class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
-            <% unless user_signed_in? %>
-              <%= link_to "Sign up", new_user_registration_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
-            <% end %>
-          </div>
+      <% if @featured_band.description.present? %>
+        <p class="text-neutral-200 text-base sm:text-lg mb-10 max-w-xl mx-auto">
+          <%= @featured_band.description %>
+        </p>
+      <% end %>
 
-          <%= render "shared/social_links", band: @featured_band %>
-        </div>
-
-        <% if @featured_band.photo.attached? %>
-          <div class="aspect-square lg:aspect-[4/3] rounded-3xl overflow-hidden bg-black/30">
-            <%= image_tag @featured_band.photo, class: "w-full h-full object-cover" %>
-          </div>
+      <div class="flex items-center justify-center gap-4 mb-8">
+        <%= link_to "View band", public_band_path(@featured_band.slug), class: "rounded-full bg-yellow-400 text-black font-semibold px-8 py-3 hover:bg-yellow-300 transition" %>
+        <% unless user_signed_in? %>
+          <%= link_to "Sign up", new_user_registration_path, class: "rounded-full border border-neutral-500 text-white font-semibold px-8 py-3 hover:border-neutral-300 transition" %>
         <% end %>
       </div>
 
-      <div class="mt-10">
-        <%= render "shared/coming_soon_cards" %>
+      <div class="flex justify-center">
+        <%= render "shared/social_links", band: @featured_band %>
       </div>
     </div>
+  </section>
+
+  <% if @featured_albums.any? %>
+    <section class="px-4 sm:px-6 py-16 sm:py-24 max-w-6xl mx-auto text-center">
+      <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Feature Music Albums</h2>
+      <p class="text-neutral-500 mb-12">Check out the newest music albums published on SceneCore.</p>
+
+      <div class="grid sm:grid-cols-3 gap-6 text-left">
+        <% @featured_albums.each do |album| %>
+          <%= link_to public_band_path(album.band.slug), class: "group" do %>
+            <div class="aspect-square rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800 mb-4">
+              <% if album.cover.attached? %>
+                <%= image_tag album.cover, class: "w-full h-full object-cover group-hover:scale-105 transition duration-300" %>
+              <% else %>
+                <div class="w-full h-full flex items-center justify-center text-neutral-600 text-sm">No cover</div>
+              <% end %>
+            </div>
+            <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= album.title %></p>
+            <p class="text-sm text-neutral-500"><%= album.band.name %></p>
+          <% end %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <section class="px-4 sm:px-6 pb-20 sm:pb-28 max-w-6xl mx-auto">
+    <%= render "shared/coming_soon_cards" %>
   </section>
 <% else %>
   <section class="px-4 sm:px-6 py-10 sm:py-16 max-w-3xl mx-auto">

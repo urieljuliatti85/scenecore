@@ -421,9 +421,10 @@ an album — there is no ungrouped track.
 * [x] Album model.
 * [x] Album belongs to band.
 * [x] Create album (imported from Spotify search; see `AlbumsController`).
-* [ ] Edit album (no edit/update route exists yet — albums are
-      created via Spotify import and otherwise only published/unpublished).
-* [ ] Album cover.
+* [x] Edit album (2026-09-14: `AlbumsController#edit`/`#update` added,
+      scoped to the cover only — title/tracks stay Spotify-import-only).
+* [x] Album cover (Active Storage, same validation as `Band#photo` via
+      the shared `HasImage` concern; set from the album's edit page).
 * [x] Album publication state.
 
 ### 5.2 Tracks

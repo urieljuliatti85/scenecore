@@ -49,4 +49,49 @@ RSpec.describe Album, type: :model do
 
     expect { album.destroy }.to change(AdminActionLog, :count).by(-1)
   end
+
+  describe "cover" do
+    it "accepts a valid image" do
+      album = build(:album)
+      album.cover.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/band_photo.png")),
+        filename: "cover.png",
+        content_type: "image/png"
+      )
+
+      expect(album).to be_valid
+    end
+
+    it "rejects a non-image content type" do
+      album = build(:album)
+      album.cover.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/invalid_photo.txt")),
+        filename: "invalid_photo.txt",
+        content_type: "text/plain"
+      )
+
+      expect(album).not_to be_valid
+      expect(album.errors[:cover]).to be_present
+    end
+
+    it "rejects a file larger than the maximum size" do
+      album = build(:album)
+      album.cover.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/band_photo.png")),
+        filename: "cover.png",
+        content_type: "image/png"
+      )
+      allow(album.cover).to receive(:byte_size).and_return(HasImage::IMAGE_MAX_SIZE + 1)
+
+      expect(album).not_to be_valid
+      expect(album.errors[:cover]).to be_present
+    end
+
+    it "is valid without a cover attached" do
+      album = build(:album)
+
+      expect(album.cover).not_to be_attached
+      expect(album).to be_valid
+    end
+  end
 end

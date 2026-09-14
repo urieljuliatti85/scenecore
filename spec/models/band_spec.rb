@@ -82,7 +82,7 @@ RSpec.describe Band, type: :model do
         filename: "band_photo.png",
         content_type: "image/png"
       )
-      allow(band.photo).to receive(:byte_size).and_return(Band::PHOTO_MAX_SIZE + 1)
+      allow(band.photo).to receive(:byte_size).and_return(HasImage::IMAGE_MAX_SIZE + 1)
 
       expect(band).not_to be_valid
       expect(band.errors[:photo]).to be_present

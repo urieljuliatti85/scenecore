@@ -1,6 +1,6 @@
 class Band < ApplicationRecord
-  PHOTO_CONTENT_TYPES = %w[image/png image/jpeg image/webp].freeze
-  PHOTO_MAX_SIZE = 5.megabytes
+  include HasImage
+
   SOCIAL_LINK_ATTRIBUTES = %i[spotify_url youtube_url instagram_url website_url].freeze
   URL_FORMAT = %r{\Ahttps?://[^\s/$.?#].[^\s]*\z}i
 
@@ -13,7 +13,7 @@ class Band < ApplicationRecord
   has_many :posts, dependent: :destroy
   has_many :admin_action_logs, as: :subject, dependent: :destroy
   belongs_to :category, optional: true
-  has_one_attached :photo
+  has_image :photo
 
   enum :status, { pending: "pending", approved: "approved", rejected: "rejected", suspended: "suspended" },
        default: :pending, validate: true
@@ -23,7 +23,6 @@ class Band < ApplicationRecord
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
-  validate :photo_is_valid
   validates :spotify_url, :youtube_url, :instagram_url, :website_url,
             format: { with: URL_FORMAT, message: "must be a valid URL" }, allow_blank: true
 
@@ -55,17 +54,5 @@ class Band < ApplicationRecord
     end
 
     self.slug = candidate
-  end
-
-  def photo_is_valid
-    return unless photo.attached?
-
-    unless photo.content_type.in?(PHOTO_CONTENT_TYPES)
-      errors.add(:photo, "must be a PNG, JPEG, or WebP image")
-    end
-
-    if photo.byte_size > PHOTO_MAX_SIZE
-      errors.add(:photo, "must be smaller than #{PHOTO_MAX_SIZE / 1.megabyte}MB")
-    end
   end
 end
