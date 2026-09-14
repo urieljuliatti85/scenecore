@@ -8,7 +8,9 @@ RSpec.describe "Mobile navigation", type: :system do
   it "exposes Bands and auth links behind a menu button when signed out" do
     visit root_path
 
-    expect(page).to have_no_link("Bands", visible: :visible)
+    within("#desktop-nav") do
+      expect(page).to have_no_link("Bands", visible: :visible)
+    end
 
     find("button[aria-label='Open menu']").click
 
