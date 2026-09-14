@@ -3,6 +3,10 @@ class TrackPolicy < ApplicationPolicy
     member?
   end
 
+  def update?
+    member?
+  end
+
   private
 
   def member?

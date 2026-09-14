@@ -34,4 +34,32 @@ RSpec.describe Track, type: :model do
 
     expect(track.band).to eq(band)
   end
+
+  it "is valid without a spotify_url" do
+    expect(build(:track, spotify_url: nil)).to be_valid
+  end
+
+  it "is valid with a Spotify track URL" do
+    track = build(:track, spotify_url: "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC")
+
+    expect(track).to be_valid
+  end
+
+  it "is valid with a Spotify track URL that has a query string" do
+    track = build(:track, spotify_url: "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC?si=abc123")
+
+    expect(track).to be_valid
+  end
+
+  it "is invalid with a non-Spotify URL" do
+    track = build(:track, spotify_url: "https://example.com/song")
+
+    expect(track).not_to be_valid
+  end
+
+  it "is invalid with a Spotify URL that is not a track link" do
+    track = build(:track, spotify_url: "https://open.spotify.com/album/4uLU6hMCjMI75M1A2tKUQC")
+
+    expect(track).not_to be_valid
+  end
 end
