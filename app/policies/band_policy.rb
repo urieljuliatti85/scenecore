@@ -1,6 +1,6 @@
 class BandPolicy < ApplicationPolicy
   def show?
-    member? || user&.platform_admin? || record.approved?
+    member? || user&.platform_admin?
   end
 
   def create?
@@ -19,10 +19,6 @@ class BandPolicy < ApplicationPolicy
     user&.platform_admin?
   end
 
-  def member?
-    membership.present?
-  end
-
   class Scope < Scope
     def resolve
       return scope.none if user.nil?
@@ -36,6 +32,10 @@ class BandPolicy < ApplicationPolicy
 
   def membership
     @membership ||= record.band_memberships.find_by(user_id: user&.id)
+  end
+
+  def member?
+    membership.present?
   end
 
   def administrator?

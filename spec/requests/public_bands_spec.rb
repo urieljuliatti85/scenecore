@@ -58,6 +58,30 @@ RSpec.describe "Public band pages", type: :request do
 
       expect(response.body).not_to include("aria-label=\"Website\"")
     end
+
+    it "shows only published albums and tracks" do
+      band = create(:band, :approved)
+      published_album = create(:album, :published, band: band, title: "Public Album")
+      draft_album = create(:album, band: band, title: "Secret Album")
+      create(:track, :published, album: published_album, title: "Public Track")
+      create(:track, album: published_album, title: "Secret Track")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Public Album")
+      expect(response.body).not_to include("Secret Album")
+      expect(response.body).to include("Public Track")
+      expect(response.body).not_to include("Secret Track")
+    end
+
+    it "does not show anything when the band has no published albums" do
+      band = create(:band, :approved)
+      create(:album, band: band, title: "Secret Album")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Secret Album")
+    end
   end
 
   describe "route precedence" do
