@@ -69,8 +69,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Install libvips
-        run: sudo apt-get update && sudo apt-get install -y libvips
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -80,8 +80,88 @@ jobs:
       - name: Prepare test database
         run: bin/rails db:test:prepare
 
+      # System specs have their own job below: they're browser-driven and
+      # flakier, so mixing them into this run would hide which layer failed
+      # and would need the retry/evidence handling that job does.
       - name: Run tests
-        run: bundle exec rspec
+        run: bundle exec rspec --exclude-pattern "spec/system/**/*_spec.rb"
+
+  # Separate job on purpose: system specs drive a real headless Chrome
+  # browser, are slower, and are the ones most prone to flaking. Keeping
+  # them out of `test` means a flake here doesn't mask a real failure
+  # elsewhere, and this job can retry once and keep evidence when it does.
+  system-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: scenecore
+          POSTGRES_PASSWORD: scenecore
+          POSTGRES_DB: scenecore_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgres://scenecore:scenecore@localhost:5432/scenecore_test
+      RAILS_ENV: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Prepare test database
+        run: bin/rails db:test:prepare
+
+      - name: Run system specs
+        run: |
+          if bundle exec rspec spec/system; then
+            exit 0
+          fi
+
+          # Save evidence from the first attempt before retrying: a second,
+          # green run would overwrite these screenshots/log, destroying the
+          # only record of what actually failed.
+          mkdir -p tmp/first-attempt
+          cp -r tmp/capybara tmp/first-attempt/ 2>/dev/null || true
+          cp log/test.log tmp/first-attempt/ 2>/dev/null || true
+
+          echo "::warning title=Flaky system test::The system spec suite failed on the first attempt and was retried. Evidence is in the 'system-test-first-attempt' artifact. A green job with this warning is NOT a clean run."
+
+          bundle exec rspec spec/system
+
+      # Uploaded even when the job ends green: that's the case of a retry
+      # that passed on the second attempt, the only one where the flake
+      # leaves a trace worth keeping.
+      - name: Keep evidence from a retried system test run
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: system-test-first-attempt
+          path: ${{ github.workspace }}/tmp/first-attempt
+          if-no-files-found: ignore
+
+      - name: Keep screenshots and server log from a failed system test run
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: system-test-screenshots
+          path: |
+            ${{ github.workspace }}/tmp/capybara
+            ${{ github.workspace }}/log/test.log
+          if-no-files-found: ignore
 
   lint:
     runs-on: ubuntu-latest
