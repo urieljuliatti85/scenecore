@@ -42,6 +42,11 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 2.1"
 
+# image_processing >= 2.0 made this a soft dependency; Active Storage's
+# default :vips variant processor needs it declared explicitly or it
+# raises a LoadError on boot.
+gem "ruby-vips", "~> 2.0"
+
 # Pinned below 3.0: json 3.x dropped the legacy positional-opts JSON.parse
 # signature that this version of Rails' session cookie decoding still calls,
 # breaking every request with an existing session cookie.
