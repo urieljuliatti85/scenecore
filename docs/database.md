@@ -54,20 +54,47 @@ Connects users and bands.
 
 ---
 
-## Tracks
+## Albums
+
+### Purpose
+
+Groups a band's tracks into a release.
 
 ### Attributes
 
 - band_id
 - title
 - status
-- audio
+- cover
 - created_at
 - updated_at
 
 ### Rules
 
-- A track belongs to one band.
+- An album belongs to one band.
+- An album has many tracks.
+- Draft albums are not publicly accessible.
+- Published albums may be publicly accessible.
+
+---
+
+## Tracks
+
+### Attributes
+
+- album_id
+- title
+- track_number
+- status
+- spotify_url
+- created_at
+- updated_at
+
+### Rules
+
+- A track belongs to one album (and, through it, to one band).
+- A track's audio is not hosted by SceneCore — it links to the
+  corresponding Spotify track, and playback uses Spotify's embed.
 - Draft tracks are not publicly accessible.
 - Published tracks may be publicly accessible.
 
@@ -90,5 +117,8 @@ User
 
 Band
   ├── has_many BandMemberships
-  ├── has_many Tracks
+  ├── has_many Albums
   └── has_many Products
+
+Album
+  └── has_many Tracks
