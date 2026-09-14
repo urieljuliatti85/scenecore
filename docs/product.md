@@ -756,26 +756,113 @@ This is sufficient for SceneCore to start operating without creating a massive b
 
 ## 3. Core User Journeys
 
+Each journey below corresponds to a task in ROADMAP.md §0.3. Journeys already
+reachable in the app are noted as such; the rest describe the intended flow
+for phases not yet built (Store, Payments, Subscriptions, Events).
+
 ### Journey 1 — Discover a Band
 
+*Built (Phase 4).*
+
 1. Visitor accesses the platform.
-2. Visitor discovers a band.
-3. Visitor opens the band's page.
-4. Visitor listens to music.
+2. Visitor browses or is directed to a band (e.g., via a shared link or
+   Spotify).
+3. Visitor opens the band's public page (`GET /:slug`).
 
-### Journey 2 — Become a Fan
+### Journey 2 — View a Band's Public Page
 
-1. Visitor creates an account.
-2. User follows a band.
-3. User receives access to follower content.
+*Built (Phase 4).*
 
-### Journey 3 — Subscribe
+1. Visitor opens an approved band's public page.
+2. Visitor sees the band's name, description, links, and published albums.
+3. Pending, rejected, or suspended bands are not reachable at this URL.
 
-1. Fan selects a subscription.
-2. Fan completes checkout.
+### Journey 3 — Listen to Music
+
+*Built (Phase 5).*
+
+1. Visitor opens a band's public page or an album's page.
+2. Visitor sees published albums and tracks.
+3. Visitor plays a track via the embedded Spotify player.
+4. Draft tracks and tracks without a Spotify link are never shown.
+
+### Journey 4 — Create an Account
+
+*Built (Phase 2).*
+
+1. Visitor registers with an email and password.
+2. Visitor is authenticated and becomes a Fan (the base authenticated role;
+   see `docs/permissions.md`).
+
+### Journey 5 — Follow a Band
+
+*Built (Phase 6).*
+
+1. Fan opens an approved band's public page.
+2. Fan follows the band.
+3. The band's follower count updates and the Fan's UI reflects the
+   following state.
+4. Fan can unfollow at any time.
+
+### Journey 6 — Access Exclusive Content
+
+*Partially built (Phase 7): Public and Follower visibility are built;
+Subscriber visibility is not yet reachable (see ROADMAP.md Phase 7 note —
+blocked on Phase 10).*
+
+1. Band publishes a post with Public, Followers, or Subscribers visibility.
+2. A Visitor can see only Public posts.
+3. A Fan who follows the band can additionally see Follower posts.
+4. A Fan who subscribes to the band would additionally see Subscriber
+   posts, once Phase 10 (Subscriptions) exists to establish that
+   relationship.
+
+### Journey 7 — Purchase a Product
+
+*Not built (Phase 8 — Store — skipped; depends on Phase 9 — Payments —
+also skipped). Describes the intended flow only.*
+
+1. Fan opens a band's store and selects a product (and variant, if
+   applicable).
+2. Fan adds the product to a cart scoped to that one band (ADR-003).
+3. Fan checks out and pays through the approved payment provider.
+4. Payment is confirmed and an order is created with a price/product
+   snapshot.
+5. Inventory is decremented consistently with the purchase.
+
+### Journey 8 — Subscribe
+
+*Not built (Phase 10 — Subscriptions — depends on Phase 9 — Payments —
+both not yet implemented). Describes the intended flow only.*
+
+1. Fan selects a band's subscription plan.
+2. Fan completes checkout through the approved payment provider.
 3. Payment is confirmed.
 4. Subscription becomes active.
-5. Exclusive content becomes available.
+5. Subscriber-only content becomes available to the Fan (see Journey 6).
+
+### Journey 9 — Purchase an Event Ticket
+
+*Not built (Phase 11 — Events and Tickets — depends on Phase 9 —
+Payments). Describes the intended flow only.*
+
+1. Fan opens a band's published event.
+2. Fan selects a ticket batch and quantity.
+3. Fan checks out and pays through the approved payment provider.
+4. Payment is confirmed and a ticket (with a unique identifier and QR
+   code) is issued to the Fan.
+
+### Journey 10 — Validate a Ticket
+
+*Not built (Phase 11 — Events and Tickets). Describes the intended flow
+only.*
+
+1. Door staff (a Band Member/Administrator or designated role — not yet
+   defined) scans a ticket's QR code at check-in.
+2. The system verifies the ticket belongs to the event and has not already
+   been used.
+3. A valid, unused ticket is marked used and check-in succeeds.
+4. An already-used or invalid ticket is rejected, with the reason shown.
 
 ---
 
