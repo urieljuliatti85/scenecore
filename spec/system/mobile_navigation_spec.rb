@@ -4,11 +4,19 @@ RSpec.describe "Mobile navigation", type: :system do
   before do
     # window.resize_to is unreliable under --headless=new in CI containers
     # (no real window manager), so force the viewport via CDP instead —
-    # this is deterministic regardless of headless mode.
+    # this is deterministic regardless of headless mode. mobile: false
+    # keeps normal mouse/click event dispatch (mobile: true switches to
+    # touch emulation, which broke Devise form submission in this app).
     page.driver.browser.execute_cdp(
       "Emulation.setDeviceMetricsOverride",
-      width: 375, height: 800, deviceScaleFactor: 1, mobile: true
+      width: 375, height: 800, deviceScaleFactor: 1, mobile: false
     )
+  end
+
+  after do
+    # Reset the override so it doesn't leak into specs that reuse this
+    # browser session/worker later in the same run.
+    page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
   end
 
   it "exposes Bands and auth links behind a menu button when signed out" do
