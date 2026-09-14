@@ -42,4 +42,11 @@ RSpec.describe Album, type: :model do
     expect { album.destroy }.to change(Track, :count).by(-1)
     expect { track.reload }.to raise_error(ActiveRecord::RecordNotFound)
   end
+
+  it "destroys its admin action logs when destroyed" do
+    album = create(:album)
+    create(:admin_action_log, subject: album)
+
+    expect { album.destroy }.to change(AdminActionLog, :count).by(-1)
+  end
 end

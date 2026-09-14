@@ -17,6 +17,11 @@ Rails.application.routes.draw do
       resources :privileges, only: [ :index, :create, :update ]
     end
     resources :users, only: [ :index ]
+    resources :albums, only: [ :index ] do
+      member do
+        patch :unpublish
+      end
+    end
   end
 
   resources :bands, only: [ :index, :new, :create, :show, :edit, :update ] do
