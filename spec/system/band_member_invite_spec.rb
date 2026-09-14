@@ -1,6 +1,14 @@
 require "rails_helper"
 
 RSpec.describe "Band member invitation", type: :system do
+  # Known CI flake: on the GitHub Actions headless Chrome runner, the
+  # click_link "Add member" below sometimes never reaches the server at all
+  # (confirmed via log/test.log — no GET .../members/new request logged),
+  # even though this spec is reliably fast and green locally. The
+  # system-test CI job retries the suite once on failure and keeps
+  # screenshots/log as an artifact from the first attempt specifically to
+  # make this failure mode investigable rather than silently masking it.
+  # Root cause not yet found; do not mark this pending/skipped.
   it "lets an administrator add a member who can see the band but not manage its members" do
     admin = create(:user, name: "Alice")
     new_member = create(:user, name: "Bob", email: "bob@example.com")

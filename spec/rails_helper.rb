@@ -45,9 +45,11 @@ RSpec.configure do |config|
   end
 
   # CI runners are slower than a local machine (cold asset/bootsnap caches,
-  # shared CPU), and Capybara's 2-second default wait isn't always enough
-  # for a Turbo form submission's click -> request -> redirect -> render
-  # round trip there, even though the same spec is reliably fast locally.
+  # shared CPU), so give Capybara more room than its 2-second default before
+  # giving up on a finder. This did not fully fix the known flake in
+  # band_member_invite_spec (see the comment there) — that one isn't a slow
+  # response, it's a click that never reaches the server at all — but it's
+  # still a reasonable general safety margin for CI.
   Capybara.default_max_wait_time = 5 if ENV["CI"].present?
 
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
