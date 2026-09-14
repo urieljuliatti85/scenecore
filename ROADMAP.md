@@ -423,12 +423,16 @@ Allow bands to manage and publish music.
 * [ ] Draft state.
 * [ ] Published state.
 
-### 5.3 Audio
+### 5.3 Audio (via Spotify link, no file upload)
 
-* [ ] Audio upload.
-* [ ] Validate supported file types.
-* [ ] Validate file size.
-* [ ] Store audio through approved storage strategy.
+Decision: track audio is not hosted by SceneCore. A track stores a link to
+its corresponding Spotify track, and playback happens through Spotify's
+official embed. No Active Storage attachment, no file upload, no audio
+file validation.
+
+* [ ] Track stores a Spotify track URL.
+* [ ] Validate the URL matches Spotify's track URL format.
+* [ ] Handle a track with no Spotify link yet (allowed while in draft).
 
 ### 5.4 Publishing
 
@@ -436,23 +440,23 @@ Allow bands to manage and publish music.
 * [ ] Publish track.
 * [ ] Unpublish track.
 * [ ] Hide unpublished tracks from public users.
+* [ ] A track cannot be published without a Spotify link.
 
-### 5.5 Player
+### 5.5 Player (Spotify embed)
 
-* [ ] Play published track.
-* [ ] Pause.
-* [ ] Seek.
-* [ ] Display track information.
-* [ ] Handle missing/unavailable audio.
+* [ ] Display Spotify's official embed player for a published track's link.
+* [ ] Display track information (title).
+* [ ] Handle missing/invalid Spotify link gracefully (no embed shown).
 
 ### 5.6 Security
 
-* [ ] Verify private/unpublished audio cannot be accessed directly.
+* [ ] Verify unpublished tracks are not exposed to visitors (no Spotify
+      link leaked, no route to reach the track).
 * [ ] Verify authorization server-side.
 
 ## Exit criteria
 
-A band administrator can publish music and a visitor can listen to published tracks.
+A band administrator can publish a track linked to Spotify and a visitor can play it through the embedded Spotify player.
 
 ---
 
