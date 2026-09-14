@@ -6,6 +6,7 @@ class PublicBandsController < ApplicationController
     @albums = @band.albums.published.includes(:tracks)
     @following = current_user.present? && @band.follows.exists?(user: current_user)
     @posts = visible_posts(@band)
+    @published_tracks_count = @band.tracks.published.count
   rescue ActiveRecord::RecordNotFound
     head :not_found
   end
