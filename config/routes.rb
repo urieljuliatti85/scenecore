@@ -23,4 +23,8 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   root "pages#home"
+
+  # Public band page, resolved by slug. Must stay last so it doesn't
+  # shadow any of the routes declared above.
+  get "/:slug", to: "public_bands#show", as: :public_band, constraints: { slug: /[a-z0-9\-]+/ }
 end

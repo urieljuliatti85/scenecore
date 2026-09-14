@@ -5,6 +5,8 @@ class Band < ApplicationRecord
   enum :status, { pending: "pending", approved: "approved", rejected: "rejected" },
        default: :pending, validate: true
 
+  scope :approved, -> { where(status: :approved) }
+
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
 
