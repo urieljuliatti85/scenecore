@@ -31,6 +31,8 @@
         <% end %>
 
         <nav class="flex items-center gap-3 sm:gap-4">
+          <%= link_to "Bands", discover_bands_path, class: "text-sm font-medium text-neutral-300 hover:text-white hidden sm:inline" %>
+
           <% if user_signed_in? %>
             <%= link_to "Your bands", bands_path, class: "text-sm font-medium text-neutral-300 hover:text-white hidden sm:inline" %>
             <% if current_user.platform_admin? %>

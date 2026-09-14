@@ -1,0 +1,24 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-5xl mx-auto">
+  <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-8">Bands</h1>
+
+  <% if @bands.empty? %>
+    <p class="text-neutral-500">No bands to discover yet.</p>
+  <% else %>
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <% @bands.each do |band| %>
+        <%= link_to public_band_path(band.slug), class: "group rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden hover:border-neutral-600 transition" do %>
+          <div class="aspect-square bg-neutral-800 flex items-center justify-center">
+            <% if band.photo.attached? %>
+              <%= image_tag band.photo, class: "w-full h-full object-cover" %>
+            <% else %>
+              <span class="text-neutral-600 text-sm">No photo</span>
+            <% end %>
+          </div>
+          <div class="p-4">
+            <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= band.name %></p>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</section>

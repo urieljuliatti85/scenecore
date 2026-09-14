@@ -1,6 +1,37 @@
 require "rails_helper"
 
 RSpec.describe "Public band pages", type: :request do
+  describe "GET /discover" do
+    it "lists approved bands without authentication" do
+      create(:band, :approved, name: "The Testers")
+
+      get discover_bands_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("The Testers")
+    end
+
+    it "does not list pending, rejected, or suspended bands" do
+      create(:band, name: "Pending Band")
+      create(:band, :rejected, name: "Rejected Band")
+      create(:band, :suspended, name: "Suspended Band")
+
+      get discover_bands_path
+
+      expect(response.body).not_to include("Pending Band")
+      expect(response.body).not_to include("Rejected Band")
+      expect(response.body).not_to include("Suspended Band")
+    end
+
+    it "links to each band's public page" do
+      band = create(:band, :approved, name: "The Testers")
+
+      get discover_bands_path
+
+      expect(response.body).to include(public_band_path(band.slug))
+    end
+  end
+
   describe "GET /:slug" do
     it "shows an approved band's public page without authentication" do
       band = create(:band, :approved, name: "The Testers", description: "A great band.")
