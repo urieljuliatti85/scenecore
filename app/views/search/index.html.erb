@@ -1,0 +1,45 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-5xl mx-auto">
+  <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">Search</h1>
+
+  <% if @query.present? %>
+    <p class="text-neutral-500 mb-8">
+      <%= @results.size %> <%= @type %> result<%= "s" unless @results.size == 1 %> for "<%= @query %>"
+    </p>
+  <% else %>
+    <p class="text-neutral-500 mb-8">Search for a band or an album.</p>
+  <% end %>
+
+  <% if @query.present? && @results.empty? %>
+    <p class="text-neutral-500">No results found.</p>
+  <% elsif @type == "band" %>
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <% @results.each do |band| %>
+        <%= link_to public_band_path(band.slug), class: "group rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden hover:border-neutral-600 transition" do %>
+          <div class="aspect-square bg-neutral-800 flex items-center justify-center">
+            <% if band.photo.attached? %>
+              <%= image_tag band.photo, class: "w-full h-full object-cover" %>
+            <% else %>
+              <span class="text-neutral-600 text-sm">No photo</span>
+            <% end %>
+          </div>
+          <div class="p-4">
+            <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= band.name %></p>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <ul class="flex flex-col gap-3">
+      <% @results.each do |album| %>
+        <li>
+          <%= link_to public_band_path(album.band.slug), class: "group flex items-center justify-between gap-3 rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 hover:border-neutral-600 transition" do %>
+            <div>
+              <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= album.title %></p>
+              <p class="text-sm text-neutral-500"><%= album.band.name %></p>
+            </div>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>
