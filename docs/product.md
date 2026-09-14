@@ -971,21 +971,125 @@ Claude must not implement these features unless explicitly authorized.
 
 ## 5. Acceptance Criteria
 
+Per ROADMAP.md 0.5, one set of criteria per mandatory domain from §4.1.
+Unresolved requirements each criterion depends on are listed at the end of
+this section rather than repeated inline.
+
+### Foundation (Authentication, Profiles)
+
+- A visitor can register with an email and password and is authenticated
+  immediately after.
+- A user can log in, log out, and have their session end on logout.
+- A user can view and edit their own profile; a user cannot edit another
+  user's profile.
+- Protected resources are unreachable without authentication.
+
 ### Bands
 
-- A band can have multiple administrators.
-- A band administrator can edit only their own band.
-- Users cannot access another band's private data.
+- A band can have multiple administrators (`docs/database.md`
+  BandMemberships).
+- A band administrator can edit only their own band; another band's
+  administrator gets a 403/redirect, not a 404 that leaks existence
+  differently from a real 404.
+- A band can never be left without at least one administrator (existing
+  `BandMembership` invariant).
+- A band's approval status (pending/approved/rejected/suspended) is set
+  only by a platform administrator, never by the band itself.
+
+### Public Band Pages
+
+- Only approved bands are reachable at `GET /:slug`.
+- Pending, rejected, and suspended bands return the same not-found response
+  a visitor would see for a nonexistent slug (no status leak).
+- The public page never exposes draft albums, draft tracks, or non-public
+  posts, regardless of how the URL is reached.
 
 ### Music
 
-- Draft tracks are not publicly accessible.
-- Published tracks are publicly accessible.
+- A track belongs to exactly one album, which belongs to exactly one band.
+- Draft tracks and albums are not publicly accessible under any route.
+- Published tracks are publicly accessible only through their band's public
+  page.
+- A track cannot be published without a valid Spotify track URL.
+- Publishing/unpublishing an album cascades to its tracks as documented in
+  ROADMAP.md 5.4.
 
-### Payments
+### Followers
 
-- Payment events are idempotent.
-- Payment state is persisted.
+- A fan can follow and unfollow an approved band; an anonymous visitor
+  cannot.
+- A user cannot follow the same band twice (idempotent follow).
+- A user cannot unfollow on another user's behalf.
+
+### Exclusive Content
+
+- A post's visibility (Public/Followers/Subscribers) determines who can see
+  it; enforcement happens server-side, not by hiding UI.
+- A non-follower cannot see Follower-visibility posts.
+- A non-subscriber cannot see Subscriber-visibility posts (blocked until
+  Subscriptions exists — see Unresolved Requirements).
+- A band administrator can manage only their own band's posts.
+
+### Store (not yet built)
+
+- One order/cart contains products from exactly one band (ADR-003).
+- Inventory never goes negative; concurrent purchases cannot both consume
+  the last unit.
+- An order snapshots product and price at time of purchase, independent of
+  later product edits.
+
+### Payments (not yet built)
+
+- Monetary values are stored as integer cents (`docs/payments.md`).
+- Every payment webhook validates authenticity before acting on it.
+- Every payment webhook is idempotent under retries and duplicate/
+  out-of-order delivery.
+- No complete card data or sensitive payment payloads are logged or stored.
+- Payment state transitions follow `docs/payments.md`'s defined states;
+  the payment provider is the source of truth for payment status.
+
+### Subscriptions (not yet built)
+
+- A subscription's active/cancelled/past-due/expired state stays
+  synchronized with the payment provider's webhooks.
+- Subscriber-only content access is granted only while the underlying
+  subscription is active, per the approved grace-period rule (see
+  Unresolved Requirements).
+- Cancelling a subscription does not retroactively delete content already
+  consumed, only future access.
+
+### Events and Tickets (not yet built)
+
+- A ticket has a unique identifier and is associated with exactly one
+  event and one purchaser.
+- A used ticket cannot be validated (checked in) a second time.
+- Ticket data is not guessable/enumerable from its public identifier.
+
+### Platform Administration
+
+- A platform administrator action (approve/reject/suspend/reactivate/
+  unpublish) is recorded in the audit log with actor, timestamp, and
+  affected resource.
+- A platform administrator cannot edit a band's content as if they were a
+  band member (e.g., cannot edit a band's profile fields, only its
+  moderation status).
+- The `/admin` namespace 404s for non-platform-admins (existing pattern,
+  not a 403).
+
+### Unresolved Requirements
+
+The following acceptance criteria above depend on product decisions not
+yet made, tracked in §7 Open Questions:
+
+- Store/Events checkout flow for unauthenticated visitors (§7: can a cart
+  be started before account creation?).
+- Subscription cancellation/failed-payment grace-period rule (referenced
+  in ROADMAP.md Phase 10 but not yet defined).
+- Payment provider selection, which blocks writing concrete Payments
+  acceptance tests against a specific provider's webhook format.
+- Door/check-in role for ticket validation (ROADMAP.md 11.5 assumes
+  someone validates tickets, but that role isn't in `docs/permissions.md`
+  yet — likely a Band Member/Administrator action, to be confirmed).
 
 ---
 
@@ -1002,3 +1106,8 @@ Claude must not implement these features unless explicitly authorized.
   create one during checkout?
 - After the band-home proposition is validated, should SceneCore formally expand
   toward scene-level discovery and community?
+- What is the subscription cancellation/failed-payment grace-period rule
+  (referenced by ROADMAP.md Phase 10 but not yet defined)?
+- Who is authorized to validate (check in) an event ticket — a Band
+  Member/Administrator of the hosting band, or a separate door-staff role
+  not yet in `docs/permissions.md`?
