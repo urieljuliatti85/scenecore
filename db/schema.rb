@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_123818) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_131408) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -69,6 +69,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_123818) do
     t.index ["status"], name: "index_bands_on_status"
   end
 
+  create_table "tracks", force: :cascade do |t|
+    t.bigint "band_id", null: false
+    t.datetime "created_at", null: false
+    t.string "status", default: "draft", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["band_id", "status"], name: "index_tracks_on_band_id_and_status"
+    t.index ["band_id"], name: "index_tracks_on_band_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
@@ -86,4 +96,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_123818) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "band_memberships", "bands"
   add_foreign_key "band_memberships", "users"
+  add_foreign_key "tracks", "bands"
 end
