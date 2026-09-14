@@ -1,7 +1,11 @@
+<% is_member = policy(@band).member? %>
+<% can_manage = policy(@band).update? %>
 <section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
   <div class="flex items-center gap-3 mb-4">
     <h1 class="text-3xl font-extrabold tracking-tight"><%= @band.name %></h1>
-    <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= @band.status %></span>
+    <% if is_member %>
+      <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= @band.status %></span>
+    <% end %>
   </div>
 
   <% if @band.description.present? %>
@@ -9,11 +13,11 @@
   <% end %>
 
   <div class="flex flex-wrap items-center gap-3">
-    <% if policy(@band).show? %>
+    <% if is_member %>
       <%= link_to "Add Album", new_band_album_path(@band), class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition" %>
     <% end %>
 
-    <% if policy(@band).update? %>
+    <% if can_manage %>
       <%= link_to "Edit", edit_band_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
       <%= link_to "Members", band_band_memberships_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
     <% end %>
@@ -24,14 +28,17 @@
     <% end %>
   </div>
 
-  <% if policy(@band).show? && @band.albums.any? %>
+  <% visible_albums = is_member ? @band.albums.includes(:tracks) : @band.albums.published.includes(:tracks) %>
+  <% if visible_albums.any? %>
     <div class="mt-10 flex flex-col gap-8">
-      <% @band.albums.includes(:tracks).each do |album| %>
+      <% visible_albums.each do |album| %>
         <div>
           <div class="flex flex-wrap items-center gap-3 mb-3">
             <h2 class="text-lg font-semibold text-neutral-300">
               <%= album.title %>
-              <span class="text-xs uppercase tracking-wide text-neutral-500 ml-2"><%= album.status %></span>
+              <% if is_member %>
+                <span class="text-xs uppercase tracking-wide text-neutral-500 ml-2"><%= album.status %></span>
+              <% end %>
             </h2>
 
             <% if policy(album).publish? && album.draft? %>
@@ -43,14 +50,19 @@
             <% end %>
           </div>
           <ul class="flex flex-col gap-2">
-            <% album.tracks.order(:track_number).each do |track| %>
+            <% visible_tracks = is_member ? album.tracks.order(:track_number) : album.tracks.published.order(:track_number) %>
+            <% visible_tracks.each do |track| %>
               <li class="flex items-center justify-between gap-3 rounded-lg border border-neutral-800 px-4 py-3">
                 <div>
                   <span class="text-neutral-500 text-sm mr-2"><%= track.track_number %></span>
                   <span class="text-white"><%= track.title %></span>
-                  <span class="text-xs uppercase tracking-wide text-neutral-500 ml-2"><%= track.status %></span>
+                  <% if is_member %>
+                    <span class="text-xs uppercase tracking-wide text-neutral-500 ml-2"><%= track.status %></span>
+                  <% end %>
                 </div>
-                <%= link_to "Edit", edit_band_track_path(@band, track), class: "text-sm text-neutral-400 hover:text-white transition" %>
+                <% if is_member %>
+                  <%= link_to "Edit", edit_band_track_path(@band, track), class: "text-sm text-neutral-400 hover:text-white transition" %>
+                <% end %>
               </li>
             <% end %>
           </ul>
