@@ -9,7 +9,29 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 # return unless Rails.env.test?
 require 'rspec/rails'
 require 'capybara/rspec'
+require 'selenium-webdriver'
 # Add additional requires below this line. Rails is not loaded until this point!
+
+# The stock :headless_chrome driver (Selenium::WebDriver::Chrome::Options
+# with just --headless) is a known source of intermittent, unexplainable
+# lost clicks on memory-constrained CI containers: Chrome's default shared
+# memory area is /dev/shm, which GitHub Actions containers cap at 64MB.
+# When Chrome runs low on shm under load it can silently drop or corrupt
+# renderer IPC (including input events), which looks exactly like a click
+# "not registering" with no error anywhere — the symptom we chased across
+# three earlier attempts in band_member_invite_spec before finding this.
+# --disable-dev-shm-usage makes Chrome use /tmp instead, which isn't
+# capped. --no-sandbox is required for Chrome to run at all as root in a
+# container. This is the standard fix documented across the Rails/Capybara
+# community for this exact failure signature on containerized CI.
+Capybara.register_driver :ci_headless_chrome do |app|
+  options = Selenium::WebDriver::Chrome::Options.new
+  options.add_argument("--headless=new")
+  options.add_argument("--no-sandbox")
+  options.add_argument("--disable-dev-shm-usage")
+  options.add_argument("--disable-gpu")
+  Capybara::Selenium::Driver.new(app, browser: :chrome, options: options)
+end
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
@@ -41,15 +63,16 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :system
 
   config.before(:each, type: :system) do
-    driven_by :selenium, using: :headless_chrome
+    if ENV["CI"].present?
+      driven_by :ci_headless_chrome
+    else
+      driven_by :selenium, using: :headless_chrome
+    end
   end
 
   # CI runners are slower than a local machine (cold asset/bootsnap caches,
   # shared CPU), so give Capybara more room than its 2-second default before
-  # giving up on a finder. This did not fully fix the known flake in
-  # band_member_invite_spec (see the comment there) — that one isn't a slow
-  # response, it's a click that never reaches the server at all — but it's
-  # still a reasonable general safety margin for CI.
+  # giving up on a finder.
   Capybara.default_max_wait_time = 5 if ENV["CI"].present?
 
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures

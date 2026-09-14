@@ -1,23 +1,24 @@
 require "rails_helper"
 
 RSpec.describe "Band member invitation", type: :system do
-  # Known CI-only flake, not yet fixed after three targeted attempts:
-  #   1. Longer Capybara.default_max_wait_time on CI (spec/rails_helper.rb)
-  #   2. Waiting for the "Member added." flash before asserting
-  #   3. An explicit have_select(..., selected: ...) wait between `select`
-  #      and the submit click, in case the change event hadn't settled
-  # None of these held up. Across CI runs, log/test.log shows a *different*
-  # click silently failing to reach the server each time (sometimes
-  # click_link "Add member", sometimes click_button "Add member") — this
-  # points at something systemic with headless Chrome on the GitHub Actions
-  # runner losing an occasional click, not a bug in one specific step of
-  # this spec. Reliably green locally, every time.
+  # Known CI-only flake. Three spec-level attempts didn't fix it (longer
+  # Capybara wait, waiting for the flash notice, waiting for the select's
+  # change event to settle) — across CI runs, log/test.log showed a
+  # *different* click silently failing to reach the server each time, which
+  # ruled out a bug in one specific step of this spec.
   #
-  # Not spending more time on it for now. The system-test CI job retries
-  # the suite once on failure and keeps screenshots/log as an artifact from
-  # the first attempt specifically so the next investigation has evidence
-  # to start from. Do not mark this pending/skipped — that would just hide
-  # the flake instead of leaving a trail to it.
+  # Current hypothesis (spec/rails_helper.rb): GitHub Actions containers cap
+  # /dev/shm at 64MB, and Chrome uses /dev/shm for its shared renderer
+  # memory by default; under memory pressure this is a documented cause of
+  # silently dropped input events with no error anywhere, which matches
+  # this symptom exactly. Added --disable-dev-shm-usage (moves Chrome's
+  # shared memory to /tmp) to the CI driver. Passed locally with CI=true,
+  # which proves nothing on its own since this has never failed locally —
+  # real signal is whether it holds up over the next few real CI runs.
+  #
+  # Do not mark this pending/skipped if it still flakes — the system-test
+  # CI job retries once and keeps screenshots/log as an artifact from the
+  # first attempt specifically so this stays investigable.
   it "lets an administrator add a member who can see the band but not manage its members" do
     admin = create(:user, name: "Alice")
     new_member = create(:user, name: "Bob", email: "bob@example.com")
