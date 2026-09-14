@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: scenecore
+      POSTGRES_PASSWORD: scenecore
+      POSTGRES_DB: scenecore_development
+    ports:
+      - "5433:5432"
+    volumes:
+      - scenecore_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  scenecore_postgres_data:
