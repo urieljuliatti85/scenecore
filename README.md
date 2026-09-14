@@ -25,6 +25,12 @@ Ruby version: see `.ruby-version`.
    bin/setup
    ```
 
+4. Install Git hooks (RuboCop on commit, RSpec on push):
+
+   ```
+   bundle exec overcommit --install
+   ```
+
 ## Running the app
 
 ```

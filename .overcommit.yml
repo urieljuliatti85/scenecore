@@ -1,0 +1,14 @@
+PreCommit:
+  ALL:
+    requires_files: true
+    quiet: false
+
+  RuboCop:
+    enabled: true
+    on_warn: fail
+    command: [ "bundle", "exec", "rubocop" ]
+
+PrePush:
+  RSpec:
+    enabled: true
+    command: [ "bundle", "exec", "rspec" ]
