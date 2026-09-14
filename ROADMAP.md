@@ -156,16 +156,20 @@ Define exactly what the MVP is before implementation begins.
 
 ### 0.3 Define core journeys
 
-* [ ] Discover a band.
-* [ ] View a band's public page.
-* [ ] Listen to music.
+All journeys are documented in `docs/product.md` §3, including the intended
+flow for phases not yet built (Purchase a product, Subscribe, Purchase an
+event ticket, Validate a ticket — each noted as not-yet-implemented there).
+
+* [x] Discover a band.
+* [x] View a band's public page.
+* [x] Listen to music.
 * [x] Create an account.
-* [ ] Follow a band.
-* [ ] Access exclusive content.
-* [ ] Purchase a product.
-* [ ] Subscribe.
-* [ ] Purchase an event ticket.
-* [ ] Validate a ticket.
+* [x] Follow a band.
+* [x] Access exclusive content.
+* [x] Purchase a product.
+* [x] Subscribe.
+* [x] Purchase an event ticket.
+* [x] Validate a ticket.
 
 ### 0.4 Define MVP scope
 
