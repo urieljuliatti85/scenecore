@@ -138,6 +138,13 @@ Define exactly what the MVP is before implementation begins.
 * [x] Define the target audience.
 * [x] Define the product solution.
 * [x] Define the core value proposition.
+* [x] Define SceneCore as a music-first digital home for the ongoing band–fan
+      relationship.
+* [x] Document complementary positioning relative to Spotify, Bandcamp, and
+      Patreon.
+* [x] Define the primary MVP metric that demonstrates a durable band–fan
+      relationship (retained followers; see `docs/product.md` and
+      ADR-006 in `docs/decisions.md`).
 
 ### 0.2 Define user types
 
@@ -1281,9 +1288,12 @@ Features not included in the MVP should be recorded here instead of being implem
 
 ## Candidate Features
 
-* [ ] Feature proposal 1
-* [ ] Feature proposal 2
-* [ ] Feature proposal 3
+* [ ] Scene pages connecting bands, fans, releases, and events — requires
+      separate product validation and must not be inferred from the SceneCore
+      name alone.
+* [ ] Scene-level discovery by genre and location.
+* [ ] Cross-band community spaces and scene participation.
+* [ ] Recommendations for related bands, releases, events, or scenes.
 * [ ] Follower notifications — requested alongside Phase 6, but channel
       (email? in-app?), trigger (new release? new post?), and UI are
       undefined.
@@ -1301,6 +1311,11 @@ Each future feature must eventually receive:
 * priority.
 
 Nothing in this section is authorized for implementation.
+
+Future proposals must be evaluated first against the product positioning:
+whether they strengthen the music-first digital home and the ongoing band–fan
+relationship. Feature count or competitor parity alone is not sufficient
+justification.
 
 ---
 

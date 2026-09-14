@@ -8,15 +8,42 @@ SceneCore
 
 ### Description
 
-A multi-band platform for music, exclusive content, subscriptions, merchandise, and tickets.
+A music-first platform where independent bands create a digital home, publish
+music and content, sell merchandise and tickets, offer subscriptions, and
+maintain a direct, ongoing relationship with their fans.
+
+### Product Promise
+
+**Your band. Your fans. Your home.**
+
+### Core Product Question
+
+SceneCore must not rely on “everything for your band in one place” as its main
+differentiator. Bandcamp, Patreon, Spotify, and other services already solve
+important parts of this problem well.
+
+The strategic question is:
+
+> Which band experience does SceneCore make significantly better?
+
+The answer to test is:
+
+> SceneCore makes the ongoing relationship between an independent band and its
+> fans significantly better by giving that relationship a music-first digital
+> home.
 
 ### Problem
 
-SceneCore primarily solves a problem of centralization and relationship between bands, fans, and musical content, bringing together on a single platform what is normally scattered across different services.
+Independent bands may be discovered on one service, publish content on another,
+sell elsewhere, and communicate with fans through still more channels. The
+central problem is not only fragmented tooling: it is that the relationship
+between band and fan remains fragmented, rented, and difficult to sustain.
 
 ### Solution
 
-The service solves the problem by transforming fragmentation into a unique and integrated experience.
+SceneCore gives each band a music-first digital home that connects its identity,
+music, content, commerce, subscriptions, and events into a continuous fan
+journey.
 
 The idea behind SceneCore isn't simply to be "just another social network for bands." The service creates a direct relationship between band ↔ fan ↔ content ↔ purchase ↔ event.
 
@@ -155,7 +182,9 @@ So what's the solution in a sentence?
 
 I would put it like this:
 
-SceneCore centralizes the relationship between independent bands and their fans, bringing together music, content, community, and monetization in a single experience.
+SceneCore gives independent bands a music-first digital home where they can
+build and sustain a direct relationship with their fans through music, content,
+commerce, subscriptions, and events.
 
 Or, thinking more as a service proposition:
 
@@ -163,7 +192,78 @@ SceneCore is the place where a band not only publishes its music, but builds and
 
 And this helps to make it clearer what is being sold: it's not just software for bands. It's an infrastructure to transform fan attention into relationships and relationships into financial support, all within a single platform.
 
-Important: this last differentiation is a strategic interpretation based on the MVP. The document does not yet establish that this is a proven competitive advantage against Bandcamp, Patreon, Spotify, etc.; This should become an explicit product decision.
+### Primary MVP Metric
+
+The primary metric for the MVP is **retained followers**: the percentage of a
+band's followers who are still following after 30 days (i.e., have not
+unfollowed).
+
+This is chosen over raw follow count because following is a single,
+low-friction action and does not by itself demonstrate an *ongoing*
+relationship — the product promise this metric must validate. Retention
+after a fixed window is a proxy for durability: it is measurable today using
+the existing `Follow` model (Phase 6) without depending on unbuilt features.
+
+Purchases, subscriptions, and event participation would be stronger signals
+of a durable, monetized relationship, but they depend on Phase 8 (Store),
+Phase 9 (Payments), and Phase 11 (Events/Tickets), all currently unbuilt or
+skipped. Once Phase 10 (Subscriptions) ships, **subscription retention**
+(the percentage of subscribers still active after N billing cycles) should
+supersede retained followers as the primary metric, since a recurring paid
+relationship is stronger evidence of the promise than a free follow.
+
+### Competitive Positioning
+
+SceneCore complements the strongest existing platforms instead of requiring a
+band to abandon them.
+
+| Platform | Main problem solved | SceneCore relationship |
+| --- | --- | --- |
+| Spotify | Discovery, streaming, and audience growth | A discovery channel that can lead listeners to the band's SceneCore home |
+| Bandcamp | Direct sales of music and merchandise | A commerce benchmark and possible complementary purchase channel |
+| Patreon | Memberships and exclusive creator content | A membership benchmark; SceneCore remains music-first and band-centric |
+| SceneCore | Ongoing relationship between band and fan | The band's persistent digital home |
+
+The intended strategic flow is:
+
+Discovery on Spotify, social media, shows, or elsewhere → the band's SceneCore
+home → follow and ongoing relationship → support through purchases,
+subscriptions, content, community, and events.
+
+SceneCore should therefore say:
+
+> Use Spotify to get discovered. Use SceneCore to build your fan base.
+
+It should not say:
+
+- “Stop using Spotify, Bandcamp, or Patreon.”
+- “Everything for bands in one place” as the sole differentiation.
+- “Bandcamp, but with more features.”
+- “The social network for music scenes” before that strategy and product scope
+  have been explicitly validated.
+
+### Music-first, not streaming-first or content-first
+
+Music establishes the band's identity and anchors the experience, but SceneCore
+does not compete by hosting a larger streaming catalog. Content, subscriptions,
+commerce, and events deepen the relationship around the music; they are not
+independent feature silos.
+
+The primary product outcome is not plays, posts, or isolated transactions. It is
+a fan who can discover the band, understand it, follow it, support it, buy from
+it, and return to it over time.
+
+### The Scene Opportunity
+
+The name SceneCore supports a broader future direction centered on bands + fans
++ musical scenes. This may become especially valuable for independent,
+underground, local, and genre-specific communities.
+
+That direction is not yet the MVP. The current product remains a multi-band
+platform whose primary unit of experience is the band's digital home and its
+direct relationship with each fan. Scene-level discovery, community graphs,
+cross-band feeds, recommendations, and social-network mechanics require a
+separate positioning decision, validation, scope, and approval.
 
 ---
 
@@ -736,9 +836,13 @@ This is sufficient for SceneCore to start operating without creating a massive b
 
 The following are NOT part of the MVP:
 
-- [feature]
-- [feature]
-- [feature]
+- Scene-based social network or scene graph
+- Cross-band community spaces
+- Algorithmic music or band recommendations
+- Fan-to-fan messaging or generic social posting
+- Scene-level feeds, follows, and moderation workflows
+- Replacing Spotify as a streaming and discovery platform
+- Requiring bands to abandon Bandcamp, Patreon, or other complementary channels
 
 Claude must not implement these features
 unless explicitly authorized.
@@ -774,5 +878,7 @@ unless explicitly authorized.
 
 ## 8. Open Questions
 
-- [Question requiring decision]
-- [Question requiring decision]
+- Can a visitor start a product or ticket purchase without an account and
+  create one during checkout?
+- After the band-home proposition is validated, should SceneCore formally expand
+  toward scene-level discovery and community?
