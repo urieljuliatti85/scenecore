@@ -235,7 +235,11 @@ Create a stable Rails foundation before implementing business features.
 * [x] Configure Stimulus.
 * [x] Configure Tailwind CSS.
 * [x] Establish basic layout.
-* [ ] Establish responsive foundation.
+* [x] Establish responsive foundation. Public/marketing pages already used
+      responsive breakpoints; the gap was the header nav, which hid Bands/
+      Your bands/Admin/search below the `sm` breakpoint with no
+      replacement. Added a Stimulus-driven mobile menu (hamburger toggle)
+      exposing the same links and search at phone width.
 
 ### 1.3 Storage
 
@@ -411,8 +415,10 @@ criteria (a visitor can play a published track) depends on it.
 ### 4.3 Responsive interface
 
 * [ ] Desktop layout.
-* [ ] Mobile layout.
-* [ ] Accessible navigation.
+* [x] Mobile layout (public pages already responsive; header nav fixed to
+      expose all links below the `sm` breakpoint via a mobile menu).
+* [x] Accessible navigation (mobile menu button has `aria-label`,
+      `aria-expanded`, `aria-controls`).
 * [ ] Loading states.
 * [ ] Empty states.
 * [ ] Error states.
