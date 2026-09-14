@@ -405,21 +405,24 @@ Allow bands to manage and publish music.
 
 ## Tasks
 
-### 5.1 Releases
+### 5.1 Albums
 
-* [ ] Release model.
-* [ ] Create release.
-* [ ] Edit release.
-* [ ] Release cover.
-* [ ] Release publication state.
+An album groups a band's tracks into a release. A track always belongs to
+an album — there is no ungrouped track.
+
+* [ ] Album model.
+* [ ] Album belongs to band.
+* [ ] Create album.
+* [ ] Edit album.
+* [ ] Album cover.
+* [ ] Album publication state.
 
 ### 5.2 Tracks
 
 * [ ] Track model.
-* [ ] Track belongs to band.
-* [ ] Track belongs to release when applicable.
+* [ ] Track belongs to album (and, through it, to a band).
 * [ ] Track title.
-* [ ] Track position.
+* [ ] Track number (position within the album).
 * [ ] Draft state.
 * [ ] Published state.
 
@@ -1013,7 +1016,7 @@ Create:
 
 ## Scenario 2 — Music
 
-* [ ] Band A creates a release.
+* [ ] Band A creates an album.
 * [ ] Band A creates a track.
 * [ ] Track remains draft.
 * [ ] Visitor cannot access draft.
