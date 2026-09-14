@@ -74,6 +74,9 @@ group :development, :test do
 
   # Load environment variables from .env in development/test
   gem "dotenv-rails"
+
+  # Manages and configures Git hooks (pre-commit, pre-push, etc.)
+  gem "overcommit", require: false
 end
 
 group :development do
