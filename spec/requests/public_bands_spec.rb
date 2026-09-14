@@ -82,6 +82,27 @@ RSpec.describe "Public band pages", type: :request do
 
       expect(response.body).not_to include("Secret Album")
     end
+
+    it "shows the Spotify embed player for a published track with a Spotify link" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band)
+      create(:track, :published, album: album, spotify_url: "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("https://open.spotify.com/embed/track/4uLU6hMCjMI75M1A2tKUQC")
+    end
+
+    it "does not show an embed player for a track without a Spotify link" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band)
+      create(:track, :published, album: album, spotify_url: nil, title: "No Link Track")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("No Link Track")
+      expect(response.body).not_to include("open.spotify.com/embed")
+    end
   end
 
   describe "route precedence" do

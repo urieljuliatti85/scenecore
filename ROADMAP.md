@@ -463,9 +463,10 @@ action on a track.
 
 ### 5.5 Player (Spotify embed)
 
-* [ ] Display Spotify's official embed player for a published track's link.
-* [ ] Display track information (title).
-* [ ] Handle missing/invalid Spotify link gracefully (no embed shown).
+* [x] Display Spotify's official embed player for a published track's link
+      (`Track#spotify_embed_url`, rendered on the public band page).
+* [x] Display track information (title).
+* [x] Handle missing/invalid Spotify link gracefully (no embed shown).
 
 ### 5.6 Security
 
