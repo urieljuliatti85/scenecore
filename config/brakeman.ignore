@@ -1,0 +1,28 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Mass Assignment",
+      "warning_code": 105,
+      "fingerprint": "2f4409c51313bbc2d8e54d2c421123c11b8aa597c976dbee4240f2cc0a5c3366",
+      "check_name": "PermitAttributes",
+      "message": "Potentially dangerous key allowed for mass assignment",
+      "file": "app/controllers/band_memberships_controller.rb",
+      "line": 61,
+      "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
+      "note": "False positive: params.require(:band_membership).permit(:user_id, :role) is only reachable from BandMembershipsController#create, which calls `authorize @membership` before saving. BandMembershipPolicy#create? requires the current user to be an administrator of that specific band, so only a band's own administrator can ever set another user's role within that band."
+    },
+    {
+      "warning_type": "Mass Assignment",
+      "warning_code": 105,
+      "fingerprint": "e2afe49439a0f5b35ae4b7b67b84fd844959b9a3cc62bd9266aba0b41d9e3627",
+      "check_name": "PermitAttributes",
+      "message": "Potentially dangerous key allowed for mass assignment",
+      "file": "app/controllers/band_memberships_controller.rb",
+      "line": 65,
+      "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
+      "note": "False positive: params.require(:band_membership).permit(:role) is only reachable from BandMembershipsController#update, which calls `authorize @membership` before updating. BandMembershipPolicy#update? requires the current user to be an administrator of that specific band, so only a band's own administrator can ever change another member's role."
+    }
+  ],
+  "updated": "2026-09-14 07:00:36 -0300",
+  "brakeman_version": "8.0.6"
+}

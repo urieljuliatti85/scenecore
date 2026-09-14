@@ -1,0 +1,11 @@
+<h1>Your bands</h1>
+
+<%= link_to "New band", new_band_path %>
+
+<ul>
+  <% @bands.each do |band| %>
+    <li>
+      <%= link_to band.name, band %> — <%= band.status %>
+    </li>
+  <% end %>
+</ul>

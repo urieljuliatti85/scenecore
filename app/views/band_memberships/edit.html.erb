@@ -1,0 +1,20 @@
+<h1>Edit member role — <%= @band.name %></h1>
+
+<%= form_with model: @membership, url: band_band_membership_path(@band, @membership) do |form| %>
+  <% if @membership.errors.any? %>
+    <ul>
+      <% @membership.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <p><%= @membership.user.name %></p>
+
+  <div>
+    <%= form.label :role %>
+    <%= form.select :role, BandMembership.roles.keys %>
+  </div>
+
+  <%= form.submit "Update role" %>
+<% end %>

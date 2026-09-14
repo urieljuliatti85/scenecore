@@ -1,0 +1,14 @@
+<h1><%= @band.name %></h1>
+
+<p>Status: <%= @band.status %></p>
+<p><%= @band.description %></p>
+
+<% if policy(@band).update? %>
+  <%= link_to "Edit", edit_band_path(@band) %>
+  <%= link_to "Members", band_band_memberships_path(@band) %>
+<% end %>
+
+<% if policy(@band).approve? %>
+  <%= button_to "Approve", approve_band_path(@band), method: :patch %>
+  <%= button_to "Reject", reject_band_path(@band), method: :patch %>
+<% end %>

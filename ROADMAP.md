@@ -1,88 +1,1186 @@
 # ROADMAP
 
-## Phase 0 — Product & Design
+## 1. Purpose
 
-- [ ] Product specification
-- [ ] User journeys
-- [ ] MVP scope
-- [ ] Wireframes
-- [ ] Design system
+This document defines:
 
-## Phase 1 — Foundation
+* what will be implemented;
+* in what order it will be implemented;
+* the dependencies between phases;
+* the expected deliverables;
+* the acceptance criteria;
+* what must be validated before moving forward.
 
-- [ ] Rails application
-- [ ] PostgreSQL
-- [ ] Tailwind
-- [ ] Testing
-- [ ] CI
-- [ ] Staging
+This document is the implementation roadmap for the MVP.
 
-## Phase 2 — Accounts & Bands
+`CLAUDE.md` defines how Claude must work.
 
-- [ ] Authentication
-- [ ] User profiles
-- [ ] Band creation
-- [ ] Band members
-- [ ] Band administrators
-- [ ] Band approval
-- [ ] Authorization
+`docs/product.md` defines what the product is.
 
-## Phase 3 — Public Band & Music
+`docs/architecture.md` defines how the system should be structured.
 
-- [ ] Public band page
-- [ ] Custom URL
-- [ ] Releases
-- [ ] Tracks
-- [ ] Audio player
-- [ ] Draft/published state
-- [ ] Followers
+`docs/database.md` defines the data model.
 
-## Phase 4 — Exclusive Content
+`docs/permissions.md` defines authorization rules.
 
-- [ ] Posts
-- [ ] Images
-- [ ] Videos
-- [ ] Downloads
-- [ ] Public visibility
-- [ ] Followers visibility
-- [ ] Subscribers visibility
+`docs/payments.md` defines financial and payment behavior.
 
-## Phase 5 — Store
+This document defines the implementation sequence.
 
-- [ ] Products
-- [ ] Variants
-- [ ] Inventory
-- [ ] Cart
-- [ ] Checkout
-- [ ] Orders
-- [ ] Digital products
+---
 
-## Phase 6 — Subscriptions
+# 2. Roadmap Rules
 
-- [ ] Plans
-- [ ] Recurring checkout
-- [ ] Webhooks
-- [ ] Subscription lifecycle
-- [ ] Cancellation
-- [ ] Failed payments
+## 2.1 Sequential implementation
 
-## Phase 7 — Events
+Phases should be implemented in order unless a dependency requires a different sequence.
 
-- [ ] Events
-- [ ] Ticket batches
-- [ ] Inventory
-- [ ] QR codes
-- [ ] Check-in
-- [ ] Cancellation
+Claude must not skip a phase simply because a later feature appears easier to implement.
 
-## Phase 8 — Administration & Launch
+---
 
-- [ ] Moderation
-- [ ] Refunds
-- [ ] Reports
-- [ ] Administrative logs
-- [ ] Metrics
-- [ ] Terms/privacy
-- [ ] Monitoring
-- [ ] Backups
-- [ ] Production deployment
+## 2.2 No implementation without a defined scope
+
+Before implementing a roadmap item, there must be:
+
+* a clearly defined objective;
+* acceptance criteria;
+* known dependencies;
+* relevant product rules;
+* relevant authorization rules;
+* known database implications.
+
+If these are missing, Claude must stop and ask for clarification.
+
+---
+
+## 2.3 One vertical slice at a time
+
+Large phases must be divided into small, independently testable slices.
+
+Example:
+
+Do not implement:
+
+> "Build the entire music system."
+
+Instead implement:
+
+1. Create track.
+2. Edit track.
+3. Save track as draft.
+4. Publish track.
+5. Display published track.
+6. Protect unpublished track.
+7. Add audio playback.
+
+Each slice should have its own tests and acceptance criteria.
+
+---
+
+## 2.4 Definition of Done
+
+A roadmap item is considered complete only when:
+
+* implementation is finished;
+* acceptance criteria are satisfied;
+* automated tests pass;
+* lint passes;
+* authorization has been tested;
+* relevant edge cases have been considered;
+* no unrelated functionality was modified;
+* the implementation has been manually reviewed;
+* the feature has been validated in the appropriate environment.
+
+A checkbox must not be marked complete merely because code exists.
+
+---
+
+## 2.5 Scope control
+
+The following are prohibited unless explicitly approved:
+
+* new product features;
+* speculative abstractions;
+* unnecessary dependencies;
+* unrelated refactors;
+* premature optimization;
+* architecture changes outside the current phase;
+* additional integrations;
+* changes to previously approved business rules.
+
+If Claude identifies a potentially useful feature, it should be recorded as a proposal and not implemented.
+
+---
+
+# 3. Phase 0 — Product Definition
+
+## Objective
+
+Define exactly what the MVP is before implementation begins.
+
+## Deliverables
+
+* `docs/product.md`
+* initial `ROADMAP.md`
+* documented user roles;
+* documented user journeys;
+* MVP scope;
+* explicit out-of-scope features;
+* acceptance criteria;
+* open product questions.
+
+## Tasks
+
+### 0.1 Define product proposition
+
+* [ ] Define the problem.
+* [ ] Define the target audience.
+* [ ] Define the product solution.
+* [ ] Define the core value proposition.
+
+### 0.2 Define user types
+
+* [ ] Visitor
+* [ ] Fan
+* [ ] Band
+* [ ] Band administrator
+* [ ] Platform administrator
+
+### 0.3 Define core journeys
+
+* [ ] Discover a band.
+* [ ] View a band's public page.
+* [ ] Listen to music.
+* [ ] Create an account.
+* [ ] Follow a band.
+* [ ] Access exclusive content.
+* [ ] Purchase a product.
+* [ ] Subscribe.
+* [ ] Purchase an event ticket.
+* [ ] Validate a ticket.
+
+### 0.4 Define MVP scope
+
+* [ ] List mandatory functionality.
+* [ ] List optional future functionality.
+* [ ] List explicitly excluded functionality.
+
+### 0.5 Define product acceptance criteria
+
+* [ ] Define acceptance criteria for every MVP domain.
+* [ ] Identify unresolved requirements.
+
+## Exit criteria
+
+Phase 0 is complete only when:
+
+* the MVP scope is approved;
+* out-of-scope functionality is documented;
+* user roles are defined;
+* core journeys are documented;
+* major ambiguities have been resolved.
+
+---
+
+# 4. Phase 1 — Technical Foundation
+
+## Objective
+
+Create a stable Rails foundation before implementing business features.
+
+## Deliverables
+
+* Rails application;
+* PostgreSQL;
+* frontend foundation;
+* testing framework;
+* linting;
+* CI;
+* development environment;
+* staging environment.
+
+## Tasks
+
+### 1.1 Application setup
+
+* [ ] Verify Ruby version.
+* [ ] Verify Rails version.
+* [ ] Configure PostgreSQL.
+* [ ] Configure environment variables.
+* [ ] Configure development environment.
+* [ ] Configure production environment.
+
+### 1.2 Frontend
+
+* [ ] Configure Hotwire.
+* [ ] Configure Stimulus.
+* [ ] Configure Tailwind CSS.
+* [ ] Establish basic layout.
+* [ ] Establish responsive foundation.
+
+### 1.3 Storage
+
+* [ ] Configure Active Storage.
+* [ ] Define development storage.
+* [ ] Define staging storage.
+* [ ] Define production storage.
+
+### 1.4 Testing
+
+* [ ] Configure test framework.
+* [ ] Configure system tests.
+* [ ] Configure request tests.
+* [ ] Configure test database.
+
+### 1.5 Quality
+
+* [ ] Configure RuboCop.
+* [ ] Configure security checks.
+* [ ] Configure CI.
+* [ ] Verify CI runs tests.
+* [ ] Verify CI runs lint.
+
+### 1.6 Error handling
+
+* [ ] Establish application error handling.
+* [ ] Establish production logging.
+* [ ] Establish basic health check.
+
+## Exit criteria
+
+* [ ] Application boots locally.
+* [ ] PostgreSQL connection works.
+* [ ] Tests pass.
+* [ ] Lint passes.
+* [ ] CI passes.
+* [ ] Staging environment is operational.
+
+---
+
+# 5. Phase 2 — Identity and Authentication
+
+## Objective
+
+Establish users and authentication before implementing protected resources.
+
+## Tasks
+
+### 2.1 User
+
+* [ ] User model.
+* [ ] User database structure.
+* [ ] User validations.
+* [ ] User tests.
+
+### 2.2 Authentication
+
+* [ ] Registration.
+* [ ] Login.
+* [ ] Logout.
+* [ ] Session management.
+* [ ] Authentication failure behavior.
+
+### 2.3 Profile
+
+* [ ] User profile.
+* [ ] Edit profile.
+* [ ] Profile validation.
+
+### 2.4 Authorization foundation
+
+* [ ] Define authorization mechanism.
+* [ ] Define authenticated access.
+* [ ] Test unauthorized access.
+* [ ] Test unauthenticated access.
+
+## Exit criteria
+
+* [ ] User can register.
+* [ ] User can authenticate.
+* [ ] User can log out.
+* [ ] Protected resources require authentication.
+* [ ] Authentication tests pass.
+
+---
+
+# 6. Phase 3 — Bands and Memberships
+
+## Objective
+
+Create the multi-band foundation.
+
+## Tasks
+
+### 3.1 Band
+
+* [ ] Band model.
+* [ ] Band creation.
+* [ ] Band editing.
+* [ ] Band slug.
+* [ ] Band status.
+* [ ] Band validations.
+
+### 3.2 Membership
+
+* [ ] Band membership model.
+* [ ] User-to-band relationship.
+* [ ] Membership roles.
+* [ ] Multiple members per band.
+
+### 3.3 Band administrators
+
+* [ ] Administrator role.
+* [ ] Add administrator.
+* [ ] Remove administrator.
+* [ ] Authorization rules.
+
+### 3.4 Band approval
+
+* [ ] Define band approval status.
+* [ ] Pending state.
+* [ ] Approved state.
+* [ ] Rejected state.
+* [ ] Platform administrator approval.
+
+### 3.5 Isolation
+
+Test that:
+
+* [ ] Band A administrator can manage Band A.
+* [ ] Band A administrator cannot manage Band B.
+* [ ] Band A cannot access Band B private resources.
+* [ ] Band IDs cannot be manipulated to bypass authorization.
+
+## Exit criteria
+
+The multi-band authorization model is operational and tested.
+
+---
+
+# 7. Phase 4 — Public Band Pages
+
+## Objective
+
+Allow visitors and fans to discover bands.
+
+## Tasks
+
+### 4.1 Public band page
+
+* [ ] Band name.
+* [ ] Description.
+* [ ] Logo.
+* [ ] Cover.
+* [ ] Links.
+* [ ] Public status.
+
+### 4.2 Custom URL
+
+* [ ] Generate slug.
+* [ ] Validate uniqueness.
+* [ ] Resolve public band URL.
+* [ ] Handle invalid slugs.
+
+### 4.3 Responsive interface
+
+* [ ] Desktop layout.
+* [ ] Mobile layout.
+* [ ] Accessible navigation.
+* [ ] Loading states.
+* [ ] Empty states.
+* [ ] Error states.
+
+## Exit criteria
+
+A visitor can access an approved band's public page without authentication.
+
+---
+
+# 8. Phase 5 — Music
+
+## Objective
+
+Allow bands to manage and publish music.
+
+## Tasks
+
+### 5.1 Releases
+
+* [ ] Release model.
+* [ ] Create release.
+* [ ] Edit release.
+* [ ] Release cover.
+* [ ] Release publication state.
+
+### 5.2 Tracks
+
+* [ ] Track model.
+* [ ] Track belongs to band.
+* [ ] Track belongs to release when applicable.
+* [ ] Track title.
+* [ ] Track position.
+* [ ] Draft state.
+* [ ] Published state.
+
+### 5.3 Audio
+
+* [ ] Audio upload.
+* [ ] Validate supported file types.
+* [ ] Validate file size.
+* [ ] Store audio through approved storage strategy.
+
+### 5.4 Publishing
+
+* [ ] Save track as draft.
+* [ ] Publish track.
+* [ ] Unpublish track.
+* [ ] Hide unpublished tracks from public users.
+
+### 5.5 Player
+
+* [ ] Play published track.
+* [ ] Pause.
+* [ ] Seek.
+* [ ] Display track information.
+* [ ] Handle missing/unavailable audio.
+
+### 5.6 Security
+
+* [ ] Verify private/unpublished audio cannot be accessed directly.
+* [ ] Verify authorization server-side.
+
+## Exit criteria
+
+A band administrator can publish music and a visitor can listen to published tracks.
+
+---
+
+# 9. Phase 6 — Followers
+
+## Objective
+
+Allow fans to follow bands.
+
+## Tasks
+
+* [ ] Follow relationship.
+* [ ] Follow a band.
+* [ ] Unfollow a band.
+* [ ] Prevent duplicate follows.
+* [ ] Display following state.
+* [ ] Test authorization.
+
+## Exit criteria
+
+A user can follow and unfollow a band and the relationship is persisted correctly.
+
+---
+
+# 10. Phase 7 — Exclusive Content
+
+## Objective
+
+Allow bands to publish content with different visibility levels.
+
+## Visibility Levels
+
+* Public
+* Followers
+* Subscribers
+
+## Tasks
+
+### 10.1 Posts
+
+* [ ] Post model.
+* [ ] Create post.
+* [ ] Edit post.
+* [ ] Delete post.
+* [ ] Draft state.
+* [ ] Published state.
+
+### 10.2 Media
+
+* [ ] Images.
+* [ ] Videos.
+* [ ] Downloads.
+* [ ] File validation.
+* [ ] Storage.
+
+### 10.3 Visibility
+
+* [ ] Public content.
+* [ ] Follower content.
+* [ ] Subscriber content.
+
+### 10.4 Authorization
+
+Test:
+
+* [ ] Visitor cannot access follower content.
+* [ ] Non-follower cannot access follower content.
+* [ ] Non-subscriber cannot access subscriber content.
+* [ ] Subscriber can access subscriber content.
+* [ ] Band administrators can manage their band's content.
+* [ ] Another band's administrator cannot modify content.
+
+### 10.5 File protection
+
+* [ ] Protected files are not exposed through predictable URLs.
+* [ ] Direct access is authorized.
+* [ ] Authorization is enforced server-side.
+
+## Exit criteria
+
+Content visibility works correctly at both the application and file-storage levels.
+
+---
+
+# 11. Phase 8 — Store
+
+## Objective
+
+Allow bands to sell products.
+
+## Tasks
+
+### 11.1 Products
+
+* [ ] Product model.
+* [ ] Product title.
+* [ ] Description.
+* [ ] Price.
+* [ ] Images.
+* [ ] Publication status.
+* [ ] Band ownership.
+
+### 11.2 Variants
+
+* [ ] Variant model when required.
+* [ ] Variant attributes.
+* [ ] Variant price when applicable.
+* [ ] Variant inventory.
+
+Do not create variants unless the product actually requires combinations.
+
+### 11.3 Inventory
+
+* [ ] Stock quantity.
+* [ ] Stock validation.
+* [ ] Inventory changes.
+* [ ] Prevent negative inventory.
+* [ ] Handle concurrent purchases.
+
+### 11.4 Cart
+
+* [ ] Cart.
+* [ ] Cart items.
+* [ ] Add product.
+* [ ] Remove product.
+* [ ] Update quantity.
+* [ ] Calculate totals.
+
+### 11.5 Single-band rule
+
+For the MVP:
+
+* [ ] A cart belongs to one band.
+* [ ] Products from another band cannot be added to the current cart.
+* [ ] Checkout cannot contain products from multiple bands.
+
+### 11.6 Orders
+
+* [ ] Order creation.
+* [ ] Order items.
+* [ ] Price snapshot.
+* [ ] Product snapshot.
+* [ ] Order status.
+
+### 11.7 Concurrency
+
+Test:
+
+* [ ] Two simultaneous purchases cannot consume nonexistent inventory.
+* [ ] Inventory remains consistent after failed payment.
+* [ ] Cancelled orders release inventory when appropriate.
+
+## Exit criteria
+
+A fan can purchase an available product and the order/inventory state remains consistent.
+
+---
+
+# 12. Phase 9 — Payments
+
+## Objective
+
+Integrate the approved payment provider.
+
+## Important Rule
+
+Payment implementation must follow `docs/payments.md`.
+
+Do not invent payment behavior during implementation.
+
+## Tasks
+
+### 12.1 Provider integration
+
+* [ ] Configure credentials.
+* [ ] Configure test environment.
+* [ ] Implement provider client.
+* [ ] Handle provider errors.
+
+### 12.2 One-time payments
+
+* [ ] Create checkout.
+* [ ] Redirect/checkout flow.
+* [ ] Pending state.
+* [ ] Paid state.
+* [ ] Failed state.
+* [ ] Cancelled state.
+
+### 12.3 Pix
+
+* [ ] Pix payment flow.
+* [ ] Pending payment.
+* [ ] Confirmation.
+* [ ] Expiration.
+
+### 12.4 Card
+
+* [ ] Card checkout.
+* [ ] Authorization.
+* [ ] Payment confirmation.
+* [ ] Failure handling.
+
+### 12.5 Webhooks
+
+* [ ] Validate authenticity.
+* [ ] Persist external event identifier.
+* [ ] Ensure idempotency.
+* [ ] Handle duplicate events.
+* [ ] Handle unexpected events.
+* [ ] Handle provider retries.
+
+### 12.6 Refunds
+
+* [ ] Refund state.
+* [ ] Provider refund request.
+* [ ] Refund webhook.
+* [ ] Order state update.
+
+### 12.7 Financial records
+
+* [ ] Persist payment state.
+* [ ] Persist external payment ID.
+* [ ] Persist relevant transaction information.
+* [ ] Maintain auditability.
+
+## Exit criteria
+
+The complete payment lifecycle works in the provider's test environment.
+
+---
+
+# 13. Phase 10 — Subscriptions
+
+## Objective
+
+Allow fans to subscribe to band plans.
+
+## Tasks
+
+### 13.1 Plans
+
+* [ ] Plan model.
+* [ ] Plan name.
+* [ ] Price.
+* [ ] Billing interval.
+* [ ] Band ownership.
+* [ ] Active/inactive state.
+
+### 13.2 Subscription
+
+* [ ] Subscription model.
+* [ ] User relationship.
+* [ ] Band relationship.
+* [ ] Plan relationship.
+* [ ] External subscription ID.
+* [ ] Subscription status.
+
+### 13.3 Lifecycle
+
+Support:
+
+* [ ] Pending.
+* [ ] Active.
+* [ ] Past due.
+* [ ] Cancelled.
+* [ ] Expired.
+
+### 13.4 Billing
+
+* [ ] Initial payment.
+* [ ] Recurring payment.
+* [ ] Failed payment.
+* [ ] Recovery.
+* [ ] Cancellation.
+
+### 13.5 Webhooks
+
+* [ ] Validate webhook.
+* [ ] Ensure idempotency.
+* [ ] Process subscription events.
+* [ ] Process payment events.
+
+### 13.6 Content access
+
+* [ ] Active subscriber gets subscriber content.
+* [ ] Cancelled subscription loses access according to the approved business rule.
+* [ ] Failed payment follows the approved grace-period rule.
+
+## Exit criteria
+
+Subscription state and content access remain synchronized with the payment provider.
+
+---
+
+# 14. Phase 11 — Events and Tickets
+
+## Objective
+
+Allow bands to create events and sell tickets.
+
+## Tasks
+
+### 11.1 Events
+
+* [ ] Event model.
+* [ ] Event title.
+* [ ] Description.
+* [ ] Date/time.
+* [ ] Location.
+* [ ] Publication state.
+
+### 11.2 Ticket batches
+
+* [ ] Ticket batch model.
+* [ ] Price.
+* [ ] Quantity.
+* [ ] Start/end availability.
+* [ ] Batch activation.
+
+### 11.3 Ticket purchase
+
+* [ ] Select ticket.
+* [ ] Checkout.
+* [ ] Payment.
+* [ ] Ticket creation.
+
+### 11.4 QR code
+
+* [ ] Generate unique ticket identifier.
+* [ ] Generate QR code.
+* [ ] Associate QR code with ticket.
+* [ ] Protect ticket data.
+
+### 11.5 Check-in
+
+* [ ] Scan/validate ticket.
+* [ ] Mark ticket as used.
+* [ ] Prevent duplicate check-in.
+* [ ] Display invalid/used ticket state.
+
+### 11.6 Cancellation
+
+* [ ] Cancel ticket according to business rules.
+* [ ] Handle refund when applicable.
+
+## Exit criteria
+
+A user can purchase a ticket and the ticket can be validated exactly according to the approved rules.
+
+---
+
+# 15. Phase 12 — Platform Administration
+
+## Objective
+
+Provide platform-level controls.
+
+## Tasks
+
+### 12.1 Band moderation
+
+* [ ] Review pending bands.
+* [ ] Approve band.
+* [ ] Reject band.
+* [ ] Suspend band when applicable.
+
+### 12.2 Content moderation
+
+* [ ] Review reported content.
+* [ ] Remove content when authorized.
+* [ ] Record administrative action.
+
+### 12.3 Orders and payments
+
+* [ ] View orders.
+* [ ] View payment status.
+* [ ] Process approved refunds.
+* [ ] View relevant payment events.
+
+### 12.4 Administrative audit
+
+* [ ] Record important administrative actions.
+* [ ] Record actor.
+* [ ] Record timestamp.
+* [ ] Record affected resource.
+
+## Exit criteria
+
+Platform administrators can perform approved administrative actions without gaining inappropriate access to unrelated user data.
+
+---
+
+# 16. Phase 13 — Security Audit
+
+## Objective
+
+Validate the system before production.
+
+## Authentication
+
+* [ ] Authentication boundaries reviewed.
+* [ ] Session behavior reviewed.
+* [ ] Password/security mechanisms reviewed.
+
+## Authorization
+
+* [ ] Band isolation tested.
+* [ ] Private content tested.
+* [ ] Administrative permissions tested.
+* [ ] Object-level authorization tested.
+
+## Files
+
+* [ ] Private files protected.
+* [ ] Upload validation verified.
+* [ ] File access authorization verified.
+
+## Payments
+
+* [ ] Webhook authenticity verified.
+* [ ] Webhook idempotency verified.
+* [ ] Sensitive payment information not logged.
+
+## Application
+
+* [ ] Secrets are not committed.
+* [ ] Environment variables are used correctly.
+* [ ] Security checks pass.
+* [ ] Error pages do not expose sensitive information.
+
+## Exit criteria
+
+No critical security issue remains unresolved.
+
+---
+
+# 17. Phase 14 — Performance and Reliability
+
+## Objective
+
+Find obvious production problems before launch.
+
+## Tasks
+
+### Database
+
+* [ ] Review indexes.
+* [ ] Review foreign keys.
+* [ ] Review constraints.
+* [ ] Identify N+1 queries.
+* [ ] Review expensive queries.
+
+### Background jobs
+
+* [ ] Identify asynchronous workloads.
+* [ ] Configure retries.
+* [ ] Handle failed jobs.
+* [ ] Verify job idempotency where necessary.
+
+### Storage
+
+* [ ] Verify media storage.
+* [ ] Verify upload limits.
+* [ ] Verify private file access.
+
+### Reliability
+
+* [ ] Verify error handling.
+* [ ] Verify external service failures.
+* [ ] Verify payment provider downtime behavior.
+
+## Exit criteria
+
+No known critical performance or reliability issue remains.
+
+---
+
+# 18. Phase 15 — Production Readiness
+
+## Objective
+
+Prepare the application for real users.
+
+## Tasks
+
+### Infrastructure
+
+* [ ] Production application.
+* [ ] PostgreSQL.
+* [ ] Storage.
+* [ ] Background jobs.
+* [ ] Domain.
+* [ ] HTTPS.
+
+### Environment
+
+* [ ] Production environment variables.
+* [ ] Secrets configured securely.
+* [ ] No secrets in repository.
+
+### Database
+
+* [ ] Production migrations reviewed.
+* [ ] Backup configured.
+* [ ] Restore procedure documented.
+
+### Monitoring
+
+* [ ] Application logs.
+* [ ] Error monitoring.
+* [ ] Health check.
+* [ ] Payment monitoring.
+* [ ] Background job monitoring.
+
+### Email
+
+* [ ] Email provider configured.
+* [ ] Transactional emails tested.
+* [ ] Failure handling tested.
+
+### Webhooks
+
+* [ ] Production webhook URLs configured.
+* [ ] Signature validation enabled.
+* [ ] Idempotency verified.
+
+## Exit criteria
+
+Production infrastructure is documented and can be deployed reproducibly.
+
+---
+
+# 19. Phase 16 — End-to-End Homologation
+
+## Objective
+
+Validate the MVP using realistic scenarios.
+
+## Test Accounts
+
+Create:
+
+* [ ] Platform administrator.
+* [ ] Band A administrator.
+* [ ] Band B administrator.
+* [ ] Fan.
+* [ ] Visitor.
+
+## Scenario 1 — Band onboarding
+
+* [ ] Band A requests registration.
+* [ ] Platform administrator approves Band A.
+* [ ] Band A administrator accesses the dashboard.
+
+## Scenario 2 — Music
+
+* [ ] Band A creates a release.
+* [ ] Band A creates a track.
+* [ ] Track remains draft.
+* [ ] Visitor cannot access draft.
+* [ ] Band A publishes track.
+* [ ] Visitor can listen.
+
+## Scenario 3 — Followers
+
+* [ ] Fan follows Band A.
+* [ ] Fan unfollows Band A.
+* [ ] Relationship is correctly updated.
+
+## Scenario 4 — Exclusive content
+
+* [ ] Band A creates follower content.
+* [ ] Visitor cannot access it.
+* [ ] Fan who follows Band A can access it.
+* [ ] Subscriber-only content remains protected.
+
+## Scenario 5 — Commerce
+
+* [ ] Band A creates product.
+* [ ] Fan adds product to cart.
+* [ ] Fan completes checkout.
+* [ ] Payment succeeds.
+* [ ] Order becomes paid.
+* [ ] Inventory changes correctly.
+
+## Scenario 6 — Multi-band isolation
+
+* [ ] Band A administrator attempts to access Band B.
+* [ ] Access is denied.
+* [ ] Band A administrator cannot modify Band B.
+* [ ] Band A administrator cannot access Band B private files.
+* [ ] Band A administrator cannot access Band B financial information.
+
+## Scenario 7 — Subscription
+
+* [ ] Fan subscribes to Band A.
+* [ ] Payment is confirmed.
+* [ ] Subscription becomes active.
+* [ ] Subscriber content becomes available.
+* [ ] Subscription is cancelled.
+* [ ] Access changes according to the approved business rule.
+
+## Scenario 8 — Tickets
+
+* [ ] Band A creates event.
+* [ ] Fan purchases ticket.
+* [ ] Ticket is generated.
+* [ ] QR code is generated.
+* [ ] Ticket is validated.
+* [ ] Second validation is rejected.
+
+## Exit criteria
+
+Every critical user journey passes in staging.
+
+---
+
+# 20. Phase 17 — Launch
+
+## Objective
+
+Deploy the approved MVP to production.
+
+## Pre-launch checklist
+
+* [ ] CI green.
+* [ ] Tests green.
+* [ ] Lint green.
+* [ ] Security audit complete.
+* [ ] Staging homologation complete.
+* [ ] Production environment configured.
+* [ ] Database backup verified.
+* [ ] Payment provider production configuration verified.
+* [ ] Webhooks verified.
+* [ ] Email verified.
+* [ ] Monitoring verified.
+* [ ] Rollback procedure documented.
+
+## Deployment
+
+* [ ] Merge approved changes.
+* [ ] Deploy production.
+* [ ] Run migrations.
+* [ ] Verify health check.
+* [ ] Run smoke tests.
+* [ ] Verify logs.
+* [ ] Verify background jobs.
+* [ ] Verify payment integration.
+
+## Exit criteria
+
+The application is operating in production and the critical user journeys work.
+
+---
+
+# 21. Post-Launch
+
+## Objective
+
+Monitor the MVP before adding new functionality.
+
+## First checks
+
+* [ ] Application errors.
+* [ ] Authentication failures.
+* [ ] Payment failures.
+* [ ] Webhook failures.
+* [ ] Background job failures.
+* [ ] Database errors.
+* [ ] Storage failures.
+* [ ] User-reported problems.
+
+## Product validation
+
+Monitor:
+
+* [ ] User registration.
+* [ ] Band creation.
+* [ ] Music publication.
+* [ ] Content engagement.
+* [ ] Product purchases.
+* [ ] Subscription conversion.
+* [ ] Ticket purchases.
+
+## Rule
+
+Do not immediately expand the product after launch.
+
+First identify:
+
+* real user problems;
+* operational problems;
+* payment problems;
+* usability problems;
+* missing critical functionality.
+
+New features should enter the roadmap only after being evaluated against actual product needs.
+
+---
+
+# 22. Future Features
+
+Features not included in the MVP should be recorded here instead of being implemented opportunistically.
+
+## Candidate Features
+
+* [ ] Feature proposal 1
+* [ ] Feature proposal 2
+* [ ] Feature proposal 3
+
+Each future feature must eventually receive:
+
+* product justification;
+* scope;
+* acceptance criteria;
+* technical impact;
+* dependencies;
+* priority.
+
+Nothing in this section is authorized for implementation.
+
+---
+
+# 23. Roadmap Status
+
+Use the following status convention:
+
+* `[ ]` Not started
+* `[~]` In progress
+* `[x]` Completed
+* `[!]

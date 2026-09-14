@@ -1,0 +1,12 @@
+<h1><%= @band.name %> — Members</h1>
+
+<%= link_to "Add member", new_band_band_membership_path(@band) %>
+
+<ul>
+  <% @memberships.each do |membership| %>
+    <li>
+      <%= membership.user.name %> — <%= membership.role %>
+      <%= button_to "Remove", band_band_membership_path(@band, membership), method: :delete %>
+    </li>
+  <% end %>
+</ul>
