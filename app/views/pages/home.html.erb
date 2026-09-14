@@ -1,4 +1,8 @@
 <% if @featured_band %>
+  <div class="pt-8 pb-2 flex justify-center">
+    <%= image_tag "logo.png", alt: "SceneCore", class: "h-14 sm:h-20 w-auto" %>
+  </div>
+
   <section class="relative min-h-[70vh] sm:min-h-[85vh] flex items-end overflow-hidden">
     <% if @featured_band.photo.attached? %>
       <%= image_tag @featured_band.photo, class: "absolute inset-0 w-full h-full object-cover" %>

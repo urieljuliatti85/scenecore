@@ -151,18 +151,28 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).not_to include("aria-label=\"Website\"")
     end
 
-    it "shows only published albums and tracks" do
+    it "shows only published albums as cards, linking to the album page" do
       band = create(:band, :approved)
       published_album = create(:album, :published, band: band, title: "Public Album")
       draft_album = create(:album, band: band, title: "Secret Album")
-      create(:track, :published, album: published_album, title: "Public Track")
-      create(:track, album: published_album, title: "Secret Track")
 
       get public_band_path(band.slug)
 
       expect(response.body).to include("Public Album")
       expect(response.body).not_to include("Secret Album")
-      expect(response.body).to include("Public Track")
+      expect(response.body).to include(public_band_album_path(band.slug, published_album))
+    end
+
+    it "shows the album's published track count, not individual track titles" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band, title: "Public Album")
+      create(:track, :published, album: album, title: "Public Track")
+      create(:track, album: album, title: "Secret Track")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("1 track")
+      expect(response.body).not_to include("Public Track")
       expect(response.body).not_to include("Secret Track")
     end
 
@@ -173,38 +183,6 @@ RSpec.describe "Public band pages", type: :request do
       get public_band_path(band.slug)
 
       expect(response.body).not_to include("Secret Album")
-    end
-
-    it "shows the Spotify embed player for a published track with a Spotify link" do
-      band = create(:band, :approved)
-      album = create(:album, :published, band: band)
-      create(:track, :published, album: album, spotify_url: "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC")
-
-      get public_band_path(band.slug)
-
-      expect(response.body).to include("https://open.spotify.com/embed/track/4uLU6hMCjMI75M1A2tKUQC")
-    end
-
-    it "does not show an embed player for a track without a Spotify link" do
-      band = create(:band, :approved)
-      album = create(:album, :published, band: band)
-      create(:track, :published, album: album, spotify_url: nil, title: "No Link Track")
-
-      get public_band_path(band.slug)
-
-      expect(response.body).to include("No Link Track")
-      expect(response.body).not_to include("open.spotify.com/embed")
-    end
-
-    it "does not leak a draft track's Spotify link, even inside a published album" do
-      band = create(:band, :approved)
-      album = create(:album, :published, band: band)
-      create(:track, album: album, title: "Secret Track", spotify_url: "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC")
-
-      get public_band_path(band.slug)
-
-      expect(response.body).not_to include("Secret Track")
-      expect(response.body).not_to include("4uLU6hMCjMI75M1A2tKUQC")
     end
 
     it "shows the follower count" do
@@ -306,6 +284,90 @@ RSpec.describe "Public band pages", type: :request do
       get public_band_path(band.slug)
 
       expect(response.body).not_to include("Subscribers News")
+    end
+  end
+
+  describe "GET /:slug/albums/:id" do
+    it "shows the album's published tracks without authentication" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band, title: "Discovery")
+      track = create(:track, :published, album: album, title: "One More Time")
+
+      get public_band_album_path(band.slug, album)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Discovery")
+      expect(response.body).to include("One More Time")
+    end
+
+    it "does not show a draft track" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band)
+      create(:track, album: album, title: "Secret Track")
+
+      get public_band_album_path(band.slug, album)
+
+      expect(response.body).not_to include("Secret Track")
+    end
+
+    it "does not leak a draft track's Spotify link" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band)
+      create(:track, album: album, title: "Secret Track", spotify_url: "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC")
+
+      get public_band_album_path(band.slug, album)
+
+      expect(response.body).not_to include("Secret Track")
+      expect(response.body).not_to include("4uLU6hMCjMI75M1A2tKUQC")
+    end
+
+    it "shows the Spotify embed player for a published track with a Spotify link" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band)
+      create(:track, :published, album: album, spotify_url: "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC")
+
+      get public_band_album_path(band.slug, album)
+
+      expect(response.body).to include("https://open.spotify.com/embed/track/4uLU6hMCjMI75M1A2tKUQC")
+    end
+
+    it "does not show an embed player for a track without a Spotify link" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band)
+      create(:track, :published, album: album, spotify_url: nil, title: "No Link Track")
+
+      get public_band_album_path(band.slug, album)
+
+      expect(response.body).to include("No Link Track")
+      expect(response.body).not_to include("open.spotify.com/embed")
+    end
+
+    it "returns 404 for a draft album" do
+      band = create(:band, :approved)
+      album = create(:album, band: band)
+
+      get public_band_album_path(band.slug, album)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns 404 when the album belongs to a different band than the one in the URL" do
+      band = create(:band, :approved)
+      other_band = create(:band, :approved)
+      album = create(:album, :published, band: other_band)
+
+      get public_band_album_path(band.slug, album)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns 404 for a non-approved band" do
+      band = create(:band)
+      album = create(:album, :published, band: band)
+
+      get public_band_album_path(band.slug, album)
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 
