@@ -12,6 +12,24 @@
   <% end %>
 
   <%= render "shared/social_links", band: @band %>
+
+  <% if @albums.any? %>
+    <div class="mt-10 flex flex-col gap-8">
+      <% @albums.each do |album| %>
+        <div>
+          <h2 class="text-lg font-semibold text-neutral-300 mb-3"><%= album.title %></h2>
+          <ul class="flex flex-col gap-2">
+            <% album.tracks.published.order(:track_number).each do |track| %>
+              <li class="flex items-center gap-3 rounded-lg border border-neutral-800 px-4 py-3">
+                <span class="text-neutral-500 text-sm"><%= track.track_number %></span>
+                <span class="text-white"><%= track.title %></span>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 </section>
 
 <section class="px-4 sm:px-6 pb-20 sm:pb-28 max-w-5xl mx-auto">

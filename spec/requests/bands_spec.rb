@@ -84,67 +84,6 @@ RSpec.describe "Bands", type: :request do
 
       expect(response).to have_http_status(:ok)
     end
-
-    it "allows an anonymous visitor to view an approved band" do
-      band = create(:band, :approved)
-
-      get band_path(band)
-
-      expect(response).to have_http_status(:ok)
-    end
-
-    it "returns 404 for an anonymous visitor on a pending band" do
-      band = create(:band)
-
-      get band_path(band)
-
-      expect(response).to have_http_status(:not_found)
-    end
-
-    it "returns 404 for an anonymous visitor on a rejected band" do
-      band = create(:band, :rejected)
-
-      get band_path(band)
-
-      expect(response).to have_http_status(:not_found)
-    end
-
-    it "hides management actions from an anonymous visitor" do
-      band = create(:band, :approved)
-
-      get band_path(band)
-
-      expect(response.body).not_to include("Add Album")
-      expect(response.body).not_to include(">Edit<")
-      expect(response.body).not_to include("Members")
-    end
-
-    it "shows only published albums and tracks to an anonymous visitor" do
-      band = create(:band, :approved)
-      published_album = create(:album, :published, band: band, title: "Public Album")
-      draft_album = create(:album, band: band, title: "Secret Album")
-      published_track = create(:track, :published, album: published_album, title: "Public Track")
-      draft_track = create(:track, album: published_album, title: "Secret Track")
-
-      get band_path(band)
-
-      expect(response.body).to include("Public Album")
-      expect(response.body).not_to include("Secret Album")
-      expect(response.body).to include("Public Track")
-      expect(response.body).not_to include("Secret Track")
-    end
-
-    it "shows draft albums and tracks to a band member" do
-      user = create(:user)
-      band = create(:band, :approved)
-      create(:band_membership, band: band, user: user)
-      draft_album = create(:album, band: band, title: "Secret Album")
-      sign_in user
-
-      get band_path(band)
-
-      expect(response.body).to include("Secret Album")
-    end
   end
 
   describe "band isolation" do

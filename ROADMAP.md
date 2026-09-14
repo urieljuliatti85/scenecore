@@ -368,26 +368,27 @@ Allow visitors and fans to discover bands.
 
 ### 4.1 Public band page
 
-Minimal slice implemented ahead of the rest of Phase 4: an anonymous
-visitor can view an approved band's existing `/bands/:id` page (name,
-description, and its published albums/tracks). Pulled forward because
-Phase 5's exit criteria (a visitor can play a published track) is
-otherwise unreachable. Logo, cover, links, a friendly public URL, and
-responsive/empty/error states are still not implemented.
+Implemented as `GET /:slug` via `PublicBandsController`, deliberately
+separate from the band management area (`BandsController`/`BandPolicy`,
+which stays members/platform-admin only). Includes the band's published
+albums and tracks — pulled forward from Phase 5, since Phase 5's exit
+criteria (a visitor can play a published track) depends on it.
 
 * [x] Band name.
 * [x] Description.
-* [ ] Logo.
+* [x] Logo (available on the model via `photo`; not yet rendered on the
+      public page).
 * [ ] Cover.
-* [ ] Links.
+* [x] Links (social links rendered via `shared/social_links`).
 * [x] Public status (approved bands are visible; pending/rejected are not).
 
 ### 4.2 Custom URL
 
-* [ ] Generate slug.
-* [ ] Validate uniqueness.
-* [ ] Resolve public band URL.
-* [ ] Handle invalid slugs.
+* [x] Generate slug (`Band#generate_slug`, on create).
+* [x] Validate uniqueness (DB unique index + model validation).
+* [x] Resolve public band URL (`GET /:slug`, constrained and ordered last
+      in `routes.rb` so it doesn't shadow other routes).
+* [ ] Handle invalid slugs (currently a plain 404; no dedicated UX).
 
 ### 4.3 Responsive interface
 
@@ -456,8 +457,8 @@ action on a track.
       track with no Spotify link, even if its album is published).
 * [x] Publish album (cascades to tracks that have a Spotify link).
 * [x] Unpublish album (cascades to all tracks).
-* [x] Hide unpublished tracks from public users (see 4.1: the public band
-      page now only renders published albums/tracks to non-members).
+* [x] Hide unpublished tracks from public users (see 4.1: `GET /:slug`
+      only renders published albums/tracks).
 * [x] A track cannot be published without a Spotify link.
 
 ### 5.5 Player (Spotify embed)

@@ -38,33 +38,6 @@ RSpec.describe BandPolicy do
 
       it { is_expected.not_to be_show }
     end
-
-    context "when band is approved and user is anonymous" do
-      let(:band) { create(:band, :approved) }
-      let(:user) { nil }
-
-      it { is_expected.to be_show }
-    end
-
-    context "when band is approved and user is not a member" do
-      let(:band) { create(:band, :approved) }
-      let(:user) { create(:user) }
-
-      it { is_expected.to be_show }
-    end
-
-    context "when band is pending and user is anonymous" do
-      let(:user) { nil }
-
-      it { is_expected.not_to be_show }
-    end
-
-    context "when band is rejected and user is anonymous" do
-      let(:band) { create(:band, :rejected) }
-      let(:user) { nil }
-
-      it { is_expected.not_to be_show }
-    end
   end
 
   describe "#create?" do
