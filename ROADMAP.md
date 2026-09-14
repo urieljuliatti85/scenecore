@@ -593,6 +593,18 @@ Content visibility works correctly at both the application and file-storage leve
 
 # 11. Phase 8 — Store
 
+**Skipped for now (2026-09-14):** by explicit decision, not attempted this
+round. Note for whoever resumes it: the exit criteria ("a fan can purchase
+an available product and the order/inventory state remains consistent")
+has the same structural issue Phase 7 had with Subscriptions — Order
+states (`paid`, `processing`, `completed`, per `docs/payments.md`) are
+sourced from the payment provider, which doesn't exist until Phase 9. A
+sliceable approach was scoped (Products/Variants/Inventory/Cart without
+checkout) but not implemented. One open product question if this is
+picked up: whether a cart requires authentication, or a visitor can start
+one before creating an account (`docs/product.md` leaves this
+unresolved).
+
 ## Objective
 
 Allow bands to sell products.
