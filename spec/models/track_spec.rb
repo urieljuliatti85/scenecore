@@ -11,8 +11,14 @@ RSpec.describe Track, type: :model do
     expect(track).not_to be_valid
   end
 
-  it "requires a band" do
-    track = build(:track, band: nil)
+  it "requires an album" do
+    track = build(:track, album: nil)
+
+    expect(track).not_to be_valid
+  end
+
+  it "requires a track number" do
+    track = build(:track, track_number: nil)
 
     expect(track).not_to be_valid
   end
@@ -28,9 +34,17 @@ RSpec.describe Track, type: :model do
     expect(track).not_to be_valid
   end
 
-  it "belongs to a band" do
+  it "belongs to an album" do
+    album = create(:album)
+    track = create(:track, album: album)
+
+    expect(track.album).to eq(album)
+  end
+
+  it "exposes its band through the album" do
     band = create(:band)
-    track = create(:track, band: band)
+    album = create(:album, band: band)
+    track = create(:track, album: album)
 
     expect(track.band).to eq(band)
   end

@@ -1,0 +1,28 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-xl mx-auto">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-2">Add Album</h1>
+  <p class="text-neutral-500 mb-8"><%= @band.name %></p>
+
+  <% if @album.errors.any? %>
+    <ul class="rounded-xl border border-red-900 bg-red-950/40 text-red-400 text-sm p-4 space-y-1 mb-5">
+      <% @album.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div data-controller="album-search" data-album-search-url-value="<%= search_band_albums_path(@band) %>" class="flex flex-col gap-3">
+    <%= form_with url: band_albums_path(@band), class: "flex flex-col gap-5" do |form| %>
+      <div class="relative">
+        <%= label_tag :album_search_query, "Search for an album on Spotify", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+        <input type="text" data-album-search-target="query" data-action="input->album-search#search" placeholder="Album or artist name..." autocomplete="off" class="w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+        <ul data-album-search-target="results" class="absolute z-10 w-full mt-1 rounded-lg bg-neutral-900 border border-neutral-800 max-h-64 overflow-y-auto"></ul>
+      </div>
+
+      <p data-album-search-target="selectedLabel" hidden class="text-sm text-neutral-300"></p>
+
+      <%= hidden_field_tag :spotify_album_id, "", data: { album_search_target: "selectedId" } %>
+
+      <%= form.submit "Add Album", data: { album_search_target: "submit" }, disabled: true, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition cursor-pointer self-start disabled:opacity-40 disabled:cursor-not-allowed" %>
+    <% end %>
+  </div>
+</section>
