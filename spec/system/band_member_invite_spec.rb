@@ -15,9 +15,11 @@ RSpec.describe "Band member invitation", type: :system do
 
     visit band_band_memberships_path(band)
     click_link "Add member"
+    expect(page).to have_button("Add member")
     select new_member.email, from: "User"
     click_button "Add member"
 
+    expect(page).to have_content("Member added.")
     expect(page).to have_content("Bob")
 
     Capybara.reset_sessions!

@@ -44,6 +44,12 @@ RSpec.configure do |config|
     driven_by :selenium, using: :headless_chrome
   end
 
+  # CI runners are slower than a local machine (cold asset/bootsnap caches,
+  # shared CPU), and Capybara's 2-second default wait isn't always enough
+  # for a Turbo form submission's click -> request -> redirect -> render
+  # round trip there, even though the same spec is reliably fast locally.
+  Capybara.default_max_wait_time = 5 if ENV["CI"].present?
+
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
     Rails.root.join('spec/fixtures')
