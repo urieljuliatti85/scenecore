@@ -1,10 +1,30 @@
-<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-5xl mx-auto">
-  <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-8">Bands</h1>
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-6xl mx-auto">
+  <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Bands</h1>
 
-  <% if @bands.empty? %>
+    <div class="flex items-center gap-2">
+      <%= link_to "Recently added", discover_bands_path(sort: "recent"), class: "rounded-full px-4 py-2 text-sm font-semibold transition #{@sort == "recent" ? "bg-yellow-400 text-black" : "border border-neutral-700 text-neutral-300 hover:border-neutral-500"}" %>
+      <%= link_to "Most followed", discover_bands_path(sort: "followers"), class: "rounded-full px-4 py-2 text-sm font-semibold transition #{@sort == "followers" ? "bg-yellow-400 text-black" : "border border-neutral-700 text-neutral-300 hover:border-neutral-500"}" %>
+    </div>
+  </div>
+
+  <% if @featured_band.nil? %>
     <p class="text-neutral-500">No bands to discover yet.</p>
   <% else %>
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <%= link_to public_band_path(@featured_band.slug), class: "group relative rounded-3xl overflow-hidden bg-gradient-to-br from-neutral-800 via-neutral-900 to-black border border-neutral-800 hover:border-neutral-600 transition sm:col-span-2 lg:col-span-2 lg:row-span-2 aspect-square sm:aspect-auto sm:min-h-[22rem]" do %>
+        <% if @featured_band.photo.attached? %>
+          <%= image_tag @featured_band.photo, class: "absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition" %>
+        <% end %>
+
+        <span class="absolute top-4 left-4 text-[10px] uppercase tracking-wide text-black bg-yellow-400 rounded-full px-3 py-1 font-semibold">Top band</span>
+
+        <div class="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black via-black/70 to-transparent">
+          <p class="text-2xl font-bold text-white"><%= @featured_band.name %></p>
+          <p class="text-sm text-neutral-300"><%= pluralize(@featured_band.followers_count, "follower") %></p>
+        </div>
+      <% end %>
+
       <% @bands.each do |band| %>
         <%= link_to public_band_path(band.slug), class: "group rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden hover:border-neutral-600 transition" do %>
           <div class="aspect-square bg-neutral-800 flex items-center justify-center">
@@ -16,6 +36,7 @@
           </div>
           <div class="p-4">
             <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= band.name %></p>
+            <p class="text-sm text-neutral-500"><%= pluralize(band.followers_count, "follower") %></p>
           </div>
         <% end %>
       <% end %>

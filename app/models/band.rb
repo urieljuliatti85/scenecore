@@ -29,7 +29,7 @@ class Band < ApplicationRecord
   before_validation :generate_slug, on: :create
 
   def followers_count
-    followers.count
+    followers.size
   end
 
   def social_links
