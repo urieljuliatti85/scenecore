@@ -1,0 +1,23 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-6">Admin</h1>
+  <%= render "admin/nav" %>
+
+  <h2 class="text-xl font-semibold mb-2">Moderation</h2>
+  <p class="text-neutral-500 mb-8">Published albums, across all bands.</p>
+
+  <% if @albums.empty? %>
+    <p class="text-neutral-500">No published albums.</p>
+  <% else %>
+    <ul class="space-y-3">
+      <% @albums.each do |album| %>
+        <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-center justify-between">
+          <div>
+            <p class="font-semibold text-white"><%= album.title %></p>
+            <p class="text-sm text-neutral-500"><%= album.band.name %></p>
+          </div>
+          <%= button_to "Unpublish", unpublish_admin_album_path(album), method: :patch, class: "rounded-full border border-red-900 text-red-400 text-sm font-semibold px-4 py-1.5 hover:border-red-700 transition cursor-pointer" %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

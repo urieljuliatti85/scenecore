@@ -909,10 +909,23 @@ Provide platform-level controls.
 
 ### 12.2 Content moderation
 
+Sliced (2026-09-14): "review reported content" stays blocked — no
+reporting/flagging system is defined in the product docs. But a minimal,
+explicitly-scoped moderation action was implemented: a platform admin
+can unpublish any band's published album (and its tracks revert to
+draft along with it), reversible, no new business rule invented — it
+reuses the same publish/draft mechanics `AlbumsController#unpublish`
+already has, just authorized differently (platform admin, not band
+membership). Deleting content outright was considered and explicitly
+not built — unpublish is reversible, destroy is not, and nothing asked
+for permanent removal.
+
 * [ ] Review reported content (blocked — no reporting/flagging system
       is defined in the product docs).
-* [ ] Remove content when authorized.
-* [ ] Record administrative action.
+* [x] Remove content when authorized (unpublish, not delete — see
+      `Admin::AlbumsController#unpublish`).
+* [x] Record administrative action (`AdminActionLog`, action
+      `moderate_unpublish_album`).
 
 ### 12.3 Orders and payments
 
@@ -944,8 +957,8 @@ item, added here since it's squarely Platform Administration scope.
       user, reusing `BandMembership`'s existing "a band can never be
       left without an administrator" rule (no new rule invented).
 * [ ] Subscriptions — not built; blocked on Phase 9/10, both skipped.
-* [ ] Content moderation (albums/tracks) — not built; same blocker as
-      12.2 (no report/flag system defined).
+* [x] Content moderation (albums) — added 2026-09-14: platform admin
+      can unpublish any band's published album (see 12.2).
 
 ## Exit criteria
 
