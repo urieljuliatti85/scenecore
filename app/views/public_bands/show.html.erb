@@ -1,40 +1,61 @@
-<section class="px-4 sm:px-6 py-16 sm:py-24 max-w-5xl mx-auto">
-  <p class="text-xs sm:text-sm tracking-[0.2em] text-neutral-500 uppercase mb-4">Band</p>
+<section class="px-4 sm:px-6 py-10 sm:py-16 max-w-5xl mx-auto">
+  <div class="rounded-[2rem] sm:rounded-[2.5rem] bg-gradient-to-br from-neutral-800 via-neutral-900 to-black p-6 sm:p-10 shadow-2xl shadow-black/40">
+    <p class="text-xs sm:text-sm tracking-[0.2em] text-neutral-500 uppercase mb-4">Band</p>
 
-  <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight mb-6">
-    <%= @band.name %>
-  </h1>
+    <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight mb-6">
+      <%= @band.name %>
+    </h1>
 
-  <% if @band.description.present? %>
-    <p class="text-neutral-300 text-base sm:text-lg max-w-2xl mb-8">
-      <%= @band.description %>
-    </p>
-  <% end %>
-
-  <div class="flex flex-wrap items-center gap-4 mb-8">
-    <% if user_signed_in? %>
-      <% if @following %>
-        <%= button_to "Following", band_follow_path(@band), method: :delete, class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition cursor-pointer" %>
-      <% else %>
-        <%= button_to "Follow", band_follow_path(@band), method: :post, class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition cursor-pointer" %>
-      <% end %>
+    <% if @band.description.present? %>
+      <p class="text-neutral-300 text-base sm:text-lg max-w-2xl mb-8">
+        <%= @band.description %>
+      </p>
     <% end %>
 
-    <span class="text-neutral-400 text-sm">
-      <%= pluralize(@band.followers_count, "follower") %>
-    </span>
-  </div>
+    <div class="flex flex-wrap items-center gap-4 mb-6">
+      <% if user_signed_in? %>
+        <% if @following %>
+          <%= button_to "Following", band_follow_path(@band), method: :delete, class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition cursor-pointer" %>
+        <% else %>
+          <%= button_to "Follow", band_follow_path(@band), method: :post, class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition cursor-pointer" %>
+        <% end %>
+      <% end %>
 
-  <%= render "shared/social_links", band: @band %>
+      <span class="text-neutral-400 text-sm">
+        <%= pluralize(@band.followers_count, "follower") %>
+      </span>
+
+      <%= render "shared/social_links", band: @band %>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+      <div class="rounded-2xl border border-neutral-800 bg-black/30 px-5 py-4 flex flex-col gap-1">
+        <span class="text-xs uppercase tracking-wide text-neutral-500">Albums</span>
+        <span class="text-xl font-bold text-white"><%= @albums.size %></span>
+      </div>
+      <div class="rounded-2xl border border-neutral-800 bg-black/30 px-5 py-4 flex flex-col gap-1">
+        <span class="text-xs uppercase tracking-wide text-neutral-500">Tracks</span>
+        <span class="text-xl font-bold text-white"><%= @published_tracks_count %></span>
+      </div>
+      <div class="rounded-2xl border border-neutral-800 bg-black/30 px-5 py-4 flex flex-col gap-1">
+        <span class="text-xs uppercase tracking-wide text-neutral-500">Posts</span>
+        <span class="text-xl font-bold text-white"><%= @posts.size %></span>
+      </div>
+      <div class="rounded-2xl border border-neutral-800 bg-black/30 px-5 py-4 flex flex-col gap-1">
+        <span class="text-xs uppercase tracking-wide text-neutral-500">Followers</span>
+        <span class="text-xl font-bold text-white"><%= @band.followers_count %></span>
+      </div>
+    </div>
+  </div>
 
   <% if @albums.any? %>
     <div class="mt-10 flex flex-col gap-8">
       <% @albums.each do |album| %>
-        <div>
-          <h2 class="text-lg font-semibold text-neutral-300 mb-3"><%= album.title %></h2>
+        <div class="rounded-3xl bg-gradient-to-br from-neutral-900 to-black border border-neutral-800 p-5 sm:p-6">
+          <h2 class="text-lg font-semibold text-neutral-300 mb-4"><%= album.title %></h2>
           <ul class="flex flex-col gap-2">
             <% album.tracks.published.order(:track_number).each do |track| %>
-              <li class="flex flex-col gap-3 rounded-lg border border-neutral-800 px-4 py-3">
+              <li class="flex flex-col gap-3 rounded-2xl border border-neutral-800 bg-black/30 px-4 py-3">
                 <div class="flex items-center gap-3">
                   <span class="text-neutral-500 text-sm"><%= track.track_number %></span>
                   <span class="text-white"><%= track.title %></span>
@@ -55,7 +76,7 @@
     <div class="mt-10 flex flex-col gap-6">
       <h2 class="text-lg font-semibold text-neutral-300">Posts</h2>
       <% @posts.each do |post| %>
-        <article class="rounded-lg border border-neutral-800 px-4 py-4">
+        <article class="rounded-3xl bg-gradient-to-br from-neutral-900 to-black border border-neutral-800 px-5 py-5">
           <h3 class="text-white font-semibold mb-2"><%= post.title %></h3>
           <p class="text-neutral-300 text-sm whitespace-pre-line"><%= post.body %></p>
         </article>
