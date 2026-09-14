@@ -679,6 +679,16 @@ A fan can purchase an available product and the order/inventory state remains co
 
 # 12. Phase 9 — Payments
 
+**Skipped for now (2026-09-14):** by explicit decision, not attempted
+this round. Two unresolved dependencies: (1) no payment provider is
+named anywhere — `docs/payments.md` only says "the approved payment
+provider" without specifying which one (Stripe? Mercado Pago? Pagar.me?
+Pix requires a Brazil-capable provider) — this is a product/business
+decision, not one to make unilaterally; (2) Payments processes Orders
+(Phase 8, also skipped) and Subscriptions (Phase 10, doesn't exist) —
+there's nothing to process yet even once a provider is chosen. Resume
+once a provider is named and at least one of Phase 8/10 exists.
+
 ## Objective
 
 Integrate the approved payment provider.
