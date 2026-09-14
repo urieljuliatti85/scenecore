@@ -59,3 +59,34 @@ All private resources must be authorized server-side.
 ### Reason
 
 Frontend restrictions are not security boundaries.
+
+---
+
+## ADR-005 — Music-first Band Home Positioning
+
+Status: Accepted
+
+### Decision
+
+SceneCore is positioned as a music-first digital home for the ongoing
+relationship between an independent band and its fans.
+
+SceneCore complements discovery, streaming, commerce, and membership platforms;
+it does not require bands to replace Spotify, Bandcamp, Patreon, or equivalent
+channels.
+
+“The scene” is a future strategic opportunity, not part of the current MVP
+unless separately validated and approved.
+
+### Reason
+
+“Everything for bands in one place” is generic and does not distinguish
+SceneCore from existing products. Centering the persistent band–fan relationship
+provides a clearer product outcome while keeping music at the core.
+
+### Consequence
+
+Product and UX decisions should strengthen the band's home and the fan's return
+relationship. Competitor parity and feature count are not sufficient reasons to
+expand scope. Scene-level social or discovery features must remain proposals
+until explicitly approved.

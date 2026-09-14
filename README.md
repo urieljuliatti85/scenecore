@@ -1,7 +1,14 @@
 # SceneCore
 
-Rails monolith for a multi-band music platform. See `CLAUDE.md` for
-project conventions and `docs/product.md` for product scope.
+**Your band. Your fans. Your home.**
+
+SceneCore is a music-first platform where independent bands create a digital
+home and build a direct, ongoing relationship with their fans through music,
+content, merchandise, subscriptions, and events.
+
+This repository contains the Rails monolith for the SceneCore MVP. See
+`CLAUDE.md` for project conventions and `docs/product.md` for product scope and
+positioning.
 
 ## Setup
 
