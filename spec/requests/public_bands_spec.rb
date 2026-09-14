@@ -153,6 +153,68 @@ RSpec.describe "Public band pages", type: :request do
 
       expect(response.body).to include(">Following<")
     end
+
+    it "shows a published public post to an anonymous visitor" do
+      band = create(:band, :approved)
+      create(:post, :published, band: band, title: "Public News")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Public News")
+    end
+
+    it "does not show a draft post" do
+      band = create(:band, :approved)
+      create(:post, band: band, title: "Draft News")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Draft News")
+    end
+
+    it "does not show a followers-only post to an anonymous visitor" do
+      band = create(:band, :approved)
+      create(:post, :published, :followers_only, band: band, title: "Followers News")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Followers News")
+    end
+
+    it "does not show a followers-only post to an authenticated non-follower" do
+      user = create(:user)
+      band = create(:band, :approved)
+      create(:post, :published, :followers_only, band: band, title: "Followers News")
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Followers News")
+    end
+
+    it "shows a followers-only post to an authenticated follower" do
+      user = create(:user)
+      band = create(:band, :approved)
+      create(:post, :published, :followers_only, band: band, title: "Followers News")
+      create(:follow, user: user, band: band)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Followers News")
+    end
+
+    it "never shows a subscribers-only post, even to a follower" do
+      user = create(:user)
+      band = create(:band, :approved)
+      create(:post, :published, :subscribers_only, band: band, title: "Subscribers News")
+      create(:follow, user: user, band: band)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Subscribers News")
+    end
   end
 
   describe "route precedence" do

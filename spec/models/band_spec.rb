@@ -156,6 +156,22 @@ RSpec.describe Band, type: :model do
     end
   end
 
+  describe "posts" do
+    it "has many posts" do
+      band = create(:band)
+      post = create(:post, band: band)
+
+      expect(band.posts).to contain_exactly(post)
+    end
+
+    it "destroys its posts when destroyed" do
+      band = create(:band)
+      create(:post, band: band)
+
+      expect { band.destroy }.to change(Post, :count).by(-1)
+    end
+  end
+
   describe "#followers_count" do
     it "returns 0 when the band has no followers" do
       band = create(:band)
