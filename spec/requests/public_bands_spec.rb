@@ -30,6 +30,36 @@ RSpec.describe "Public band pages", type: :request do
 
       expect(response.body).to include(public_band_path(band.slug))
     end
+
+    it "features the most recently added band by default" do
+      create(:band, :approved, name: "Older Band", created_at: 2.days.ago)
+      create(:band, :approved, name: "Newer Band", created_at: 1.day.ago)
+
+      get discover_bands_path
+
+      body_without_footer = response.body.split("Older Band").first
+      expect(body_without_footer).to include("Newer Band")
+    end
+
+    it "features the band with the most followers when sorted by followers" do
+      popular = create(:band, :approved, name: "Popular Band")
+      create_list(:follow, 3, band: popular)
+      quiet = create(:band, :approved, name: "Quiet Band")
+
+      get discover_bands_path(sort: "followers")
+
+      body_without_footer = response.body.split("Quiet Band").first
+      expect(body_without_footer).to include("Popular Band")
+    end
+
+    it "shows the featured band's follower count" do
+      band = create(:band, :approved, name: "The Testers")
+      create_list(:follow, 2, band: band)
+
+      get discover_bands_path
+
+      expect(response.body).to include("2 followers")
+    end
   end
 
   describe "GET /:slug" do

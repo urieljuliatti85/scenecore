@@ -1,8 +1,16 @@
 class PublicBandsController < ApplicationController
   skip_before_action :authenticate_user!
 
+  SORT_OPTIONS = %w[recent followers].freeze
+
   def index
-    @bands = Band.approved.with_attached_photo.order(created_at: :desc)
+    @sort = SORT_OPTIONS.include?(params[:sort]) ? params[:sort] : "recent"
+
+    bands = Band.approved.with_attached_photo.includes(:followers).to_a
+    bands = @sort == "followers" ? bands.sort_by { |band| -band.followers_count } : bands.sort_by(&:created_at).reverse
+
+    @featured_band = bands.first
+    @bands = bands.drop(1)
   end
 
   def show
