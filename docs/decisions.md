@@ -90,3 +90,34 @@ Product and UX decisions should strengthen the band's home and the fan's return
 relationship. Competitor parity and feature count are not sufficient reasons to
 expand scope. Scene-level social or discovery features must remain proposals
 until explicitly approved.
+
+---
+
+## ADR-006 — Retained Followers as Primary MVP Metric
+
+Status: Accepted
+
+### Decision
+
+The primary MVP metric is retained followers: the percentage of a band's
+followers still following after 30 days.
+
+Once Phase 10 (Subscriptions) ships, subscription retention (percentage of
+subscribers still active after N billing cycles) should supersede it as the
+primary metric.
+
+### Reason
+
+The product promise is an *ongoing* band–fan relationship, not a single
+transaction or a low-friction action like following. Retention over a fixed
+window is measurable today with the existing Follow model (Phase 6) and
+approximates durability without depending on unbuilt features (Store,
+Payments, Events). Subscription retention is a stronger signal once
+recurring paid relationships exist.
+
+### Consequence
+
+Product decisions in the MVP should be evaluated in part against whether
+they improve follower retention, not just raw follow or signup counts.
+Analytics/reporting for this metric is not yet built and is not implied by
+this decision.

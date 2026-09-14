@@ -192,6 +192,26 @@ SceneCore is the place where a band not only publishes its music, but builds and
 
 And this helps to make it clearer what is being sold: it's not just software for bands. It's an infrastructure to transform fan attention into relationships and relationships into financial support, all within a single platform.
 
+### Primary MVP Metric
+
+The primary metric for the MVP is **retained followers**: the percentage of a
+band's followers who are still following after 30 days (i.e., have not
+unfollowed).
+
+This is chosen over raw follow count because following is a single,
+low-friction action and does not by itself demonstrate an *ongoing*
+relationship — the product promise this metric must validate. Retention
+after a fixed window is a proxy for durability: it is measurable today using
+the existing `Follow` model (Phase 6) without depending on unbuilt features.
+
+Purchases, subscriptions, and event participation would be stronger signals
+of a durable, monetized relationship, but they depend on Phase 8 (Store),
+Phase 9 (Payments), and Phase 11 (Events/Tickets), all currently unbuilt or
+skipped. Once Phase 10 (Subscriptions) ships, **subscription retention**
+(the percentage of subscribers still active after N billing cycles) should
+supersede retained followers as the primary metric, since a recurring paid
+relationship is stronger evidence of the promise than a free follow.
+
 ### Competitive Positioning
 
 SceneCore complements the strongest existing platforms instead of requiring a
@@ -860,8 +880,5 @@ unless explicitly authorized.
 
 - Can a visitor start a product or ticket purchase without an account and
   create one during checkout?
-- Which measurable behavior best validates an ongoing band–fan relationship in
-  the MVP: return visits, follows, purchases, subscriptions, event participation,
-  or a defined combination?
 - After the band-home proposition is validated, should SceneCore formally expand
   toward scene-level discovery and community?

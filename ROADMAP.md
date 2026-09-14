@@ -142,8 +142,9 @@ Define exactly what the MVP is before implementation begins.
       relationship.
 * [x] Document complementary positioning relative to Spotify, Bandcamp, and
       Patreon.
-* [ ] Define the primary MVP metric that demonstrates a durable band–fan
-      relationship.
+* [x] Define the primary MVP metric that demonstrates a durable band–fan
+      relationship (retained followers; see `docs/product.md` and
+      ADR-006 in `docs/decisions.md`).
 
 ### 0.2 Define user types
 
