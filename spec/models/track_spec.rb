@@ -76,4 +76,24 @@ RSpec.describe Track, type: :model do
 
     expect(track).not_to be_valid
   end
+
+  describe "#spotify_embed_url" do
+    it "builds the embed URL from the Spotify track URL" do
+      track = build(:track, spotify_url: "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC")
+
+      expect(track.spotify_embed_url).to eq("https://open.spotify.com/embed/track/4uLU6hMCjMI75M1A2tKUQC")
+    end
+
+    it "strips the query string when building the embed URL" do
+      track = build(:track, spotify_url: "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC?si=abc123")
+
+      expect(track.spotify_embed_url).to eq("https://open.spotify.com/embed/track/4uLU6hMCjMI75M1A2tKUQC")
+    end
+
+    it "returns nil when there is no Spotify link" do
+      track = build(:track, spotify_url: nil)
+
+      expect(track.spotify_embed_url).to be_nil
+    end
+  end
 end
