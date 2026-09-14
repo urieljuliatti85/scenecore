@@ -47,6 +47,34 @@ RSpec.describe "Pages", type: :request do
 
         expect(response.body).not_to include("Featured Band")
       end
+
+      it "shows the coming-soon navigation cards" do
+        create(:band, :approved, name: "Farscape")
+
+        get root_path
+
+        expect(response.body).to include("Music")
+        expect(response.body).to include("Exclusive Content")
+        expect(response.body).to include("Subscriptions")
+        expect(response.body).to include("Merchandise")
+        expect(response.body).to include("Tickets")
+      end
+
+      it "shows social links when present" do
+        create(:band, :approved, name: "Farscape", spotify_url: "https://open.spotify.com/artist/1")
+
+        get root_path
+
+        expect(response.body).to include("https://open.spotify.com/artist/1")
+      end
+
+      it "does not show social link icons when none are set" do
+        create(:band, :approved, name: "Farscape")
+
+        get root_path
+
+        expect(response.body).not_to include("aria-label=\"Spotify\"")
+      end
     end
   end
 end

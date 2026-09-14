@@ -14,12 +14,14 @@
           </p>
         <% end %>
 
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-4 mb-8">
           <%= link_to "View band", public_band_path(@featured_band.slug), class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
           <% unless user_signed_in? %>
             <%= link_to "Sign up", new_user_registration_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
           <% end %>
         </div>
+
+        <%= render "shared/social_links", band: @featured_band %>
       </div>
 
       <% if @featured_band.photo.attached? %>
@@ -28,6 +30,10 @@
         </div>
       <% end %>
     </div>
+  </section>
+
+  <section class="px-4 sm:px-6 pb-20 sm:pb-28 max-w-7xl mx-auto">
+    <%= render "shared/coming_soon_cards" %>
   </section>
 <% else %>
   <section class="px-4 sm:px-6 py-20 sm:py-32 text-center max-w-3xl mx-auto">

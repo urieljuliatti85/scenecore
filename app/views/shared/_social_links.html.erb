@@ -1,0 +1,36 @@
+<% if band.social_links.any? %>
+  <div class="flex items-center gap-3">
+    <% if band.spotify_url.present? %>
+      <%= link_to band.spotify_url, target: "_blank", rel: "noopener noreferrer", "aria-label": "Spotify", class: "h-10 w-10 rounded-full border border-neutral-700 flex items-center justify-center text-neutral-300 hover:text-white hover:border-neutral-500 transition" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
+          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2Zm4.6 14.4c-.2.3-.6.4-.9.2-2.5-1.5-5.6-1.9-9.3-1-.4.1-.7-.1-.8-.5-.1-.4.1-.7.5-.8 4-.9 7.5-.5 10.3 1.2.3.2.4.6.2.9Zm1.2-2.8c-.2.4-.7.5-1.1.3-2.9-1.8-7.3-2.3-10.7-1.2-.4.1-.9-.1-1-.5-.1-.4.1-.9.5-1 3.9-1.2 8.7-.6 12 1.4.4.2.5.7.3 1Zm.1-2.9C14.4 8.6 9 8.4 5.9 9.4c-.5.2-1.1-.1-1.3-.6-.2-.5.1-1.1.6-1.3 3.6-1.1 9.6-.9 13.3 1.3.5.3.6.9.3 1.4-.3.4-.9.5-1.4.2Z" />
+        </svg>
+      <% end %>
+    <% end %>
+
+    <% if band.youtube_url.present? %>
+      <%= link_to band.youtube_url, target: "_blank", rel: "noopener noreferrer", "aria-label": "YouTube", class: "h-10 w-10 rounded-full border border-neutral-700 flex items-center justify-center text-neutral-300 hover:text-white hover:border-neutral-500 transition" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
+          <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.5v-7l6.3 3.5-6.3 3.5Z" />
+        </svg>
+      <% end %>
+    <% end %>
+
+    <% if band.instagram_url.present? %>
+      <%= link_to band.instagram_url, target: "_blank", rel: "noopener noreferrer", "aria-label": "Instagram", class: "h-10 w-10 rounded-full border border-neutral-700 flex items-center justify-center text-neutral-300 hover:text-white hover:border-neutral-500 transition" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
+          <path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 2.1.3 2.9.6.8.3 1.4.7 2 1.3.6.6 1 1.2 1.3 2 .3.8.5 1.7.6 2.9.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.3 2.1-.6 2.9a5.8 5.8 0 0 1-1.3 2c-.6.6-1.2 1-2 1.3-.8.3-1.7.5-2.9.6-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-2.1-.3-2.9-.6a5.8 5.8 0 0 1-2-1.3 5.8 5.8 0 0 1-1.3-2c-.3-.8-.5-1.7-.6-2.9C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.3-2.1.6-2.9.3-.8.7-1.4 1.3-2 .6-.6 1.2-1 2-1.3.8-.3 1.7-.5 2.9-.6C8.4 2.2 8.8 2.2 12 2.2Zm0 3a4.8 4.8 0 1 0 0 9.6 4.8 4.8 0 0 0 0-9.6Zm0 7.9a3.1 3.1 0 1 1 0-6.2 3.1 3.1 0 0 1 0 6.2Zm6.1-8.1a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0Z" />
+        </svg>
+      <% end %>
+    <% end %>
+
+    <% if band.website_url.present? %>
+      <%= link_to band.website_url, target: "_blank", rel: "noopener noreferrer", "aria-label": "Website", class: "h-10 w-10 rounded-full border border-neutral-700 flex items-center justify-center text-neutral-300 hover:text-white hover:border-neutral-500 transition" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5">
+          <circle cx="12" cy="12" r="9.5" />
+          <path d="M2.5 12h19M12 2.5c2.5 2.7 3.8 6 3.8 9.5s-1.3 6.8-3.8 9.5c-2.5-2.7-3.8-6-3.8-9.5S9.5 5.2 12 2.5Z" />
+        </svg>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
