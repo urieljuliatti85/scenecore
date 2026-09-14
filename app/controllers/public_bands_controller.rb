@@ -1,6 +1,10 @@
 class PublicBandsController < ApplicationController
   skip_before_action :authenticate_user!
 
+  def index
+    @bands = Band.approved.with_attached_photo.order(created_at: :desc)
+  end
+
   def show
     @band = Band.approved.find_by!(slug: params[:slug])
     @albums = @band.albums.published.includes(:tracks)

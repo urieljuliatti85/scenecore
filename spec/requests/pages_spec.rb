@@ -25,6 +25,21 @@ RSpec.describe "Pages", type: :request do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("Your bands")
       end
+
+      it "shows a link to the public band directory when not authenticated" do
+        get root_path
+
+        expect(response.body).to include(discover_bands_path)
+      end
+
+      it "shows a link to the public band directory when authenticated" do
+        user = create(:user)
+        sign_in user
+
+        get root_path
+
+        expect(response.body).to include(discover_bands_path)
+      end
     end
 
     context "when there is an approved band" do
