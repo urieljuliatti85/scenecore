@@ -28,6 +28,29 @@ Capybara.register_driver :ci_headless_chrome do |app|
   Capybara::Selenium::Driver.new(app, browser: :chrome, options: options)
 end
 
+# --window-size at launch, rather than resizing an already-open window,
+# because Selenium's window.resize_to/CDP device-metrics overrides proved
+# unreliable specifically under --headless=new in GitHub Actions' container
+# (no real window manager) — a real phone-width window from the start
+# sidesteps that class of flake entirely. Used by specs that need to assert
+# on mobile-only UI (e.g. spec/system/mobile_navigation_spec.rb).
+Capybara.register_driver :ci_headless_chrome_mobile do |app|
+  options = Selenium::WebDriver::Chrome::Options.new
+  options.add_argument("--headless=new")
+  options.add_argument("--no-sandbox")
+  options.add_argument("--disable-dev-shm-usage")
+  options.add_argument("--disable-gpu")
+  options.add_argument("--window-size=375,800")
+  Capybara::Selenium::Driver.new(app, browser: :chrome, options: options)
+end
+
+Capybara.register_driver :headless_chrome_mobile do |app|
+  options = Selenium::WebDriver::Chrome::Options.new
+  options.add_argument("--headless=new")
+  options.add_argument("--window-size=375,800")
+  Capybara::Selenium::Driver.new(app, browser: :chrome, options: options)
+end
+
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
 # run as spec files by default. This means that files in spec/support that end
