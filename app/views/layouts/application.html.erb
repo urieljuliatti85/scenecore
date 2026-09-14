@@ -33,7 +33,11 @@
         <nav class="flex items-center gap-3 sm:gap-4">
           <% if user_signed_in? %>
             <%= link_to "Your bands", bands_path, class: "text-sm font-medium text-neutral-300 hover:text-white hidden sm:inline" %>
-            <%= link_to "Profile", profile_path, class: "text-sm font-medium text-neutral-300 hover:text-white hidden sm:inline" %>
+            <%= link_to profile_path, class: "h-9 w-9 rounded-full border border-neutral-700 flex items-center justify-center text-neutral-300 hover:text-white hover:border-neutral-500 transition", "aria-label": "Profile" do %>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
+                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12Zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2V19.2c0-3.2-6.4-4.8-9.6-4.8Z" />
+              </svg>
+            <% end %>
             <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-2 sm:px-5 hover:bg-yellow-300 transition" %>
           <% else %>
             <%= link_to "Sign in", new_user_session_path, class: "text-sm font-medium text-neutral-300 hover:text-white" %>

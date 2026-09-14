@@ -33,6 +33,31 @@ RSpec.describe "Public band pages", type: :request do
 
       expect(response).to have_http_status(:not_found)
     end
+
+    it "shows the coming-soon navigation cards" do
+      band = create(:band, :approved, name: "The Testers")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Music")
+      expect(response.body).to include("Tickets")
+    end
+
+    it "shows social links when present" do
+      band = create(:band, :approved, name: "The Testers", website_url: "https://the-testers.example.com")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("https://the-testers.example.com")
+    end
+
+    it "does not show social link icons when none are set" do
+      band = create(:band, :approved, name: "The Testers")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("aria-label=\"Website\"")
+    end
   end
 
   describe "route precedence" do

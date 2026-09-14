@@ -1,0 +1,17 @@
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+  <% [
+    ["Music", "Albums, singles and more"],
+    ["Exclusive Content", "Behind the scenes, interviews, and more"],
+    ["Subscriptions", "Support the band and get special perks"],
+    ["Merchandise", "Official gear and limited editions"],
+    ["Tickets", "Live shows and tour dates"]
+  ].each do |title, description| %>
+    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5 flex flex-col gap-3 opacity-60 cursor-not-allowed">
+      <div class="flex items-center justify-between">
+        <span class="font-semibold text-white"><%= title %></span>
+        <span class="text-[10px] uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-2 py-0.5">Soon</span>
+      </div>
+      <p class="text-sm text-neutral-500"><%= description %></p>
+    </div>
+  <% end %>
+</div>

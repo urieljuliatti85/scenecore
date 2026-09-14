@@ -17,5 +17,38 @@
     <%= form.text_area :description, rows: 4, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
   </div>
 
+  <div>
+    <%= form.label :photo, class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <p class="text-xs text-neutral-500 mb-1">PNG, JPEG or WebP, up to 5MB</p>
+    <% if band.photo.attached? && band.photo.persisted? %>
+      <%= image_tag band.photo, class: "w-32 h-32 object-cover rounded-lg mb-2" %>
+    <% end %>
+    <%= form.file_field :photo, accept: "image/png,image/jpeg,image/webp", class: "w-full text-sm text-neutral-300 file:mr-4 file:rounded-full file:border-0 file:bg-yellow-400 file:text-black file:font-semibold file:px-4 file:py-2 file:cursor-pointer" %>
+  </div>
+
+  <fieldset class="flex flex-col gap-4 border border-neutral-800 rounded-xl p-4">
+    <legend class="text-sm font-medium text-neutral-300 px-1">Social links (optional)</legend>
+
+    <div>
+      <%= form.label :spotify_url, "Spotify", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.url_field :spotify_url, placeholder: "https://open.spotify.com/...", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    </div>
+
+    <div>
+      <%= form.label :youtube_url, "YouTube", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.url_field :youtube_url, placeholder: "https://youtube.com/...", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    </div>
+
+    <div>
+      <%= form.label :instagram_url, "Instagram", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.url_field :instagram_url, placeholder: "https://instagram.com/...", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    </div>
+
+    <div>
+      <%= form.label :website_url, "Website", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.url_field :website_url, placeholder: "https://...", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    </div>
+  </fieldset>
+
   <%= form.submit class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition cursor-pointer self-start" %>
 <% end %>
