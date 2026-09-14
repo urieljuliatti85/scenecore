@@ -19,7 +19,12 @@ Rails.application.routes.draw do
     end
 
     resources :band_memberships, only: [ :index, :new, :create, :edit, :update, :destroy ], path: "members"
-    resources :tracks, only: [ :new, :create, :edit, :update ]
+    resources :albums, only: [ :new, :create ] do
+      collection do
+        get :search
+      end
+    end
+    resources :tracks, only: [ :edit, :update ]
   end
 
   # Defines the root path route ("/")

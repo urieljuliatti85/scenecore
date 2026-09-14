@@ -10,7 +10,7 @@
 
   <div class="flex flex-wrap items-center gap-3">
     <% if policy(@band).show? %>
-      <%= link_to "Add track", new_band_track_path(@band), class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition" %>
+      <%= link_to "Add Album", new_band_album_path(@band), class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition" %>
     <% end %>
 
     <% if policy(@band).update? %>
@@ -24,20 +24,28 @@
     <% end %>
   </div>
 
-  <% if policy(@band).show? && @band.tracks.any? %>
-    <div class="mt-10">
-      <h2 class="text-lg font-semibold text-neutral-300 mb-3">Tracks</h2>
-      <ul class="flex flex-col gap-2">
-        <% @band.tracks.each do |track| %>
-          <li class="flex items-center justify-between gap-3 rounded-lg border border-neutral-800 px-4 py-3">
-            <div>
-              <span class="text-white"><%= track.title %></span>
-              <span class="text-xs uppercase tracking-wide text-neutral-500 ml-2"><%= track.status %></span>
-            </div>
-            <%= link_to "Edit", edit_band_track_path(@band, track), class: "text-sm text-neutral-400 hover:text-white transition" %>
-          </li>
-        <% end %>
-      </ul>
+  <% if policy(@band).show? && @band.albums.any? %>
+    <div class="mt-10 flex flex-col gap-8">
+      <% @band.albums.includes(:tracks).each do |album| %>
+        <div>
+          <h2 class="text-lg font-semibold text-neutral-300 mb-3">
+            <%= album.title %>
+            <span class="text-xs uppercase tracking-wide text-neutral-500 ml-2"><%= album.status %></span>
+          </h2>
+          <ul class="flex flex-col gap-2">
+            <% album.tracks.order(:track_number).each do |track| %>
+              <li class="flex items-center justify-between gap-3 rounded-lg border border-neutral-800 px-4 py-3">
+                <div>
+                  <span class="text-neutral-500 text-sm mr-2"><%= track.track_number %></span>
+                  <span class="text-white"><%= track.title %></span>
+                  <span class="text-xs uppercase tracking-wide text-neutral-500 ml-2"><%= track.status %></span>
+                </div>
+                <%= link_to "Edit", edit_band_track_path(@band, track), class: "text-sm text-neutral-400 hover:text-white transition" %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
     </div>
   <% end %>
 </section>

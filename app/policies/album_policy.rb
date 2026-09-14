@@ -1,5 +1,9 @@
-class TrackPolicy < ApplicationPolicy
-  def update?
+class AlbumPolicy < ApplicationPolicy
+  def create?
+    member?
+  end
+
+  def search?
     member?
   end
 

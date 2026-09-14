@@ -1,8 +1,7 @@
 FactoryBot.define do
-  factory :track do
-    album
-    sequence(:title) { |n| "Track #{n}" }
-    sequence(:track_number) { |n| n }
+  factory :album do
+    band
+    sequence(:title) { |n| "Album #{n}" }
     status { :draft }
 
     trait :published do
