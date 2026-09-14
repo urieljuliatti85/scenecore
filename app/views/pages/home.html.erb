@@ -42,8 +42,8 @@
         <% @featured_albums.each do |album| %>
           <%= link_to public_band_path(album.band.slug), class: "group" do %>
             <div class="aspect-square rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800 mb-4">
-              <% if album.cover.attached? %>
-                <%= image_tag album.cover, class: "w-full h-full object-cover group-hover:scale-105 transition duration-300" %>
+              <% if album.cover_url.present? %>
+                <%= image_tag album.cover_url, class: "w-full h-full object-cover group-hover:scale-105 transition duration-300" %>
               <% else %>
                 <div class="w-full h-full flex items-center justify-center text-neutral-600 text-sm">No cover</div>
               <% end %>

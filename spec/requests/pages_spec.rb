@@ -103,6 +103,15 @@ RSpec.describe "Pages", type: :request do
         expect(response.body).to include("Other Band")
       end
 
+      it "shows the album's Spotify cover thumbnail when no cover was uploaded" do
+        band = create(:band, :approved, name: "Farscape")
+        create(:album, :published, band: band, title: "Discovery", spotify_cover_url: "https://i.scdn.co/image/discovery-cover.jpg")
+
+        get root_path
+
+        expect(response.body).to include("https://i.scdn.co/image/discovery-cover.jpg")
+      end
+
       it "does not show a draft album" do
         band = create(:band, :approved, name: "Farscape")
         create(:album, band: band, title: "Secret Album")
