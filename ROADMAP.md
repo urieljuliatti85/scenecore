@@ -177,8 +177,12 @@ mandatory domain mapped to its ROADMAP.md phase.
 
 ### 0.5 Define product acceptance criteria
 
-* [ ] Define acceptance criteria for every MVP domain.
-* [ ] Identify unresolved requirements.
+Documented in `docs/product.md` §5, one subsection per §4.1 mandatory
+domain; unresolved requirements listed at the end of that section and
+folded into §7 Open Questions.
+
+* [x] Define acceptance criteria for every MVP domain.
+* [x] Identify unresolved requirements.
 
 ## Exit criteria
 
