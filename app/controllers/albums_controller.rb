@@ -1,5 +1,6 @@
 class AlbumsController < ApplicationController
   before_action :set_band
+  before_action :set_album, only: [ :publish, :unpublish ]
 
   def new
     @album = @band.albums.new
@@ -31,6 +32,28 @@ class AlbumsController < ApplicationController
     render :new, status: :bad_gateway
   end
 
+  def publish
+    authorize @album
+
+    ActiveRecord::Base.transaction do
+      @album.published!
+      @album.tracks.where.not(spotify_url: [ nil, "" ]).update_all(status: Track.statuses[:published])
+    end
+
+    redirect_to band_path(@band), notice: "Album published."
+  end
+
+  def unpublish
+    authorize @album
+
+    ActiveRecord::Base.transaction do
+      @album.draft!
+      @album.tracks.update_all(status: Track.statuses[:draft])
+    end
+
+    redirect_to band_path(@band), notice: "Album unpublished."
+  end
+
   private
 
   def import_album(spotify_id)
@@ -52,5 +75,9 @@ class AlbumsController < ApplicationController
 
   def set_band
     @band = Band.find(params[:band_id])
+  end
+
+  def set_album
+    @album = @band.albums.find(params[:id])
   end
 end

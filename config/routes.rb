@@ -20,6 +20,10 @@ Rails.application.routes.draw do
 
     resources :band_memberships, only: [ :index, :new, :create, :edit, :update, :destroy ], path: "members"
     resources :albums, only: [ :new, :create ] do
+      member do
+        patch :publish
+        patch :unpublish
+      end
       collection do
         get :search
       end

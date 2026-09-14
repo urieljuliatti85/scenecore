@@ -55,4 +55,34 @@ RSpec.describe AlbumPolicy do
       it { is_expected.not_to be_search }
     end
   end
+
+  describe "#publish?" do
+    context "when user is a member of the band" do
+      let(:user) { create(:user) }
+      before { create(:band_membership, band: band, user: user) }
+
+      it { is_expected.to be_publish }
+    end
+
+    context "when user is not in the band at all" do
+      let(:user) { create(:user) }
+
+      it { is_expected.not_to be_publish }
+    end
+  end
+
+  describe "#unpublish?" do
+    context "when user is a member of the band" do
+      let(:user) { create(:user) }
+      before { create(:band_membership, band: band, user: user) }
+
+      it { is_expected.to be_unpublish }
+    end
+
+    context "when user is not in the band at all" do
+      let(:user) { create(:user) }
+
+      it { is_expected.not_to be_unpublish }
+    end
+  end
 end

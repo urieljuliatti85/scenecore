@@ -28,10 +28,20 @@
     <div class="mt-10 flex flex-col gap-8">
       <% @band.albums.includes(:tracks).each do |album| %>
         <div>
-          <h2 class="text-lg font-semibold text-neutral-300 mb-3">
-            <%= album.title %>
-            <span class="text-xs uppercase tracking-wide text-neutral-500 ml-2"><%= album.status %></span>
-          </h2>
+          <div class="flex flex-wrap items-center gap-3 mb-3">
+            <h2 class="text-lg font-semibold text-neutral-300">
+              <%= album.title %>
+              <span class="text-xs uppercase tracking-wide text-neutral-500 ml-2"><%= album.status %></span>
+            </h2>
+
+            <% if policy(album).publish? && album.draft? %>
+              <%= button_to "Publish", publish_band_album_path(@band, album), method: :patch, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+            <% end %>
+
+            <% if policy(album).unpublish? && album.published? %>
+              <%= button_to "Unpublish", unpublish_band_album_path(@band, album), method: :patch, class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
+            <% end %>
+          </div>
           <ul class="flex flex-col gap-2">
             <% album.tracks.order(:track_number).each do |track| %>
               <li class="flex items-center justify-between gap-3 rounded-lg border border-neutral-800 px-4 py-3">
