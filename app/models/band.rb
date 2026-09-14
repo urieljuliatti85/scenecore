@@ -10,6 +10,7 @@ class Band < ApplicationRecord
   has_many :tracks, through: :albums
   has_many :follows, dependent: :destroy
   has_many :followers, through: :follows, source: :user
+  has_many :posts, dependent: :destroy
   has_one_attached :photo
 
   enum :status, { pending: "pending", approved: "approved", rejected: "rejected" },

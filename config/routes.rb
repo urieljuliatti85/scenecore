@@ -30,6 +30,12 @@ Rails.application.routes.draw do
     end
     resources :tracks, only: [ :edit, :update ]
     resource :follow, only: [ :create, :destroy ]
+    resources :posts, only: [ :new, :create, :edit, :update, :destroy ] do
+      member do
+        patch :publish
+        patch :unpublish
+      end
+    end
   end
 
   # Defines the root path route ("/")

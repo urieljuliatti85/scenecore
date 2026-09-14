@@ -50,6 +50,18 @@
       <% end %>
     </div>
   <% end %>
+
+  <% if @posts.any? %>
+    <div class="mt-10 flex flex-col gap-6">
+      <h2 class="text-lg font-semibold text-neutral-300">Posts</h2>
+      <% @posts.each do |post| %>
+        <article class="rounded-lg border border-neutral-800 px-4 py-4">
+          <h3 class="text-white font-semibold mb-2"><%= post.title %></h3>
+          <p class="text-neutral-300 text-sm whitespace-pre-line"><%= post.body %></p>
+        </article>
+      <% end %>
+    </div>
+  <% end %>
 </section>
 
 <section class="px-4 sm:px-6 pb-20 sm:pb-28 max-w-5xl mx-auto">

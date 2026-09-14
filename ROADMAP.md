@@ -522,6 +522,16 @@ A user can follow and unfollow a band and the relationship is persisted correctl
 
 # 10. Phase 7 — Exclusive Content
 
+Sliced (2026-09-14): implemented Posts with Public and Followers
+visibility, which have everything they depend on already built. Subscriber
+visibility exists in the `Post#visibility` enum and is fully wired into the
+authorization logic (a subscriber post is never shown to anyone, follower
+or not — see `PublicBandsController#visible_posts`), but there is no way
+for anyone to become a Subscriber yet — that depends on Phase 10
+(Subscriptions), which doesn't exist. Resume once Phase 9/10 land: add
+`subscribers` to the allowed visibilities once there's a real subscription
+to check against.
+
 ## Objective
 
 Allow bands to publish content with different visibility levels.
@@ -530,18 +540,18 @@ Allow bands to publish content with different visibility levels.
 
 * Public
 * Followers
-* Subscribers
+* Subscribers (schema/enum ready; not reachable yet — see note above)
 
 ## Tasks
 
 ### 10.1 Posts
 
-* [ ] Post model.
-* [ ] Create post.
-* [ ] Edit post.
-* [ ] Delete post.
-* [ ] Draft state.
-* [ ] Published state.
+* [x] Post model.
+* [x] Create post.
+* [x] Edit post.
+* [x] Delete post.
+* [x] Draft state.
+* [x] Published state.
 
 ### 10.2 Media
 
@@ -553,20 +563,21 @@ Allow bands to publish content with different visibility levels.
 
 ### 10.3 Visibility
 
-* [ ] Public content.
-* [ ] Follower content.
-* [ ] Subscriber content.
+* [x] Public content.
+* [x] Follower content.
+* [ ] Subscriber content (blocked on Phase 10 — Subscriptions).
 
 ### 10.4 Authorization
 
 Test:
 
-* [ ] Visitor cannot access follower content.
-* [ ] Non-follower cannot access follower content.
-* [ ] Non-subscriber cannot access subscriber content.
-* [ ] Subscriber can access subscriber content.
-* [ ] Band administrators can manage their band's content.
-* [ ] Another band's administrator cannot modify content.
+* [x] Visitor cannot access follower content.
+* [x] Non-follower cannot access follower content.
+* [ ] Non-subscriber cannot access subscriber content (no subscribers
+      exist yet to test against).
+* [ ] Subscriber can access subscriber content (blocked on Phase 10).
+* [x] Band administrators can manage their band's content.
+* [x] Another band's administrator cannot modify content.
 
 ### 10.5 File protection
 

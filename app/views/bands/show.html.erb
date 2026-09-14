@@ -11,6 +11,7 @@
   <div class="flex flex-wrap items-center gap-3">
     <% if policy(@band).show? %>
       <%= link_to "Add Album", new_band_album_path(@band), class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition" %>
+      <%= link_to "New Post", new_band_post_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
     <% end %>
 
     <% if policy(@band).update? %>
@@ -54,6 +55,33 @@
               </li>
             <% end %>
           </ul>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if policy(@band).show? && @band.posts.any? %>
+    <div class="mt-10 flex flex-col gap-4">
+      <h2 class="text-lg font-semibold text-neutral-300">Posts</h2>
+      <% @band.posts.order(created_at: :desc).each do |post| %>
+        <div class="rounded-lg border border-neutral-800 px-4 py-3">
+          <div class="flex flex-wrap items-center gap-3 mb-2">
+            <span class="text-white font-medium"><%= post.title %></span>
+            <span class="text-xs uppercase tracking-wide text-neutral-500"><%= post.status %></span>
+            <span class="text-xs uppercase tracking-wide text-neutral-500"><%= post.visibility %></span>
+
+            <% if policy(post).publish? && post.draft? %>
+              <%= button_to "Publish", publish_band_post_path(@band, post), method: :patch, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+            <% end %>
+
+            <% if policy(post).unpublish? && post.published? %>
+              <%= button_to "Unpublish", unpublish_band_post_path(@band, post), method: :patch, class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
+            <% end %>
+
+            <%= link_to "Edit", edit_band_post_path(@band, post), class: "text-sm text-neutral-400 hover:text-white transition" %>
+            <%= button_to "Delete", band_post_path(@band, post), method: :delete, class: "text-sm text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this post?" } } %>
+          </div>
+          <p class="text-neutral-300 text-sm"><%= post.body %></p>
         </div>
       <% end %>
     </div>
