@@ -1,12 +1,18 @@
-<h1><%= @band.name %> — Members</h1>
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl font-extrabold tracking-tight"><%= @band.name %> — Members</h1>
+    <%= link_to "Add member", new_band_band_membership_path(@band), class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition" %>
+  </div>
 
-<%= link_to "Add member", new_band_band_membership_path(@band) %>
-
-<ul>
-  <% @memberships.each do |membership| %>
-    <li>
-      <%= membership.user.name %> — <%= membership.role %>
-      <%= button_to "Remove", band_band_membership_path(@band, membership), method: :delete %>
-    </li>
-  <% end %>
-</ul>
+  <ul class="space-y-3">
+    <% @memberships.each do |membership| %>
+      <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-center justify-between gap-4">
+        <div>
+          <p class="font-semibold text-white"><%= membership.user.name %></p>
+          <p class="text-xs uppercase tracking-wide text-neutral-500"><%= membership.role %></p>
+        </div>
+        <%= button_to "Remove", band_band_membership_path(@band, membership), method: :delete, class: "rounded-full border border-red-900 text-red-400 text-sm font-semibold px-4 py-2 hover:border-red-700 transition cursor-pointer" %>
+      </li>
+    <% end %>
+  </ul>
+</section>

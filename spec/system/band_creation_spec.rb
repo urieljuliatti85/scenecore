@@ -15,6 +15,6 @@ RSpec.describe "Band creation", type: :system do
     click_button "Create Band"
 
     expect(page).to have_content("The Testers")
-    expect(page).to have_content("pending")
+    expect(page).to have_content(/pending/i)
   end
 end

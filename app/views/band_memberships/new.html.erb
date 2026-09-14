@@ -1,23 +1,25 @@
-<h1>Add member to <%= @band.name %></h1>
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-xl mx-auto">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-8">Add member to <%= @band.name %></h1>
 
-<%= form_with model: @membership, url: band_band_memberships_path(@band) do |form| %>
-  <% if @membership.errors.any? %>
-    <ul>
-      <% @membership.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
-      <% end %>
-    </ul>
+  <%= form_with model: @membership, url: band_band_memberships_path(@band), class: "flex flex-col gap-5" do |form| %>
+    <% if @membership.errors.any? %>
+      <ul class="rounded-xl border border-red-900 bg-red-950/40 text-red-400 text-sm p-4 space-y-1">
+        <% @membership.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <div>
+      <%= form.label :user_id, "User", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.collection_select :user_id, User.all, :id, :email, {}, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    </div>
+
+    <div>
+      <%= form.label :role, class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.select :role, BandMembership.roles.keys, {}, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    </div>
+
+    <%= form.submit "Add member", class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition cursor-pointer self-start" %>
   <% end %>
-
-  <div>
-    <%= form.label :user_id, "User" %>
-    <%= form.collection_select :user_id, User.all, :id, :email %>
-  </div>
-
-  <div>
-    <%= form.label :role %>
-    <%= form.select :role, BandMembership.roles.keys %>
-  </div>
-
-  <%= form.submit "Add member" %>
-<% end %>
+</section>
