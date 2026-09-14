@@ -103,6 +103,17 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).to include("No Link Track")
       expect(response.body).not_to include("open.spotify.com/embed")
     end
+
+    it "does not leak a draft track's Spotify link, even inside a published album" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band)
+      create(:track, album: album, title: "Secret Track", spotify_url: "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Secret Track")
+      expect(response.body).not_to include("4uLU6hMCjMI75M1A2tKUQC")
+    end
   end
 
   describe "route precedence" do
