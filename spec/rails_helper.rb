@@ -12,18 +12,13 @@ require 'capybara/rspec'
 require 'selenium-webdriver'
 # Add additional requires below this line. Rails is not loaded until this point!
 
-# The stock :headless_chrome driver (Selenium::WebDriver::Chrome::Options
-# with just --headless) is a known source of intermittent, unexplainable
-# lost clicks on memory-constrained CI containers: Chrome's default shared
-# memory area is /dev/shm, which GitHub Actions containers cap at 64MB.
-# When Chrome runs low on shm under load it can silently drop or corrupt
-# renderer IPC (including input events), which looks exactly like a click
-# "not registering" with no error anywhere — the symptom we chased across
-# three earlier attempts in band_member_invite_spec before finding this.
-# --disable-dev-shm-usage makes Chrome use /tmp instead, which isn't
-# capped. --no-sandbox is required for Chrome to run at all as root in a
-# container. This is the standard fix documented across the Rails/Capybara
-# community for this exact failure signature on containerized CI.
+# --disable-dev-shm-usage makes Chrome use /tmp instead of the 64MB-capped
+# /dev/shm that GitHub Actions containers impose. Cheap insurance against
+# shm-pressure issues under headless Chrome, but NOT a confirmed fix for
+# this project's CI system-spec flake (see band_member_invite_spec for
+# what's actually known about it) — kept because it's harmless, not
+# because it was proven to help. --no-sandbox is required for Chrome to
+# run at all as root in a container.
 Capybara.register_driver :ci_headless_chrome do |app|
   options = Selenium::WebDriver::Chrome::Options.new
   options.add_argument("--headless=new")
@@ -69,26 +64,6 @@ RSpec.configure do |config|
       driven_by :selenium, using: :headless_chrome
     end
   end
-
-  # Turbo Drive intercepts link/form clicks and issues its own fetch()
-  # request instead of a normal browser navigation. On the CI runner this
-  # appears to be where clicks silently go missing (--disable-dev-shm-usage
-  # alone didn't fully fix it — see band_member_invite_spec and
-  # band_creation_spec). Disabling Turbo Drive for system specs makes every
-  # link/form interaction a plain HTML navigation, which every app
-  # controller already supports (none of them render turbo_stream
-  # responses), so this doesn't change what's being tested — only how the
-  # browser gets there. Injected after each `visit` rather than once at
-  # boot, since a fresh page load re-evaluates Turbo's own script and would
-  # otherwise turn Drive back on.
-  module DisableTurboDriveInSystemSpecs
-    def visit(*)
-      super
-      page.execute_script("window.Turbo && (Turbo.session.drive = false)")
-    end
-  end
-
-  config.include DisableTurboDriveInSystemSpecs, type: :system
 
   # CI runners are slower than a local machine (cold asset/bootsnap caches,
   # shared CPU), so give Capybara more room than its 2-second default before
