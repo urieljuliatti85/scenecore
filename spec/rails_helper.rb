@@ -9,7 +9,24 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 # return unless Rails.env.test?
 require 'rspec/rails'
 require 'capybara/rspec'
+require 'selenium-webdriver'
 # Add additional requires below this line. Rails is not loaded until this point!
+
+# --disable-dev-shm-usage makes Chrome use /tmp instead of the 64MB-capped
+# /dev/shm that GitHub Actions containers impose. Cheap insurance against
+# shm-pressure issues under headless Chrome, but NOT a confirmed fix for
+# this project's CI system-spec flake (see band_member_invite_spec for
+# what's actually known about it) — kept because it's harmless, not
+# because it was proven to help. --no-sandbox is required for Chrome to
+# run at all as root in a container.
+Capybara.register_driver :ci_headless_chrome do |app|
+  options = Selenium::WebDriver::Chrome::Options.new
+  options.add_argument("--headless=new")
+  options.add_argument("--no-sandbox")
+  options.add_argument("--disable-dev-shm-usage")
+  options.add_argument("--disable-gpu")
+  Capybara::Selenium::Driver.new(app, browser: :chrome, options: options)
+end
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
@@ -41,8 +58,17 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :system
 
   config.before(:each, type: :system) do
-    driven_by :selenium, using: :headless_chrome
+    if ENV["CI"].present?
+      driven_by :ci_headless_chrome
+    else
+      driven_by :selenium, using: :headless_chrome
+    end
   end
+
+  # CI runners are slower than a local machine (cold asset/bootsnap caches,
+  # shared CPU), so give Capybara more room than its 2-second default before
+  # giving up on a finder.
+  Capybara.default_max_wait_time = 5 if ENV["CI"].present?
 
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
