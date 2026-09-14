@@ -24,6 +24,21 @@ RSpec.describe "Tracks", type: :request do
 
       expect(response).to redirect_to(root_path)
     end
+
+    it "returns 404 when the track belongs to a different band than the one in the URL" do
+      band_a = create(:band)
+      user = create(:user)
+      create(:band_membership, :administrator, band: band_a, user: user)
+
+      band_b = create(:band)
+      album_b = create(:album, band: band_b)
+      track_b = create(:track, album: album_b)
+      sign_in user
+
+      get edit_band_track_path(band_a, track_b)
+
+      expect(response).to have_http_status(:not_found)
+    end
   end
 
   describe "PATCH /bands/:band_id/tracks/:id" do
@@ -77,6 +92,22 @@ RSpec.describe "Tracks", type: :request do
 
       expect(track.reload.spotify_url).to be_nil
       expect(response).to redirect_to(root_path)
+    end
+
+    it "returns 404 when the track belongs to a different band than the one in the URL" do
+      band_a = create(:band)
+      user = create(:user)
+      create(:band_membership, :administrator, band: band_a, user: user)
+
+      band_b = create(:band)
+      album_b = create(:album, band: band_b)
+      track_b = create(:track, album: album_b, spotify_url: nil)
+      sign_in user
+
+      patch band_track_path(band_a, track_b), params: { track: { spotify_url: "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC" } }
+
+      expect(response).to have_http_status(:not_found)
+      expect(track_b.reload.spotify_url).to be_nil
     end
   end
 end

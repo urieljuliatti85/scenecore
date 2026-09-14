@@ -418,21 +418,22 @@ Allow bands to manage and publish music.
 An album groups a band's tracks into a release. A track always belongs to
 an album — there is no ungrouped track.
 
-* [ ] Album model.
-* [ ] Album belongs to band.
-* [ ] Create album.
-* [ ] Edit album.
+* [x] Album model.
+* [x] Album belongs to band.
+* [x] Create album (imported from Spotify search; see `AlbumsController`).
+* [ ] Edit album (no edit/update route exists yet — albums are
+      created via Spotify import and otherwise only published/unpublished).
 * [ ] Album cover.
-* [ ] Album publication state.
+* [x] Album publication state.
 
 ### 5.2 Tracks
 
-* [ ] Track model.
-* [ ] Track belongs to album (and, through it, to a band).
-* [ ] Track title.
-* [ ] Track number (position within the album).
-* [ ] Draft state.
-* [ ] Published state.
+* [x] Track model.
+* [x] Track belongs to album (and, through it, to a band).
+* [x] Track title.
+* [x] Track number (position within the album).
+* [x] Draft state.
+* [x] Published state.
 
 ### 5.3 Audio (via Spotify link, no file upload)
 
@@ -441,9 +442,9 @@ its corresponding Spotify track, and playback happens through Spotify's
 official embed. No Active Storage attachment, no file upload, no audio
 file validation.
 
-* [ ] Track stores a Spotify track URL.
-* [ ] Validate the URL matches Spotify's track URL format.
-* [ ] Handle a track with no Spotify link yet (allowed while in draft).
+* [x] Track stores a Spotify track URL.
+* [x] Validate the URL matches Spotify's track URL format.
+* [x] Handle a track with no Spotify link yet (allowed while in draft).
 
 ### 5.4 Publishing
 
@@ -470,9 +471,15 @@ action on a track.
 
 ### 5.6 Security
 
-* [ ] Verify unpublished tracks are not exposed to visitors (no Spotify
+Audited the existing implementation; no production code changes were
+needed. Track has no standalone `show` route (only `edit`/`update`,
+both authenticated and band-scoped), so a draft track is only ever
+reachable through `GET /:slug`, which already filters to published
+albums/tracks.
+
+* [x] Verify unpublished tracks are not exposed to visitors (no Spotify
       link leaked, no route to reach the track).
-* [ ] Verify authorization server-side.
+* [x] Verify authorization server-side.
 
 ## Exit criteria
 
