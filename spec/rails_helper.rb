@@ -70,6 +70,26 @@ RSpec.configure do |config|
     end
   end
 
+  # Turbo Drive intercepts link/form clicks and issues its own fetch()
+  # request instead of a normal browser navigation. On the CI runner this
+  # appears to be where clicks silently go missing (--disable-dev-shm-usage
+  # alone didn't fully fix it — see band_member_invite_spec and
+  # band_creation_spec). Disabling Turbo Drive for system specs makes every
+  # link/form interaction a plain HTML navigation, which every app
+  # controller already supports (none of them render turbo_stream
+  # responses), so this doesn't change what's being tested — only how the
+  # browser gets there. Injected after each `visit` rather than once at
+  # boot, since a fresh page load re-evaluates Turbo's own script and would
+  # otherwise turn Drive back on.
+  module DisableTurboDriveInSystemSpecs
+    def visit(*)
+      super
+      page.execute_script("window.Turbo && (Turbo.session.drive = false)")
+    end
+  end
+
+  config.include DisableTurboDriveInSystemSpecs, type: :system
+
   # CI runners are slower than a local machine (cold asset/bootsnap caches,
   # shared CPU), so give Capybara more room than its 2-second default before
   # giving up on a finder.
