@@ -3,6 +3,10 @@ class AlbumPolicy < ApplicationPolicy
     member?
   end
 
+  def update?
+    member?
+  end
+
   def search?
     member?
   end

@@ -1,0 +1,25 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-xl mx-auto">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-2">Edit album</h1>
+  <p class="text-neutral-500 mb-8"><%= @band.name %> · <%= @album.title %></p>
+
+  <%= form_with model: [ @band, @album ], class: "flex flex-col gap-5" do |form| %>
+    <% if @album.errors.any? %>
+      <ul class="rounded-xl border border-red-900 bg-red-950/40 text-red-400 text-sm p-4 space-y-1">
+        <% @album.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <div>
+      <%= form.label :cover, class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <p class="text-xs text-neutral-500 mb-1">PNG, JPEG or WebP, up to 5MB</p>
+      <% if @album.cover.attached? && @album.cover.persisted? %>
+        <%= image_tag @album.cover, class: "w-32 h-32 object-cover rounded-lg mb-2" %>
+      <% end %>
+      <%= form.file_field :cover, accept: "image/png,image/jpeg,image/webp", class: "w-full text-sm text-neutral-300 file:mr-4 file:rounded-full file:border-0 file:bg-yellow-400 file:text-black file:font-semibold file:px-4 file:py-2 file:cursor-pointer" %>
+    </div>
+
+    <%= form.submit "Save changes", class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition cursor-pointer self-start" %>
+  <% end %>
+</section>

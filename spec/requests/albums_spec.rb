@@ -221,4 +221,58 @@ RSpec.describe "Albums", type: :request do
       expect(response).to redirect_to(root_path)
     end
   end
+
+  describe "PATCH /bands/:band_id/albums/:id" do
+    it "allows a band member to attach a cover" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      album = create(:album, band: band)
+      sign_in user
+
+      cover = fixture_file_upload("band_photo.png", "image/png")
+
+      patch band_album_path(band, album), params: { album: { cover: cover } }
+
+      expect(response).to redirect_to(band_path(band))
+      expect(album.reload.cover).to be_attached
+    end
+
+    it "rejects a non-image file and re-renders the form without erroring" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      album = create(:album, band: band)
+      sign_in user
+
+      invalid_file = fixture_file_upload("invalid_photo.txt", "text/plain")
+
+      patch band_album_path(band, album), params: { album: { cover: invalid_file } }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(album.reload.cover).not_to be_attached
+    end
+
+    it "requires authentication" do
+      band = create(:band)
+      album = create(:album, band: band)
+
+      patch band_album_path(band, album), params: { album: { cover: fixture_file_upload("band_photo.png", "image/png") } }
+
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it "prevents a member of another band from editing the album" do
+      band = create(:band)
+      album = create(:album, band: band)
+      outsider = create(:user)
+      create(:band_membership, band: create(:band), user: outsider)
+      sign_in outsider
+
+      patch band_album_path(band, album), params: { album: { cover: fixture_file_upload("band_photo.png", "image/png") } }
+
+      expect(response).to redirect_to(root_path)
+      expect(album.reload.cover).not_to be_attached
+    end
+  end
 end

@@ -90,6 +90,45 @@ RSpec.describe "Pages", type: :request do
 
         expect(response.body).not_to include("aria-label=\"Spotify\"")
       end
+
+      it "shows up to 3 published albums from any approved band" do
+        create(:band, :approved, name: "Farscape")
+        band_two = create(:band, :approved, name: "Other Band")
+        create(:album, :published, band: band_two, title: "Great Album")
+
+        get root_path
+
+        expect(response.body).to include("Feature Music Albums")
+        expect(response.body).to include("Great Album")
+        expect(response.body).to include("Other Band")
+      end
+
+      it "does not show a draft album" do
+        band = create(:band, :approved, name: "Farscape")
+        create(:album, band: band, title: "Secret Album")
+
+        get root_path
+
+        expect(response.body).not_to include("Secret Album")
+      end
+
+      it "does not show a published album from a non-approved band" do
+        create(:band, :approved, name: "Farscape")
+        other_band = create(:band, name: "Pending Band Two")
+        create(:album, :published, band: other_band, title: "Hidden Album")
+
+        get root_path
+
+        expect(response.body).not_to include("Hidden Album")
+      end
+
+      it "does not show the albums section when there are no published albums" do
+        create(:band, :approved, name: "Farscape")
+
+        get root_path
+
+        expect(response.body).not_to include("Feature Music Albums")
+      end
     end
   end
 end

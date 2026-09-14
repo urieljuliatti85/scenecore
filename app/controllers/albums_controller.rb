@@ -1,10 +1,24 @@
 class AlbumsController < ApplicationController
   before_action :set_band
-  before_action :set_album, only: [ :publish, :unpublish ]
+  before_action :set_album, only: [ :edit, :update, :publish, :unpublish ]
 
   def new
     @album = @band.albums.new
     authorize @album
+  end
+
+  def edit
+    authorize @album
+  end
+
+  def update
+    authorize @album
+
+    if @album.update(album_params)
+      redirect_to band_path(@band), notice: "Album updated."
+    else
+      render :edit, status: :unprocessable_entity
+    end
   end
 
   def search
@@ -79,5 +93,9 @@ class AlbumsController < ApplicationController
 
   def set_album
     @album = @band.albums.find(params[:id])
+  end
+
+  def album_params
+    params.require(:album).permit(:cover)
   end
 end
