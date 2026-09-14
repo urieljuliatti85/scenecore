@@ -1,55 +1,59 @@
 <% if @featured_band %>
-  <section class="px-4 sm:px-6 py-16 sm:py-24 max-w-7xl mx-auto">
-    <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-      <div>
-        <p class="text-xs sm:text-sm tracking-[0.2em] text-neutral-500 uppercase mb-4">Featured Band</p>
+  <section class="px-4 sm:px-6 py-10 sm:py-16 max-w-7xl mx-auto">
+    <div class="rounded-[2rem] sm:rounded-[2.5rem] bg-gradient-to-br from-neutral-800 via-neutral-900 to-black p-6 sm:p-10 shadow-2xl shadow-black/40">
+      <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+        <div>
+          <p class="text-xs sm:text-sm tracking-[0.2em] text-neutral-500 uppercase mb-4">Featured Band</p>
 
-        <h1 class="text-5xl sm:text-6xl font-extrabold tracking-tight mb-6">
-          <%= @featured_band.name %>
-        </h1>
+          <h1 class="text-5xl sm:text-6xl font-extrabold tracking-tight mb-6">
+            <%= @featured_band.name %>
+          </h1>
 
-        <% if @featured_band.description.present? %>
-          <p class="text-neutral-300 text-base sm:text-lg mb-10 max-w-xl">
-            <%= @featured_band.description %>
-          </p>
-        <% end %>
-
-        <div class="flex items-center gap-4 mb-8">
-          <%= link_to "View band", public_band_path(@featured_band.slug), class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
-          <% unless user_signed_in? %>
-            <%= link_to "Sign up", new_user_registration_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
+          <% if @featured_band.description.present? %>
+            <p class="text-neutral-300 text-base sm:text-lg mb-10 max-w-xl">
+              <%= @featured_band.description %>
+            </p>
           <% end %>
+
+          <div class="flex items-center gap-4 mb-8">
+            <%= link_to "View band", public_band_path(@featured_band.slug), class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
+            <% unless user_signed_in? %>
+              <%= link_to "Sign up", new_user_registration_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
+            <% end %>
+          </div>
+
+          <%= render "shared/social_links", band: @featured_band %>
         </div>
 
-        <%= render "shared/social_links", band: @featured_band %>
+        <% if @featured_band.photo.attached? %>
+          <div class="aspect-square lg:aspect-[4/3] rounded-3xl overflow-hidden bg-black/30">
+            <%= image_tag @featured_band.photo, class: "w-full h-full object-cover" %>
+          </div>
+        <% end %>
       </div>
 
-      <% if @featured_band.photo.attached? %>
-        <div class="aspect-square lg:aspect-[4/3] rounded-3xl overflow-hidden bg-neutral-900">
-          <%= image_tag @featured_band.photo, class: "w-full h-full object-cover" %>
-        </div>
-      <% end %>
+      <div class="mt-10">
+        <%= render "shared/coming_soon_cards" %>
+      </div>
     </div>
   </section>
-
-  <section class="px-4 sm:px-6 pb-20 sm:pb-28 max-w-7xl mx-auto">
-    <%= render "shared/coming_soon_cards" %>
-  </section>
 <% else %>
-  <section class="px-4 sm:px-6 py-20 sm:py-32 text-center max-w-3xl mx-auto">
-    <%= image_tag "logo.png", alt: "SceneCore", class: "h-20 sm:h-28 w-auto mx-auto mb-8" %>
+  <section class="px-4 sm:px-6 py-10 sm:py-16 max-w-3xl mx-auto">
+    <div class="rounded-[2rem] sm:rounded-[2.5rem] bg-gradient-to-br from-neutral-800 via-neutral-900 to-black p-10 sm:p-16 shadow-2xl shadow-black/40 text-center">
+      <%= image_tag "logo.png", alt: "SceneCore", class: "h-20 sm:h-28 w-auto mx-auto mb-8" %>
 
-    <p class="text-neutral-400 text-base sm:text-lg mb-10">
-      A platform for independent bands and their fans.
-    </p>
+      <p class="text-neutral-400 text-base sm:text-lg mb-10">
+        A platform for independent bands and their fans.
+      </p>
 
-    <div class="flex items-center justify-center gap-4">
-      <% if user_signed_in? %>
-        <%= link_to "Your bands", bands_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
-      <% else %>
-        <%= link_to "Sign up", new_user_registration_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
-        <%= link_to "Sign in", new_user_session_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
-      <% end %>
+      <div class="flex items-center justify-center gap-4">
+        <% if user_signed_in? %>
+          <%= link_to "Your bands", bands_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
+        <% else %>
+          <%= link_to "Sign up", new_user_registration_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
+          <%= link_to "Sign in", new_user_session_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
+        <% end %>
+      </div>
     </div>
   </section>
 <% end %>
