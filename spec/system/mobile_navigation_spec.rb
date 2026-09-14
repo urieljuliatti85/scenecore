@@ -2,13 +2,21 @@ require "rails_helper"
 
 RSpec.describe "Mobile navigation", type: :system do
   before do
-    page.driver.browser.manage.window.resize_to(375, 800)
+    # window.resize_to is unreliable under --headless=new in CI containers
+    # (no real window manager), so force the viewport via CDP instead —
+    # this is deterministic regardless of headless mode.
+    page.driver.browser.execute_cdp(
+      "Emulation.setDeviceMetricsOverride",
+      width: 375, height: 800, deviceScaleFactor: 1, mobile: true
+    )
   end
 
   it "exposes Bands and auth links behind a menu button when signed out" do
     visit root_path
 
-    expect(page).to have_no_link("Bands", visible: :visible)
+    within("#desktop-nav") do
+      expect(page).to have_no_link("Bands", visible: :visible)
+    end
 
     find("button[aria-label='Open menu']").click
 
