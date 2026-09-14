@@ -1,0 +1,42 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-6">Admin</h1>
+  <%= render "admin/nav" %>
+
+  <div class="flex items-center justify-between mb-8">
+    <h2 class="text-xl font-semibold">Categories</h2>
+    <%= link_to "New category", new_admin_category_path, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-2 hover:bg-yellow-300 transition" %>
+  </div>
+
+  <% if @root_categories.empty? %>
+    <p class="text-neutral-500">No categories yet.</p>
+  <% else %>
+    <ul class="space-y-3">
+      <% @root_categories.each do |category| %>
+        <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-white"><%= category.name %></span>
+            <div class="flex items-center gap-3">
+              <%= link_to "Add subcategory", new_admin_category_path(parent_id: category.id), class: "text-sm text-neutral-400 hover:text-white transition" %>
+              <%= link_to "Edit", edit_admin_category_path(category), class: "text-sm text-neutral-400 hover:text-white transition" %>
+              <%= button_to "Delete", admin_category_path(category), method: :delete, class: "text-sm text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this category?" } } %>
+            </div>
+          </div>
+
+          <% if category.subcategories.any? %>
+            <ul class="mt-3 pl-4 border-l border-neutral-800 space-y-2">
+              <% category.subcategories.each do |subcategory| %>
+                <li class="flex items-center justify-between">
+                  <span class="text-neutral-300"><%= subcategory.name %></span>
+                  <div class="flex items-center gap-3">
+                    <%= link_to "Edit", edit_admin_category_path(subcategory), class: "text-sm text-neutral-400 hover:text-white transition" %>
+                    <%= button_to "Delete", admin_category_path(subcategory), method: :delete, class: "text-sm text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this category?" } } %>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

@@ -5,8 +5,12 @@ class PublicBandsController < ApplicationController
 
   def index
     @sort = SORT_OPTIONS.include?(params[:sort]) ? params[:sort] : "recent"
+    @category = Category.find_by(id: params[:category_id])
+    @categories = Category.roots.order(:name)
 
-    bands = Band.approved.with_attached_photo.includes(:followers).to_a
+    bands = Band.approved.with_attached_photo.includes(:followers, :category)
+    bands = bands.where(category_id: @category.id) if @category
+    bands = bands.to_a
     bands = @sort == "followers" ? bands.sort_by { |band| -band.followers_count } : bands.sort_by(&:created_at).reverse
 
     @featured_band = bands.first
@@ -14,7 +18,7 @@ class PublicBandsController < ApplicationController
   end
 
   def show
-    @band = Band.approved.find_by!(slug: params[:slug])
+    @band = Band.approved.includes(:category).find_by!(slug: params[:slug])
     @albums = @band.albums.published.includes(:tracks)
     @following = current_user.present? && @band.follows.exists?(user: current_user)
     @posts = visible_posts(@band)

@@ -173,6 +173,32 @@ RSpec.describe "Bands", type: :request do
     end
   end
 
+  describe "PATCH /bands/:id (category)" do
+    it "allows the band's administrator to set the band's category" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, :administrator, band: band, user: user)
+      category = create(:category, name: "Rock")
+      sign_in user
+
+      patch band_path(band), params: { band: { category_id: category.id } }
+
+      expect(band.reload.category).to eq(category)
+    end
+
+    it "allows clearing the band's category" do
+      user = create(:user)
+      category = create(:category)
+      band = create(:band, category: category)
+      create(:band_membership, :administrator, band: band, user: user)
+      sign_in user
+
+      patch band_path(band), params: { band: { category_id: "" } }
+
+      expect(band.reload.category).to be_nil
+    end
+  end
+
   describe "PATCH /bands/:id/approve" do
     it "allows a platform admin to approve a band" do
       admin = create(:user, :platform_admin)

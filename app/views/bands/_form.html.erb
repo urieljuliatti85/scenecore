@@ -18,6 +18,11 @@
   </div>
 
   <div>
+    <%= form.label :category_id, "Category", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.select :category_id, category_select_options, { include_blank: "No category" }, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+  </div>
+
+  <div>
     <%= form.label :photo, class: "block text-sm font-medium text-neutral-300 mb-1" %>
     <p class="text-xs text-neutral-500 mb-1">PNG, JPEG or WebP, up to 5MB</p>
     <% if band.photo.attached? && band.photo.persisted? %>

@@ -1,6 +1,8 @@
 <section class="px-4 sm:px-6 py-10 sm:py-16 max-w-5xl mx-auto">
   <div class="rounded-[2rem] sm:rounded-[2.5rem] bg-gradient-to-br from-neutral-800 via-neutral-900 to-black p-6 sm:p-10 shadow-2xl shadow-black/40">
-    <p class="text-xs sm:text-sm tracking-[0.2em] text-neutral-500 uppercase mb-4">Band</p>
+    <p class="text-xs sm:text-sm tracking-[0.2em] text-neutral-500 uppercase mb-4">
+      Band<% if @band.category %> · <%= @band.category.name %><% end %>
+    </p>
 
     <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight mb-6">
       <%= @band.name %>

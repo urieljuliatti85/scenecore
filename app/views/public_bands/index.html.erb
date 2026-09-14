@@ -1,12 +1,21 @@
 <section class="px-4 sm:px-6 py-12 sm:py-16 max-w-6xl mx-auto">
-  <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+  <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
     <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Bands</h1>
 
     <div class="flex items-center gap-2">
-      <%= link_to "Recently added", discover_bands_path(sort: "recent"), class: "rounded-full px-4 py-2 text-sm font-semibold transition #{@sort == "recent" ? "bg-yellow-400 text-black" : "border border-neutral-700 text-neutral-300 hover:border-neutral-500"}" %>
-      <%= link_to "Most followed", discover_bands_path(sort: "followers"), class: "rounded-full px-4 py-2 text-sm font-semibold transition #{@sort == "followers" ? "bg-yellow-400 text-black" : "border border-neutral-700 text-neutral-300 hover:border-neutral-500"}" %>
+      <%= link_to "Recently added", discover_bands_path(sort: "recent", category_id: @category&.id), class: "rounded-full px-4 py-2 text-sm font-semibold transition #{@sort == "recent" ? "bg-yellow-400 text-black" : "border border-neutral-700 text-neutral-300 hover:border-neutral-500"}" %>
+      <%= link_to "Most followed", discover_bands_path(sort: "followers", category_id: @category&.id), class: "rounded-full px-4 py-2 text-sm font-semibold transition #{@sort == "followers" ? "bg-yellow-400 text-black" : "border border-neutral-700 text-neutral-300 hover:border-neutral-500"}" %>
     </div>
   </div>
+
+  <% if @categories.any? %>
+    <div class="flex flex-wrap items-center gap-2 mb-8">
+      <%= link_to "All", discover_bands_path(sort: @sort), class: "rounded-full px-3 py-1.5 text-xs font-semibold transition #{@category.nil? ? "bg-white text-black" : "border border-neutral-800 text-neutral-400 hover:border-neutral-600"}" %>
+      <% @categories.each do |category| %>
+        <%= link_to category.name, discover_bands_path(sort: @sort, category_id: category.id), class: "rounded-full px-3 py-1.5 text-xs font-semibold transition #{@category == category ? "bg-white text-black" : "border border-neutral-800 text-neutral-400 hover:border-neutral-600"}" %>
+      <% end %>
+    </div>
+  <% end %>
 
   <% if @featured_band.nil? %>
     <p class="text-neutral-500">No bands to discover yet.</p>
@@ -20,6 +29,9 @@
         <span class="absolute top-4 left-4 text-[10px] uppercase tracking-wide text-black bg-yellow-400 rounded-full px-3 py-1 font-semibold">Top band</span>
 
         <div class="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black via-black/70 to-transparent">
+          <% if @featured_band.category %>
+            <p class="text-xs uppercase tracking-wide text-neutral-400 mb-1"><%= @featured_band.category.name %></p>
+          <% end %>
           <p class="text-2xl font-bold text-white"><%= @featured_band.name %></p>
           <p class="text-sm text-neutral-300"><%= pluralize(@featured_band.followers_count, "follower") %></p>
         </div>
@@ -35,6 +47,9 @@
             <% end %>
           </div>
           <div class="p-4">
+            <% if band.category %>
+              <p class="text-xs uppercase tracking-wide text-neutral-500 mb-1"><%= band.category.name %></p>
+            <% end %>
             <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= band.name %></p>
             <p class="text-sm text-neutral-500"><%= pluralize(band.followers_count, "follower") %></p>
           </div>

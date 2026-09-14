@@ -12,6 +12,7 @@ class Band < ApplicationRecord
   has_many :followers, through: :follows, source: :user
   has_many :posts, dependent: :destroy
   has_many :admin_action_logs, as: :subject, dependent: :destroy
+  belongs_to :category, optional: true
   has_one_attached :photo
 
   enum :status, { pending: "pending", approved: "approved", rejected: "rejected", suspended: "suspended" },

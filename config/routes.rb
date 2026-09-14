@@ -22,6 +22,7 @@ Rails.application.routes.draw do
         patch :unpublish
       end
     end
+    resources :categories, only: [ :index, :new, :create, :edit, :update, :destroy ]
   end
 
   resources :bands, only: [ :index, :new, :create, :show, :edit, :update ] do
