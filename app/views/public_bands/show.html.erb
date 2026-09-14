@@ -46,6 +46,10 @@
         <span class="text-xl font-bold text-white"><%= @band.followers_count %></span>
       </div>
     </div>
+
+    <div class="mt-6">
+      <%= render "shared/coming_soon_cards" %>
+    </div>
   </div>
 
   <% if @albums.any? %>
@@ -83,8 +87,4 @@
       <% end %>
     </div>
   <% end %>
-</section>
-
-<section class="px-4 sm:px-6 pb-20 sm:pb-28 max-w-5xl mx-auto">
-  <%= render "shared/coming_soon_cards" %>
 </section>
