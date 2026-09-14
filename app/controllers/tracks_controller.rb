@@ -1,5 +1,6 @@
 class TracksController < ApplicationController
   before_action :set_band
+  before_action :set_track, only: [ :edit, :update ]
 
   def new
     @track = @band.tracks.new
@@ -17,13 +18,31 @@ class TracksController < ApplicationController
     end
   end
 
+  def edit
+    authorize @track
+  end
+
+  def update
+    authorize @track
+
+    if @track.update(track_params)
+      redirect_to band_path(@band), notice: "Track updated."
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def set_band
     @band = Band.find(params[:band_id])
   end
 
+  def set_track
+    @track = @band.tracks.find(params[:id])
+  end
+
   def track_params
-    params.require(:track).permit(:title)
+    params.require(:track).permit(:title, :spotify_url)
   end
 end

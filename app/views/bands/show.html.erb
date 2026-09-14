@@ -23,4 +23,21 @@
       <%= button_to "Reject", reject_band_path(@band), method: :patch, class: "rounded-full border border-red-900 text-red-400 font-semibold px-5 py-2.5 hover:border-red-700 transition cursor-pointer" %>
     <% end %>
   </div>
+
+  <% if policy(@band).show? && @band.tracks.any? %>
+    <div class="mt-10">
+      <h2 class="text-lg font-semibold text-neutral-300 mb-3">Tracks</h2>
+      <ul class="flex flex-col gap-2">
+        <% @band.tracks.each do |track| %>
+          <li class="flex items-center justify-between gap-3 rounded-lg border border-neutral-800 px-4 py-3">
+            <div>
+              <span class="text-white"><%= track.title %></span>
+              <span class="text-xs uppercase tracking-wide text-neutral-500 ml-2"><%= track.status %></span>
+            </div>
+            <%= link_to "Edit", edit_band_track_path(@band, track), class: "text-sm text-neutral-400 hover:text-white transition" %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
 </section>
