@@ -134,25 +134,25 @@ Define exactly what the MVP is before implementation begins.
 
 ### 0.1 Define product proposition
 
-* [ ] Define the problem.
-* [ ] Define the target audience.
-* [ ] Define the product solution.
-* [ ] Define the core value proposition.
+* [x] Define the problem.
+* [x] Define the target audience.
+* [x] Define the product solution.
+* [x] Define the core value proposition.
 
 ### 0.2 Define user types
 
-* [ ] Visitor
-* [ ] Fan
-* [ ] Band
-* [ ] Band administrator
-* [ ] Platform administrator
+* [x] Visitor
+* [x] Fan
+* [x] Band
+* [x] Band administrator
+* [x] Platform administrator
 
 ### 0.3 Define core journeys
 
 * [ ] Discover a band.
 * [ ] View a band's public page.
 * [ ] Listen to music.
-* [ ] Create an account.
+* [x] Create an account.
 * [ ] Follow a band.
 * [ ] Access exclusive content.
 * [ ] Purchase a product.
@@ -204,56 +204,56 @@ Create a stable Rails foundation before implementing business features.
 
 ### 1.1 Application setup
 
-* [ ] Verify Ruby version.
-* [ ] Verify Rails version.
-* [ ] Configure PostgreSQL.
-* [ ] Configure environment variables.
-* [ ] Configure development environment.
+* [x] Verify Ruby version.
+* [x] Verify Rails version.
+* [x] Configure PostgreSQL.
+* [x] Configure environment variables.
+* [x] Configure development environment.
 * [ ] Configure production environment.
 
 ### 1.2 Frontend
 
-* [ ] Configure Hotwire.
-* [ ] Configure Stimulus.
-* [ ] Configure Tailwind CSS.
-* [ ] Establish basic layout.
+* [x] Configure Hotwire.
+* [x] Configure Stimulus.
+* [x] Configure Tailwind CSS.
+* [x] Establish basic layout.
 * [ ] Establish responsive foundation.
 
 ### 1.3 Storage
 
-* [ ] Configure Active Storage.
-* [ ] Define development storage.
+* [x] Configure Active Storage.
+* [x] Define development storage.
 * [ ] Define staging storage.
 * [ ] Define production storage.
 
 ### 1.4 Testing
 
-* [ ] Configure test framework.
-* [ ] Configure system tests.
-* [ ] Configure request tests.
-* [ ] Configure test database.
+* [x] Configure test framework.
+* [x] Configure system tests.
+* [x] Configure request tests.
+* [x] Configure test database.
 
 ### 1.5 Quality
 
-* [ ] Configure RuboCop.
-* [ ] Configure security checks.
-* [ ] Configure CI.
-* [ ] Verify CI runs tests.
-* [ ] Verify CI runs lint.
+* [x] Configure RuboCop.
+* [x] Configure security checks.
+* [x] Configure CI.
+* [x] Verify CI runs tests.
+* [x] Verify CI runs lint.
 
 ### 1.6 Error handling
 
-* [ ] Establish application error handling.
-* [ ] Establish production logging.
-* [ ] Establish basic health check.
+* [x] Establish application error handling.
+* [x] Establish production logging.
+* [x] Establish basic health check.
 
 ## Exit criteria
 
-* [ ] Application boots locally.
-* [ ] PostgreSQL connection works.
-* [ ] Tests pass.
-* [ ] Lint passes.
-* [ ] CI passes.
+* [x] Application boots locally.
+* [x] PostgreSQL connection works.
+* [x] Tests pass.
+* [x] Lint passes.
+* [x] CI passes.
 * [ ] Staging environment is operational.
 
 ---
@@ -268,39 +268,39 @@ Establish users and authentication before implementing protected resources.
 
 ### 2.1 User
 
-* [ ] User model.
-* [ ] User database structure.
-* [ ] User validations.
-* [ ] User tests.
+* [x] User model.
+* [x] User database structure.
+* [x] User validations.
+* [x] User tests.
 
 ### 2.2 Authentication
 
-* [ ] Registration.
-* [ ] Login.
-* [ ] Logout.
-* [ ] Session management.
-* [ ] Authentication failure behavior.
+* [x] Registration.
+* [x] Login.
+* [x] Logout.
+* [x] Session management.
+* [x] Authentication failure behavior.
 
 ### 2.3 Profile
 
-* [ ] User profile.
-* [ ] Edit profile.
+* [x] User profile.
+* [x] Edit profile.
 * [ ] Profile validation.
 
 ### 2.4 Authorization foundation
 
-* [ ] Define authorization mechanism.
-* [ ] Define authenticated access.
-* [ ] Test unauthorized access.
-* [ ] Test unauthenticated access.
+* [x] Define authorization mechanism.
+* [x] Define authenticated access.
+* [x] Test unauthorized access.
+* [x] Test unauthenticated access.
 
 ## Exit criteria
 
-* [ ] User can register.
-* [ ] User can authenticate.
-* [ ] User can log out.
-* [ ] Protected resources require authentication.
-* [ ] Authentication tests pass.
+* [x] User can register.
+* [x] User can authenticate.
+* [x] User can log out.
+* [x] Protected resources require authentication.
+* [x] Authentication tests pass.
 
 ---
 
@@ -314,43 +314,43 @@ Create the multi-band foundation.
 
 ### 3.1 Band
 
-* [ ] Band model.
-* [ ] Band creation.
-* [ ] Band editing.
-* [ ] Band slug.
-* [ ] Band status.
-* [ ] Band validations.
+* [x] Band model.
+* [x] Band creation.
+* [x] Band editing.
+* [x] Band slug.
+* [x] Band status.
+* [x] Band validations.
 
 ### 3.2 Membership
 
-* [ ] Band membership model.
-* [ ] User-to-band relationship.
-* [ ] Membership roles.
-* [ ] Multiple members per band.
+* [x] Band membership model.
+* [x] User-to-band relationship.
+* [x] Membership roles.
+* [x] Multiple members per band.
 
 ### 3.3 Band administrators
 
-* [ ] Administrator role.
-* [ ] Add administrator.
-* [ ] Remove administrator.
-* [ ] Authorization rules.
+* [x] Administrator role.
+* [x] Add administrator.
+* [x] Remove administrator.
+* [x] Authorization rules.
 
 ### 3.4 Band approval
 
-* [ ] Define band approval status.
-* [ ] Pending state.
-* [ ] Approved state.
-* [ ] Rejected state.
-* [ ] Platform administrator approval.
+* [x] Define band approval status.
+* [x] Pending state.
+* [x] Approved state.
+* [x] Rejected state.
+* [x] Platform administrator approval.
 
 ### 3.5 Isolation
 
 Test that:
 
-* [ ] Band A administrator can manage Band A.
-* [ ] Band A administrator cannot manage Band B.
-* [ ] Band A cannot access Band B private resources.
-* [ ] Band IDs cannot be manipulated to bypass authorization.
+* [x] Band A administrator can manage Band A.
+* [x] Band A administrator cannot manage Band B.
+* [x] Band A cannot access Band B private resources.
+* [x] Band IDs cannot be manipulated to bypass authorization.
 
 ## Exit criteria
 
