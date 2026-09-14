@@ -8,6 +8,8 @@ class Band < ApplicationRecord
   has_many :members, through: :band_memberships, source: :user
   has_many :albums, dependent: :destroy
   has_many :tracks, through: :albums
+  has_many :follows, dependent: :destroy
+  has_many :followers, through: :follows, source: :user
   has_one_attached :photo
 
   enum :status, { pending: "pending", approved: "approved", rejected: "rejected" },
@@ -23,6 +25,10 @@ class Band < ApplicationRecord
             format: { with: URL_FORMAT, message: "must be a valid URL" }, allow_blank: true
 
   before_validation :generate_slug, on: :create
+
+  def followers_count
+    followers.count
+  end
 
   def social_links
     SOCIAL_LINK_ATTRIBUTES.filter_map do |attribute|
