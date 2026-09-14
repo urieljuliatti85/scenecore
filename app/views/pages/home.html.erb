@@ -1,8 +1,4 @@
 <% if @featured_band %>
-  <div class="pt-8 pb-2 flex justify-center">
-    <%= image_tag "logo.png", alt: "SceneCore", class: "h-14 sm:h-20 w-auto" %>
-  </div>
-
   <section class="relative min-h-[70vh] sm:min-h-[85vh] flex items-end overflow-hidden">
     <% if @featured_band.photo.attached? %>
       <%= image_tag @featured_band.photo, class: "absolute inset-0 w-full h-full object-cover" %>
@@ -10,6 +6,10 @@
     <% else %>
       <div class="absolute inset-0 bg-gradient-to-br from-neutral-800 via-neutral-900 to-black"></div>
     <% end %>
+
+    <div class="absolute top-6 sm:top-10 inset-x-0 flex justify-center">
+      <%= image_tag "logo.png", alt: "SceneCore", class: "h-[11.5rem] sm:h-[18.5rem] w-auto" %>
+    </div>
 
     <div class="relative px-4 sm:px-6 pb-16 sm:pb-24 pt-32 max-w-4xl mx-auto text-center w-full">
       <p class="text-xs sm:text-sm tracking-[0.2em] text-neutral-400 uppercase mb-4">Featured Band</p>
