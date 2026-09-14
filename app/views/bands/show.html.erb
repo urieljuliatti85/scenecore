@@ -9,6 +9,10 @@
   <% end %>
 
   <div class="flex flex-wrap items-center gap-3">
+    <% if policy(@band).show? %>
+      <%= link_to "Add track", new_band_track_path(@band), class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition" %>
+    <% end %>
+
     <% if policy(@band).update? %>
       <%= link_to "Edit", edit_band_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
       <%= link_to "Members", band_band_memberships_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>

@@ -1,6 +1,7 @@
 class Band < ApplicationRecord
   has_many :band_memberships, dependent: :destroy
   has_many :members, through: :band_memberships, source: :user
+  has_many :tracks, dependent: :destroy
 
   enum :status, { pending: "pending", approved: "approved", rejected: "rejected" },
        default: :pending, validate: true
