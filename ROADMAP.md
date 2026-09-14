@@ -522,6 +522,13 @@ A user can follow and unfollow a band and the relationship is persisted correctl
 
 # 10. Phase 7 — Exclusive Content
 
+**Deferred (2026-09-14):** one of the three visibility levels this phase
+requires (Subscriber) depends on Phase 10 (Subscriptions), which does not
+exist yet — no `Subscription` model, no billing. Rather than fatiar this
+phase or ship a Subscriber level that can never actually grant access,
+implementation is deferred until Phase 9/10 land. Resume Phase 7 after
+Subscriptions exists.
+
 ## Objective
 
 Allow bands to publish content with different visibility levels.
