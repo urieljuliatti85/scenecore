@@ -11,7 +11,7 @@ class SpotifyClient
   TOKEN_CACHE_KEY = "spotify_client/access_token"
 
   AlbumResult = Struct.new(:spotify_id, :name, :artist, :image_url, :release_year, keyword_init: true)
-  AlbumDetails = Struct.new(:name, :tracks, keyword_init: true)
+  AlbumDetails = Struct.new(:name, :cover_image_url, :tracks, keyword_init: true)
   TrackDetails = Struct.new(:title, :track_number, :spotify_url, keyword_init: true)
 
   def search_albums(query)
@@ -40,7 +40,7 @@ class SpotifyClient
       )
     end
 
-    AlbumDetails.new(name: response["name"], tracks: tracks)
+    AlbumDetails.new(name: response["name"], cover_image_url: response.dig("images", 0, "url"), tracks: tracks)
   end
 
   private

@@ -75,6 +75,7 @@ class AlbumsController < ApplicationController
 
     ActiveRecord::Base.transaction do
       @album.title = details.name
+      @album.spotify_cover_url = details.cover_image_url
       @album.save!
 
       details.tracks.each do |track|

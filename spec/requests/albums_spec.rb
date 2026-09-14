@@ -64,6 +64,7 @@ RSpec.describe "Albums", type: :request do
     let(:fetched_album) do
       SpotifyClient::AlbumDetails.new(
         name: "Discovery",
+        cover_image_url: "https://i.scdn.co/image/discovery-cover.jpg",
         tracks: [
           SpotifyClient::TrackDetails.new(title: "One More Time", track_number: 1, spotify_url: "https://open.spotify.com/track/0DiWol3AO6WpXZgp0goxAV"),
           SpotifyClient::TrackDetails.new(title: "Aerodynamic", track_number: 2, spotify_url: "https://open.spotify.com/track/2xLMifQCjDGFmkHkpNLD9h")
@@ -85,6 +86,7 @@ RSpec.describe "Albums", type: :request do
       album = Album.last
       expect(album.title).to eq("Discovery")
       expect(album.band).to eq(band)
+      expect(album.spotify_cover_url).to eq("https://i.scdn.co/image/discovery-cover.jpg")
       expect(album.tracks.order(:track_number).pluck(:title)).to eq([ "One More Time", "Aerodynamic" ])
       expect(response).to redirect_to(band_path(band))
     end

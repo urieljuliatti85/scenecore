@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_185954) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_192708) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -56,6 +56,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_185954) do
   create_table "albums", force: :cascade do |t|
     t.bigint "band_id", null: false
     t.datetime "created_at", null: false
+    t.string "spotify_cover_url"
     t.string "status", default: "draft", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false

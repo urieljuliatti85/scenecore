@@ -94,4 +94,29 @@ RSpec.describe Album, type: :model do
       expect(album).to be_valid
     end
   end
+
+  describe "#cover_url" do
+    it "returns nil when there is no uploaded cover or Spotify cover" do
+      album = build(:album, spotify_cover_url: nil)
+
+      expect(album.cover_url).to be_nil
+    end
+
+    it "returns the Spotify cover URL when there is no uploaded cover" do
+      album = build(:album, spotify_cover_url: "https://i.scdn.co/image/abc123.jpg")
+
+      expect(album.cover_url).to eq("https://i.scdn.co/image/abc123.jpg")
+    end
+
+    it "prefers the uploaded cover over the Spotify cover URL" do
+      album = create(:album, spotify_cover_url: "https://i.scdn.co/image/abc123.jpg")
+      album.cover.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/band_photo.png")),
+        filename: "cover.png",
+        content_type: "image/png"
+      )
+
+      expect(album.cover_url).to include("active_storage")
+    end
+  end
 end

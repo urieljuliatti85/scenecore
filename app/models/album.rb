@@ -10,4 +10,16 @@ class Album < ApplicationRecord
        default: :draft, validate: true
 
   validates :title, presence: true
+
+  def cover_url
+    return url_for(cover) if cover.attached?
+
+    spotify_cover_url
+  end
+
+  private
+
+  def url_for(attachment)
+    Rails.application.routes.url_helpers.rails_blob_path(attachment, only_path: true)
+  end
 end
