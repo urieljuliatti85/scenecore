@@ -18,7 +18,7 @@ class PublicBandsController < ApplicationController
   end
 
   def show
-    @band = Band.approved.includes(:category).find_by!(slug: params[:slug])
+    @band = Band.approved.with_attached_photo.includes(:category).find_by!(slug: params[:slug])
     @albums = @band.albums.published.with_attached_cover.includes(:tracks)
     @following = current_user.present? && @band.follows.exists?(user: current_user)
     @posts = visible_posts(@band)
