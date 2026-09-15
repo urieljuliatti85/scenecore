@@ -34,4 +34,25 @@ RSpec.describe "Production background/cache backends" do
 
     expect(cable.fetch("production").fetch("adapter")).not_to eq("solid_cable")
   end
+
+  # Active Storage in production writes to a Railway Volume mount, not the
+  # container filesystem, which is wiped on every deploy. The `:local`
+  # service roots at Rails.root/storage — inside the container — so pointing
+  # production back at it silently reintroduces upload loss.
+  describe "Active Storage" do
+    it "uses the volume-backed production service, not :local" do
+      configured = active_lines(/active_storage\.service/)
+
+      expect(configured).to include(":production")
+      expect(configured).not_to include(":local")
+    end
+
+    it "roots the production service at a configurable mount path" do
+      storage = YAML.safe_load(
+        ERB.new(Rails.root.join("config/storage.yml").read).result, aliases: true
+      )
+
+      expect(storage.fetch("production").fetch("service")).to eq("Disk")
+    end
+  end
 end

@@ -79,14 +79,22 @@ back at a Solid backend before that connection exists.
 
 ## Storage
 
-**Status (2026-09-14): unresolved.** `config/environments/production.rb`
-currently sets `config.active_storage.service = :local` — Railway's
-container filesystem is not guaranteed to persist across deploys/restarts,
-so any band photo or album cover uploaded to production today is at risk of
-being lost on the next deploy. `config/storage.yml` has no `production` (or
-`staging`) entry; only `test` and `local` (Disk-backed) exist.
+**Status (2026-09-15): resolved for production.** A Railway Volume
+(`scenecore-active-storage`, 500MB, region `ams`) is mounted on the `web`
+service at `/rails/storage`, and `ACTIVE_STORAGE_PATH=/rails/storage` is
+set on that service. `config/storage.yml` has a `production` entry rooted
+at that path (falling back to `Rails.root/storage` when the variable is
+unset, so the config is safe to run anywhere), and `production.rb` uses
+`config.active_storage.service = :production`.
 
-Decision (not yet implemented): use a Railway Volume mounted on the `web`
+Before this, `production.rb` used `:local`, rooted at the container
+filesystem — every band photo, album cover and post image uploaded to
+production was discarded on the next deploy.
+
+Staging storage remains unresolved, because no staging environment exists
+(see ROADMAP.md 1.1).
+
+Decision behind it: use a Railway Volume mounted on the `web`
 service for `production`/`staging` Active Storage, rather than external
 object storage (S3/Cloudflare R2/GCS) — SceneCore's storage need today is
 small (band photos, album covers only; no video/large media until
@@ -102,11 +110,10 @@ videos, downloads) ships and storage volume grows significantly, a
 Disk-backed volume no longer fits and should be replaced with S3-compatible
 object storage instead.
 
-Implementation not yet done (requires a live-production change, deferred
-pending explicit approval): create a Railway volume on `web`, mount it,
-add `staging`/`production` entries to `config/storage.yml` pointing at the
-mount path, and update `production.rb`'s `config.active_storage.service`
-accordingly.
+Implemented 2026-09-15. Note that the volume is attached to the `web`
+service, so it is only reachable from that container — a `staging`
+environment would need its own volume, and scaling `web` past one replica
+breaks the single-writer assumption (see the migration trigger above).
 
 ---
 
