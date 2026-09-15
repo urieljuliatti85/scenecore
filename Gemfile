@@ -58,6 +58,10 @@ gem "devise"
 # Object-oriented authorization for Rails applications [https://github.com/varvet/pundit]
 gem "pundit"
 
+# Error monitoring [https://docs.sentry.io/platforms/ruby/guides/rails/]
+gem "sentry-ruby"
+gem "sentry-rails"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"

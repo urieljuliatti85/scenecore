@@ -1362,10 +1362,14 @@ that would previously have wiped the database.
 * [x] Application logs (tagged with request id, written to STDOUT and
       collected by Railway; readable per deployment. Verified while
       debugging production this round).
-* [ ] Error monitoring. Nothing is installed — no Sentry/Rollbar/
-      Honeybadger/AppSignal in the Gemfile. Errors currently surface only
-      as 500s in the logs, with nobody notified. This is the biggest
-      remaining monitoring gap.
+* [x] Error monitoring (2026-09-15: Sentry via `sentry-rails`, configured
+      in `config/initializers/sentry.rb` from `SENTRY_DSN`. It stays
+      entirely inactive when that variable is absent, so development, test
+      and CI never report or make network calls. `send_default_pii` is off
+      — request bodies, cookies and user details are not shipped
+      off-platform — and routing/record-not-found errors are excluded as
+      bot noise. **Set `SENTRY_DSN` on the Railway `web` service to
+      activate it; until then nothing is reported.**)
 * [x] Health check (`/up` via `rails/health#show`, excluded from the
       HTTPS redirect and silenced in the logs; verified live returning
       200).

@@ -181,10 +181,35 @@ Required variables:
 - [email credentials]
 
 Currently set on the `web` service in Railway (verified 2026-09-15 against
-the live environment): `APP_HOST`, `DATABASE_URL`, `PORT`, `RAILS_ENV`,
-`RAILS_MASTER_KEY`, plus the `RAILWAY_*` variables Railway injects itself.
-No storage or email provider credentials are configured yet, and
-`SOLID_QUEUE_IN_PUMA` is deliberately not set (see Background jobs above).
+the live environment): `ACTIVE_STORAGE_PATH`, `APP_HOST`, `DATABASE_URL`,
+`PORT`, `RAILS_ENV`, `RAILS_MASTER_KEY`, plus the `RAILWAY_*` variables
+Railway injects itself. On the `postgres` service: `PGDATA` (see Database
+persistence above) and the `POSTGRES_*` credentials.
+
+Deliberately not set: `SOLID_QUEUE_IN_PUMA` (see Background jobs above).
+
+**Not yet set, and needed:**
+
+- `SENTRY_DSN` on `web` — error monitoring is wired up but inert without
+  it. Nothing is reported until this is set; see the Monitoring note
+  below.
+- Email provider credentials — no SMTP is configured, so no mail can be
+  delivered (this silently affects Devise password reset).
+
+## Monitoring
+
+Errors are reported to Sentry via `sentry-rails`, configured in
+`config/initializers/sentry.rb`. The initializer returns early unless
+`SENTRY_DSN` is present, so development, test and CI stay offline and make
+no network calls.
+
+`send_default_pii` is deliberately off: request bodies, cookies and user
+details are not sent off-platform. Routing and record-not-found errors are
+excluded, since those are mostly bots probing unknown paths.
+
+To activate: create a Sentry project (Rails platform) and set `SENTRY_DSN`
+on the `web` service. No code change or redeploy of the image is needed —
+setting the variable restarts the service, which picks it up.
 
 Never commit secrets.
 
