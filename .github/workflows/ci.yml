@@ -125,22 +125,42 @@ jobs:
       - name: Prepare test database
         run: bin/rails db:test:prepare
 
+      # band_member_invite_spec.rb runs on its own, after the rest. The one
+      # confirmed property of its long-standing flake (see the comment at the
+      # top of that file) is that it only reproduces when the whole system
+      # suite runs in a single process — never alone, however many times it
+      # is repeated. Splitting the run sidesteps it.
+      #
+      # This is mitigation, not a fix: the root cause is still unknown, and
+      # the spec still runs and still has to pass. If it starts failing in
+      # isolation too, that is new information and worth investigating rather
+      # than retrying.
       - name: Run system specs
         run: |
-          if bundle exec rspec spec/system; then
-            exit 0
-          fi
+          set -o pipefail
 
-          # Save evidence from the first attempt before retrying: a second,
-          # green run would overwrite these screenshots/log, destroying the
-          # only record of what actually failed.
-          mkdir -p tmp/first-attempt
-          cp -r tmp/capybara tmp/first-attempt/ 2>/dev/null || true
-          cp log/test.log tmp/first-attempt/ 2>/dev/null || true
+          run_with_retry() {
+            local label="$1"
+            shift
 
-          echo "::warning title=Flaky system test::The system spec suite failed on the first attempt and was retried. Evidence is in the 'system-test-first-attempt' artifact. A green job with this warning is NOT a clean run."
+            if bundle exec rspec "$@"; then
+              return 0
+            fi
 
-          bundle exec rspec spec/system
+            # Save evidence from the first attempt before retrying: a second,
+            # green run would overwrite these screenshots/log, destroying the
+            # only record of what actually failed.
+            mkdir -p tmp/first-attempt
+            cp -r tmp/capybara tmp/first-attempt/ 2>/dev/null || true
+            cp log/test.log "tmp/first-attempt/${label}-test.log" 2>/dev/null || true
+
+            echo "::warning title=Flaky system test::${label} failed on the first attempt and was retried. Evidence is in the 'system-test-first-attempt' artifact. A green job with this warning is NOT a clean run."
+
+            bundle exec rspec "$@"
+          }
+
+          run_with_retry "system-suite" spec/system --exclude-pattern "**/band_member_invite_spec.rb"
+          run_with_retry "band-member-invite" spec/system/band_member_invite_spec.rb
 
       # Uploaded even when the job ends green: that's the case of a retry
       # that passed on the second attempt, the only one where the flake
