@@ -1,63 +1,33 @@
 Rails.application.routes.draw do
-  # Active Storage's own route-drawing is disabled (see
-  # config/initializers/active_storage.rb) so the blob redirect route below
-  # can point at AuthenticatedBlobsController instead of the engine's
-  # default (publicly-accessible-to-anyone-with-the-URL) controller. The
-  # rest of this scope mirrors the engine's routes.rb so direct uploads,
-  # the disk service, and image variants keep working unchanged.
-  scope ActiveStorage.routes_prefix do
-    get "/blobs/redirect/:signed_id/*filename" => "authenticated_blobs#show", as: :rails_service_blob
-    get "/blobs/proxy/:signed_id/*filename" => "active_storage/blobs/proxy#show", as: :rails_service_blob_proxy
-    get "/blobs/:signed_id/*filename" => "authenticated_blobs#show"
+  # Active Storage's default blob redirect route is publicly accessible to
+  # anyone with the URL, forever, with no authorization check (Rails' own
+  # controller source warns about this explicitly). This adds a
+  # separately-named route pointed at AuthenticatedBlobsController, which
+  # checks the attachment's owning record is actually visible to the
+  # current viewer before redirecting to the file. Active Storage's own
+  # routes (including the original, unauthenticated rails_service_blob)
+  # are left intact below — `config.active_storage.resolve_model_to_route`
+  # in config/application.rb is what makes `rails_blob_path`/`image_tag`
+  # actually use this route instead of the original.
+  get "/rails/active_storage/blobs/authenticated/:signed_id/*filename",
+      to: "authenticated_blobs#show", as: :rails_authenticated_service_blob
 
-    get "/representations/redirect/:signed_blob_id/:variation_key/*filename" => "active_storage/representations/redirect#show", as: :rails_blob_representation
-    get "/representations/proxy/:signed_blob_id/:variation_key/*filename" => "active_storage/representations/proxy#show", as: :rails_blob_representation_proxy
-    get "/representations/:signed_blob_id/:variation_key/*filename" => "active_storage/representations/redirect#show"
+  # Neutralizes Active Storage's own blob redirect routes (unauthenticated
+  # by default) so they can't be used as a bypass now that rails_blob_path
+  # generates authenticated URLs instead (see resolve_model_to_route
+  # above). Declared without `:as` so they don't conflict with the
+  # engine's own route names, and take precedence because app routes are
+  # always matched before routes contributed by mounted engines.
+  get "/rails/active_storage/blobs/redirect/:signed_id/*filename", to: "authenticated_blobs#show"
+  get "/rails/active_storage/blobs/:signed_id/*filename", to: "authenticated_blobs#show"
 
-    get  "/disk/:encoded_key/*filename" => "active_storage/disk#show", as: :rails_disk_service
-    put  "/disk/:encoded_token" => "active_storage/disk#update", as: :update_rails_disk_service
-    post "/direct_uploads" => "active_storage/direct_uploads#create", as: :rails_direct_uploads
-  end
-
-  direct :rails_representation do |representation, options|
-    route_for(ActiveStorage.resolve_model_to_route, representation, options)
-  end
-
-  resolve("ActiveStorage::Variant") { |variant, options| route_for(ActiveStorage.resolve_model_to_route, variant, options) }
-  resolve("ActiveStorage::VariantWithRecord") { |variant, options| route_for(ActiveStorage.resolve_model_to_route, variant, options) }
-  resolve("ActiveStorage::Preview") { |preview, options| route_for(ActiveStorage.resolve_model_to_route, preview, options) }
-
-  direct :rails_blob do |blob, options|
-    route_for(ActiveStorage.resolve_model_to_route, blob, options)
-  end
-
-  resolve("ActiveStorage::Blob")       { |blob, options| route_for(ActiveStorage.resolve_model_to_route, blob, options) }
-  resolve("ActiveStorage::Attachment") { |attachment, options| route_for(ActiveStorage.resolve_model_to_route, attachment.blob, options) }
-
-  direct :rails_storage_redirect do |model, options|
+  direct :rails_authenticated_storage_redirect do |model, options|
     expires_in = options.delete(:expires_in) { ActiveStorage.urls_expire_in }
     expires_at = options.delete(:expires_at)
+    signed_id = model.respond_to?(:signed_id) ? model.signed_id(expires_in: expires_in, expires_at: expires_at) : model.blob.signed_id(expires_in: expires_in, expires_at: expires_at)
+    filename = model.respond_to?(:filename) ? model.filename : model.blob.filename
 
-    if model.respond_to?(:signed_id)
-      route_for(
-        :rails_service_blob,
-        model.signed_id(expires_in: expires_in, expires_at: expires_at),
-        model.filename,
-        options
-      )
-    else
-      signed_blob_id = model.blob.signed_id(expires_in: expires_in, expires_at: expires_at)
-      variation_key  = model.variation.key
-      filename       = model.blob.filename
-
-      route_for(
-        :rails_blob_representation,
-        signed_blob_id,
-        variation_key,
-        filename,
-        options
-      )
-    end
+    route_for(:rails_authenticated_service_blob, signed_id, filename, options)
   end
 
   devise_for :users, controllers: { registrations: "users/registrations" }
