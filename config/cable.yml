@@ -8,7 +8,10 @@ development:
 test:
   adapter: test
 
+# solid_cable needs its own tables, which this app's single-database
+# config/database.yml never creates. Nothing in the app uses Action Cable
+# today (no channels, no broadcasts, no turbo_stream_from), so this is the
+# async adapter rather than a broken one. Revisit when a real-time feature
+# lands: that needs the `cable` connection added to database.yml first.
 production:
-  adapter: solid_cable
-  polling_interval: 0.1.seconds
-  message_retention: 1.day
+  adapter: async
