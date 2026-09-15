@@ -1300,9 +1300,27 @@ Prepare the application for real users.
 
 ### Database
 
+**CRITICAL (2026-09-15): the production database has no persistent
+storage.** The `postgres` service runs the raw `postgres:16` image with
+`volumeMounts: []` — verified against the live Railway environment, and
+its deploy logs show `initdb` running with no "Mounting volume" line (the
+`web` service's logs do show one). Postgres is writing to the container
+filesystem, so a restart or redeploy of that service destroys every user,
+band, album, post and follow. This is not theoretical: the project has
+exactly one volume, and it is the Active Storage one on `web`.
+
+Attaching a volume is not a one-step fix — mounting an empty volume at
+`/var/lib/postgresql/data` masks the existing data directory, Postgres
+runs `initdb` into the empty volume, and the current data becomes
+unreachable. The order must be: dump first, then attach the volume, then
+restore.
+
 * [ ] Production migrations reviewed.
-* [ ] Backup configured.
-* [ ] Restore procedure documented.
+* [ ] Backup configured. Blocked by the above — Railway's backup feature
+      operates on volumes, so a service with no volume cannot be backed
+      up at all.
+* [ ] Restore procedure documented. Pending the volume work; the dump
+      command is recorded in `docs/deployment.md`.
 
 ### Monitoring
 
