@@ -1078,7 +1078,16 @@ blocked on Phase 9 (skipped), Application overlaps with Phase 15
       and production has no SMTP configured yet (`action_mailer.smtp_settings`
       is commented out in `production.rb`) — the same gap password-reset
       already depends on. Needs that infrastructure decision first, not a
-      silent code change.
+      silent code change. **Update 2026-09-15:** SMTP is now configured, so
+      this is unblocked — `:confirmable` is the remaining piece.
+
+      Also found and fixed 2026-09-15: password reset leaked which
+      addresses have accounts. A known address redirected (303) while an
+      unknown one rendered an error (422), so the endpoint could be used to
+      enumerate registered users. `config.paranoid = true` is now enabled,
+      making both paths respond identically. The trade-off, accepted
+      deliberately: someone who mistypes their address gets the same
+      "instructions sent" response and no warning.
 
 ## Authorization
 
@@ -1404,11 +1413,14 @@ from `MAIL_FROM`.
       `docs/deployment.md`).
 * [x] Transactional emails tested (a real message was sent from production
       and delivered — `SENT OK`, not just a green config check).
-* [ ] Failure handling tested. Not exercised: what a user sees when Resend
-      is down or rejects a message. `raise_delivery_errors` is on once SMTP
-      is configured, so a failure currently surfaces as a 500 on the
-      password-reset request — worth handling before real users depend on
-      it.
+* [x] Failure handling tested (2026-09-15). Devise delivers inline, so an
+      unreachable provider turned a password reset into a 500 — a dead end
+      for someone who has simply forgotten their password.
+      `User#send_devise_notification` now rescues, reports to Sentry and
+      logs, letting the request finish. The reset token is still generated,
+      so a retry can deliver it. Covered by `spec/models/user_spec.rb` and
+      `spec/requests/password_resets_spec.rb`, including the HTTP-level
+      case.
 
 **Still not usable by real users.** The sender is `onboarding@resend.dev`,
 Resend's test domain, which only delivers to the account owner's own

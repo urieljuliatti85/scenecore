@@ -53,4 +53,33 @@ RSpec.describe User, type: :model do
 
     expect { user.destroy }.to change(Follow, :count).by(-1)
   end
+
+  # Devise delivers inline, so without this an unreachable mail provider
+  # turns "forgot my password" into a 500 the user can do nothing about.
+  describe "notification delivery failures" do
+    let(:user) { create(:user) }
+
+    before do
+      allow(Devise.mailer).to receive(:reset_password_instructions)
+        .and_raise(Net::OpenTimeout, "execution expired")
+    end
+
+    it "does not raise when the mail provider is unreachable" do
+      expect { user.send_reset_password_instructions }.not_to raise_error
+    end
+
+    it "still generates the reset token, so a retry can deliver it" do
+      user.send_reset_password_instructions
+
+      expect(user.reload.reset_password_token).to be_present
+    end
+
+    it "logs the failure rather than swallowing it silently" do
+      allow(Rails.logger).to receive(:error)
+
+      user.send_reset_password_instructions
+
+      expect(Rails.logger).to have_received(:error).with(/delivery failed.*Net::OpenTimeout/)
+    end
+  end
 end

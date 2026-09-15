@@ -90,7 +90,12 @@ Devise.setup do |config|
   # It will change confirmation, password recovery and other workflows
   # to behave the same regardless if the e-mail provided was right or wrong.
   # Does not affect registerable.
-  # config.paranoid = true
+  #
+  # Enabled so a password reset cannot be used to enumerate which addresses
+  # have accounts: without it a known address redirects (303) and an unknown
+  # one renders an error (422). The cost is that a mistyped address gets the
+  # same "instructions sent" response and no warning.
+  config.paranoid = true
 
   # By default Devise will store the user in session. You can skip storage for
   # particular strategies by setting this option.
