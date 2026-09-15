@@ -91,4 +91,40 @@ RSpec.describe SpotifyClient do
       expect { client.fetch_album("abc123") }.to raise_error(SpotifyClient::Error)
     end
   end
+
+  # Callers rescue SpotifyClient::Error to show "Spotify is unavailable"
+  # instead of failing the request. Anything escaping as a raw exception
+  # bypasses that and becomes a 500, so every connection-level failure has
+  # to arrive as Error.
+  describe "network failures" do
+    SpotifyClient::NETWORK_ERRORS.each do |error_class|
+      it "converts #{error_class} into SpotifyClient::Error" do
+        allow(Net::HTTP).to receive(:start).and_raise(error_class)
+
+        expect { client.fetch_album("abc123") }.to raise_error(SpotifyClient::Error)
+      end
+    end
+
+    it "converts an unparseable response body into SpotifyClient::Error" do
+      response = instance_double(Net::HTTPResponse, body: "<html>502 Bad Gateway</html>", code: "200")
+      allow(response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(true)
+      allow(Net::HTTP).to receive(:start).and_return(response)
+
+      expect { client.fetch_album("abc123") }.to raise_error(SpotifyClient::Error)
+    end
+  end
+
+  # Ruby's default is 60s per phase. These calls run inside a web request on
+  # a 3-thread Puma, so a slow Spotify would otherwise stall the whole app.
+  describe "timeouts" do
+    it "bounds both connect and read time" do
+      stub_http_response(body: { name: "Discovery", tracks: { items: [] } })
+
+      client.fetch_album("abc123")
+
+      expect(Net::HTTP).to have_received(:start).with(
+        anything, anything, hash_including(open_timeout: be <= 5, read_timeout: be <= 10)
+      )
+    end
+  end
 end
