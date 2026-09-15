@@ -1349,9 +1349,15 @@ that would previously have wiped the database.
       `drop_table`, `remove_column` or `change_column`; they apply
       automatically via `db:prepare` in `bin/docker-entrypoint`, verified
       working in the deploy logs when `AddEnumCheckConstraints` shipped).
-* [ ] Backup configured. No longer blocked — Railway's backup feature
-      operates on volumes, and the database now has one, so scheduled
-      backups can be enabled. Not done yet.
+* [x] Backup configured (2026-09-15). Railway's own scheduled-backup
+      feature is not available on this account (its docs call it "still
+      under development"), so this is a `postgres-backup` service:
+      `postgres:16-alpine`, `cronSchedule` `0 3 * * *`, running `pg_dump`
+      to the dedicated `scenecore-backups` volume and keeping the 7 most
+      recent dumps. Deliberately a *separate* volume from the database's
+      own, so a corrupted database volume does not take the backups with
+      it. Verified by running it and confirming a real 43KB dump lands on
+      the volume.
 * [x] Restore procedure documented (`docs/deployment.md` has the working
       dump command and the dump → attach volume → restore order). A
       verified dump was taken 2026-09-15; restoring it has not been
