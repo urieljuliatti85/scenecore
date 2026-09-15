@@ -38,5 +38,11 @@ module Scenecore
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # Makes `rails_blob_path`/`image_tag` generate URLs for the
+    # authenticated blob route (config/routes.rb) instead of Active
+    # Storage's own, unauthenticated-by-default one. See
+    # AuthenticatedBlobsController.
+    config.active_storage.resolve_model_to_route = :rails_authenticated_storage_redirect
   end
 end
