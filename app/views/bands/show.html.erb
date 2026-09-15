@@ -56,7 +56,7 @@
             <% end %>
           </div>
           <ul class="flex flex-col gap-2">
-            <% album.tracks.order(:track_number).each do |track| %>
+            <% album.tracks.sort_by(&:track_number).each do |track| %>
               <li class="flex items-center justify-between gap-3 rounded-lg border border-neutral-800 px-4 py-3">
                 <div>
                   <span class="text-neutral-500 text-sm mr-2"><%= track.track_number %></span>
