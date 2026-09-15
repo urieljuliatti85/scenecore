@@ -93,9 +93,45 @@ sequence or the next insert collides:
 SELECT setval(pg_get_serial_sequence('users', 'id'), (SELECT MAX(id) FROM users));
 ```
 
-**Still missing:** scheduled backups. Railway's backup feature operates on
-volumes, so this is now possible — it just has not been configured yet
-(see ROADMAP.md Phase 15).
+### Scheduled backups
+
+A `postgres-backup` service runs a daily dump at 03:00 UTC.
+
+- Image `postgres:16-alpine` (it ships `pg_dump`), `restartPolicyType:
+  NEVER` and `cronSchedule: 0 3 * * *`, so it runs once and exits — the
+  shape Railway expects for a cron service.
+- Dumps land on **`scenecore-backups`**, a volume separate from the
+  database's own `scenecore-postgres-data`. That separation is the point:
+  a backup sharing the database's volume would be lost along with it.
+- The 7 most recent dumps are kept; older ones are deleted each run. Files
+  under 1KB are cleared first, so a truncated dump doesn't count toward
+  retention.
+- `DATABASE_URL` is assembled from `${{postgres.*}}` references, so the
+  dump travels over Railway's private network and the password is not
+  duplicated into a second variable.
+
+Railway's own scheduled-backup feature is *not* used — it is not available
+on this account (its docs describe it as "still under development"). If it
+becomes available, it is worth preferring: it snapshots the volume itself
+and supports staged restores.
+
+**Restoring a dump** (custom format, so `pg_restore` rather than `psql`):
+
+```
+railway ssh --service postgres-backup sh -c \
+  'pg_restore --clean --if-exists --no-owner -d "$DATABASE_URL" /backups/<file>.dump'
+```
+
+One caveat, untested: `--clean` drops existing objects before recreating
+them. Restoring onto a live database is destructive by design — take a
+fresh dump first.
+
+**Note on the entrypoint.** The plain `postgres:16` image cannot be used
+here: its ENTRYPOINT intercepts the start command and tries to boot a
+database server, failing with "Database is uninitialized and superuser
+password is not specified". The `-alpine` variant with an explicit
+`/bin/sh -c` start command and the full `/usr/local/bin/pg_dump` path
+works.
 
 ---
 
