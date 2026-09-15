@@ -1048,32 +1048,76 @@ Platform administrators can perform approved administrative actions without gain
 
 Validate the system before production.
 
+2026-09-15: first pass done (Authentication, Authorization, Files). Found
+and fixed two real gaps (session cookies, Spotify ID injection); found and
+documented one gap that needs infrastructure not yet in place (email
+confirmation). Payments/Application sections not started — Payments is
+blocked on Phase 9 (skipped), Application overlaps with Phase 15
+(Production Readiness) and wasn't attempted this round.
+
 ## Authentication
 
-* [ ] Authentication boundaries reviewed.
-* [ ] Session behavior reviewed.
-* [ ] Password/security mechanisms reviewed.
+* [x] Authentication boundaries reviewed (Devise `database_authenticatable,
+      :registerable, :recoverable, :validatable`; standard config, no
+      custom bypass logic found).
+* [x] Session behavior reviewed. Found: `config/environments/production.rb`
+      had `force_ssl`/`assume_ssl` commented out (the default `rails new`
+      state) — Railway terminates TLS at its edge and forwards plain HTTP,
+      so without these, session cookies were never marked `Secure` and
+      there was no HTTP→HTTPS redirect or HSTS. Fixed: both enabled (health
+      check path excluded from the redirect, per Rails' own guidance
+      comment).
+* [x] Password/security mechanisms reviewed. Found and **not** fixed this
+      round: `User` doesn't use Devise's `:confirmable`, so
+      `ProfilesController#update` lets a signed-in user change their email
+      instantly with no proof they control the new address. Not fixed
+      because `:confirmable` requires a working confirmation-email flow,
+      and production has no SMTP configured yet (`action_mailer.smtp_settings`
+      is commented out in `production.rb`) — the same gap password-reset
+      already depends on. Needs that infrastructure decision first, not a
+      silent code change.
 
 ## Authorization
 
-* [ ] Band isolation tested.
-* [ ] Private content tested.
-* [ ] Administrative permissions tested.
-* [ ] Object-level authorization tested.
+* [x] Band isolation tested (existing specs: `spec/requests/albums_spec.rb`,
+      `posts_spec.rb`, `band_memberships_spec.rb`, `tracks_spec.rb` all
+      cover "member of another band" scenarios; controllers scope lookups
+      through `@band.albums.find`/`@band.posts.find`/etc., not global
+      `Model.find`, so cross-band IDOR isn't reachable).
+* [x] Private content tested (draft albums/tracks/posts already covered
+      by `spec/requests/public_bands_spec.rb`; see also Files below for
+      the attachment-level gap found and fixed in #61).
+* [x] Administrative permissions tested (`Admin::BaseController` 404s
+      non-platform-admins before any admin action runs; reviewed every
+      `Admin::*Controller` — all scope through the band/record from the
+      URL, no global unscoped lookups).
+* [x] Object-level authorization tested (reviewed every Pundit policy —
+      `AlbumPolicy`, `PostPolicy`, `TrackPolicy`, `BandMembershipPolicy`,
+      `FollowPolicy` — all check membership via `record.band`, not a
+      global role).
 
 ## Files
 
-* [ ] Private files protected.
-* [ ] Upload validation verified.
-* [ ] File access authorization verified.
+Closed in #61 (2026-09-15) — see Phase 7.5 for the full writeup of the
+Active Storage blob-authorization gap found and fixed.
+
+* [x] Private files protected (`AuthenticatedBlobsController`).
+* [x] Upload validation verified (`HasImage`: content-type/size, reused
+      by `Band#photo`, `Album#cover`, `Post#image`).
+* [x] File access authorization verified (`AttachmentVisibility`, see
+      `spec/requests/authenticated_blobs_spec.rb`).
 
 ## Payments
 
-* [ ] Webhook authenticity verified.
-* [ ] Webhook idempotency verified.
-* [ ] Sensitive payment information not logged.
+* [ ] Webhook authenticity verified (blocked — Phase 9 skipped, no
+      payment provider integration exists yet).
+* [ ] Webhook idempotency verified (blocked — same).
+* [ ] Sensitive payment information not logged (blocked — same).
 
 ## Application
+
+Not attempted this round — overlaps with Phase 15 (Production Readiness),
+which is also entirely unstarted.
 
 * [ ] Secrets are not committed.
 * [ ] Environment variables are used correctly.

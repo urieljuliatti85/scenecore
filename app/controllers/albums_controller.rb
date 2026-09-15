@@ -1,4 +1,6 @@
 class AlbumsController < ApplicationController
+  SPOTIFY_ID_FORMAT = /\A[a-zA-Z0-9]{22}\z/
+
   before_action :set_band
   before_action :set_album, only: [ :edit, :update, :publish, :unpublish ]
 
@@ -35,7 +37,7 @@ class AlbumsController < ApplicationController
     authorize @album
 
     spotify_id = params[:spotify_album_id]
-    if spotify_id.blank?
+    unless spotify_id.to_s.match?(SPOTIFY_ID_FORMAT)
       @album.errors.add(:base, "Select an album from the search results.")
       return render :new, status: :unprocessable_entity
     end
