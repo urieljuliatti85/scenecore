@@ -218,19 +218,15 @@ Required variables:
 
 Currently set on the `web` service in Railway (verified 2026-09-15 against
 the live environment): `ACTIVE_STORAGE_PATH`, `APP_HOST`, `DATABASE_URL`,
-`PORT`, `RAILS_ENV`, `RAILS_MASTER_KEY`, plus the `RAILWAY_*` variables
-Railway injects itself. On the `postgres` service: `PGDATA` (see Database
-persistence above) and the `POSTGRES_*` credentials.
+`MAIL_FROM`, `PORT`, `RAILS_ENV`, `RAILS_MASTER_KEY`, `SENTRY_DSN`,
+`SMTP_ADDRESS`, `SMTP_PASSWORD`, `SMTP_PORT`, `SMTP_USER_NAME`, plus the
+`RAILWAY_*` variables Railway injects itself.
+
+On `postgres`: `PGDATA` (see Database persistence above) and the
+`POSTGRES_*` credentials. On `postgres-backup`: `DATABASE_URL` (assembled
+from `${{postgres.*}}` references) and `BACKUP_RETAIN`.
 
 Deliberately not set: `SOLID_QUEUE_IN_PUMA` (see Background jobs above).
-
-**Not yet set, and needed:**
-
-- `SENTRY_DSN` on `web` — error monitoring is wired up but inert without
-  it. Nothing is reported until this is set; see the Monitoring note
-  below.
-- Email provider credentials — see Email below. No mail is sent until
-  they are set.
 
 ## Email
 
@@ -252,14 +248,31 @@ To activate, set these on the `web` service:
 | Variable | Value |
 |---|---|
 | `SMTP_ADDRESS` | `smtp.resend.com` |
-| `SMTP_PORT` | `587` (the default if unset) |
+| `SMTP_PORT` | **`2587`** — not 587, see below |
 | `SMTP_USER_NAME` | `resend` |
 | `SMTP_PASSWORD` | the Resend API key |
 | `MAIL_FROM` | a verified sender, e.g. `no-reply@yourdomain` |
 
-Resend requires the sending domain to be verified before it will accept
-mail from it; their test domain works for a first check. `MAIL_FROM` feeds
-both `Devise.mailer_sender` and `ApplicationMailer`'s default `from`.
+**Railway blocks the standard SMTP ports.** Verified from inside the `web`
+container: ports 587 and 465 both time out (`Errno::ETIMEDOUT`), while
+2587 connects. Resend publishes 2587 as an alternative for exactly this
+situation. Using 587 fails with `Net::OpenTimeout` several seconds into
+the request, which reads like a provider problem but is not.
+
+(When testing this from the container, note that `/dev/tcp/host/port` does
+not work — the image's shell is not bash, and a failed probe there looks
+identical to a blocked port. Use `Socket.tcp` from `bin/rails runner`.)
+
+`MAIL_FROM` feeds both `Devise.mailer_sender` and `ApplicationMailer`'s
+default `from`. Resend only accepts mail from a **verified domain**; until
+one is added under Domains in their dashboard, `onboarding@resend.dev`
+works but **only delivers to the Resend account's own address** — enough to
+prove the integration, not enough for real users.
+
+Status 2026-09-15: configured with `onboarding@resend.dev` and verified by
+sending a real message from production (`SENT OK` over port 2587). Real
+user mail needs a verified domain, which in turn wants the custom domain
+still open in Phase 15.
 
 What depends on this today: Devise password reset (`:recoverable` is
 enabled and reachable from the sign-in page). Adding email confirmation for
@@ -276,9 +289,9 @@ no network calls.
 details are not sent off-platform. Routing and record-not-found errors are
 excluded, since those are mostly bots probing unknown paths.
 
-To activate: create a Sentry project (Rails platform) and set `SENTRY_DSN`
-on the `web` service. No code change or redeploy of the image is needed —
-setting the variable restarts the service, which picks it up.
+Active since 2026-09-15: `SENTRY_DSN` is set on the `web` service and a
+test event was accepted from production. Setting the variable is all that
+activation takes — no code change or image rebuild.
 
 Never commit secrets.
 
