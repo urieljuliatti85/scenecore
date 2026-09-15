@@ -1283,20 +1283,46 @@ Prepare the application for real users.
 
 ## Tasks
 
+2026-09-15: audited against the live Railway environment. Several items
+were already satisfied by work done this round but had never been recorded
+here; they are ticked below with the evidence. The genuinely missing pieces
+are database persistence/backup, error monitoring, email, and a custom
+domain.
+
 ### Infrastructure
 
-* [ ] Production application.
-* [ ] PostgreSQL.
-* [ ] Storage.
-* [ ] Background jobs.
-* [ ] Domain.
-* [ ] HTTPS.
+* [x] Production application (Railway `web` service, Dockerfile build,
+      tracking `main`, single replica in `ams`; deploys on merge and runs
+      `db:prepare` via `bin/docker-entrypoint` before booting).
+* [x] PostgreSQL (Railway `postgres` service, `postgres:16`). **Note: it
+      has no volume — see the Database section below. The service runs,
+      but its data does not survive a restart.**
+* [x] Storage (Railway Volume `scenecore-active-storage`, 500MB, mounted
+      at `/rails/storage`; see 1.3).
+* [x] Background jobs (`:async` in-process, matching a single replica with
+      no app-owned jobs — see Phase 14, Background jobs, for the reasoning
+      and the trigger for moving back to Solid Queue).
+* [ ] Domain. Only Railway's generated
+      `web-production-4c75.up.railway.app` exists; no custom domain is
+      configured (`customDomains: []`). Needs a product decision on the
+      real domain before launch.
+* [x] HTTPS (`force_ssl` + `assume_ssl` enabled in `production.rb`;
+      verified live: `http://` returns 301 and `/up` returns 200 over
+      HTTPS).
 
 ### Environment
 
-* [ ] Production environment variables.
-* [ ] Secrets configured securely.
-* [ ] No secrets in repository.
+* [x] Production environment variables (`APP_HOST`, `DATABASE_URL`,
+      `PORT`, `RAILS_ENV`, `RAILS_MASTER_KEY`, `ACTIVE_STORAGE_PATH` set
+      on `web`; verified against the live environment and listed in
+      `docs/deployment.md`).
+* [x] Secrets configured securely (credentials are encrypted in
+      `config/credentials.yml.enc`, with `RAILS_MASTER_KEY` supplied as a
+      Railway variable rather than committed).
+* [x] No secrets in repository (`config/master.key` and `.env` are
+      gitignored and were never committed — checked the full history, not
+      just the working tree; `.kamal/secrets` is the stock template with
+      no real values).
 
 ### Database
 
@@ -1315,22 +1341,42 @@ runs `initdb` into the empty volume, and the current data becomes
 unreachable. The order must be: dump first, then attach the volume, then
 restore.
 
-* [ ] Production migrations reviewed.
+* [x] Production migrations reviewed (17 migrations, none destructive — no
+      `drop_table`, `remove_column` or `change_column`; they apply
+      automatically via `db:prepare` in `bin/docker-entrypoint`, verified
+      working in the deploy logs when `AddEnumCheckConstraints` shipped).
 * [ ] Backup configured. Blocked by the above — Railway's backup feature
       operates on volumes, so a service with no volume cannot be backed
       up at all.
-* [ ] Restore procedure documented. Pending the volume work; the dump
-      command is recorded in `docs/deployment.md`.
+* [x] Restore procedure documented (`docs/deployment.md` has the working
+      dump command and the dump → attach volume → restore order). A
+      verified dump was taken 2026-09-15; restoring it has not been
+      exercised yet, so treat the procedure as documented but untested.
 
 ### Monitoring
 
-* [ ] Application logs.
-* [ ] Error monitoring.
-* [ ] Health check.
-* [ ] Payment monitoring.
-* [ ] Background job monitoring.
+* [x] Application logs (tagged with request id, written to STDOUT and
+      collected by Railway; readable per deployment. Verified while
+      debugging production this round).
+* [ ] Error monitoring. Nothing is installed — no Sentry/Rollbar/
+      Honeybadger/AppSignal in the Gemfile. Errors currently surface only
+      as 500s in the logs, with nobody notified. This is the biggest
+      remaining monitoring gap.
+* [x] Health check (`/up` via `rails/health#show`, excluded from the
+      HTTPS redirect and silenced in the logs; verified live returning
+      200).
+* [ ] Payment monitoring (blocked — Phase 9 skipped).
+* [ ] Background job monitoring. Not applicable in a useful sense yet:
+      the `:async` adapter has no queue to observe and there are no
+      app-owned jobs. Revisit together with the move back to Solid Queue.
 
 ### Email
+
+**Nothing is configured.** `production.rb` leaves
+`action_mailer.smtp_settings` commented out, so no mail can be delivered
+in production. This already matters: Devise's password reset silently
+depends on it, and it blocks adding email confirmation for address
+changes (see Phase 13, Authentication). Needs a provider decision.
 
 * [ ] Email provider configured.
 * [ ] Transactional emails tested.
@@ -1338,9 +1384,10 @@ restore.
 
 ### Webhooks
 
-* [ ] Production webhook URLs configured.
-* [ ] Signature validation enabled.
-* [ ] Idempotency verified.
+* [ ] Production webhook URLs configured (blocked — Phase 9 skipped, no
+      provider sends webhooks here yet).
+* [ ] Signature validation enabled (blocked — same).
+* [ ] Idempotency verified (blocked — same).
 
 ## Exit criteria
 
