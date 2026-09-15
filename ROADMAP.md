@@ -611,11 +611,16 @@ Allow bands to publish content with different visibility levels.
 
 ### 10.2 Media
 
-* [ ] Images.
-* [ ] Videos.
-* [ ] Downloads.
-* [ ] File validation.
-* [ ] Storage.
+* [x] Images (2026-09-15: `Post` reuses the existing `HasImage` concern
+      — same content-type/size validation as `Band#photo`/`Album#cover`
+      — via `has_image :image`; rendered on the public band page when
+      attached).
+* [ ] Videos (no pattern exists yet for video storage/validation —
+      out of scope for this slice).
+* [ ] Downloads (same — undefined storage/access pattern, out of scope
+      for this slice).
+* [x] File validation (covered by `HasImage`: PNG/JPEG/WebP, up to 5MB).
+* [x] Storage (Active Storage, same as existing image attachments).
 
 ### 10.3 Visibility
 

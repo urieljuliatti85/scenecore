@@ -45,4 +45,49 @@ RSpec.describe Post, type: :model do
 
     expect(post.band).to eq(band)
   end
+
+  describe "image" do
+    it "accepts a valid image" do
+      post = build(:post)
+      post.image.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/band_photo.png")),
+        filename: "band_photo.png",
+        content_type: "image/png"
+      )
+
+      expect(post).to be_valid
+    end
+
+    it "rejects a non-image content type" do
+      post = build(:post)
+      post.image.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/invalid_photo.txt")),
+        filename: "invalid_photo.txt",
+        content_type: "text/plain"
+      )
+
+      expect(post).not_to be_valid
+      expect(post.errors[:image]).to be_present
+    end
+
+    it "rejects a file larger than the maximum size" do
+      post = build(:post)
+      post.image.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/band_photo.png")),
+        filename: "band_photo.png",
+        content_type: "image/png"
+      )
+      allow(post.image).to receive(:byte_size).and_return(HasImage::IMAGE_MAX_SIZE + 1)
+
+      expect(post).not_to be_valid
+      expect(post.errors[:image]).to be_present
+    end
+
+    it "is valid without an image attached" do
+      post = build(:post)
+
+      expect(post.image).not_to be_attached
+      expect(post).to be_valid
+    end
+  end
 end

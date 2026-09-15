@@ -1,5 +1,9 @@
 class Post < ApplicationRecord
+  include HasImage
+
   belongs_to :band
+
+  has_image :image
 
   enum :status, { draft: "draft", published: "published" },
        default: :draft, validate: true

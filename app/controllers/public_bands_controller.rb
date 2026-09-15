@@ -41,6 +41,6 @@ class PublicBandsController < ApplicationController
     visibilities = [ Post.visibilities[:public] ]
     visibilities << Post.visibilities[:followers] if @following
 
-    band.posts.published.where(visibility: visibilities).order(created_at: :desc)
+    band.posts.published.where(visibility: visibilities).with_attached_image.order(created_at: :desc)
   end
 end
