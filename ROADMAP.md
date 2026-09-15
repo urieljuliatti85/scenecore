@@ -416,9 +416,12 @@ criteria (a visitor can play a published track) depends on it.
 
 * [x] Band name.
 * [x] Description.
-* [x] Logo (available on the model via `photo`; not yet rendered on the
-      public page).
-* [ ] Cover.
+* [x] Logo (`Band#photo`, now rendered on the public band page).
+* [x] Cover (2026-09-14: no separate "cover" field exists anywhere in the
+      product docs, and `Band#photo` was already used as a full-bleed hero
+      image on the home page — reused that same treatment on the public
+      band page instead of adding a new attachment, resolving Logo and
+      Cover together).
 * [x] Links (social links rendered via `shared/social_links`).
 * [x] Public status (approved bands are visible; pending/rejected are not).
 

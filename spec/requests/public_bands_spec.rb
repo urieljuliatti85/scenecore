@@ -135,6 +135,27 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).to include("Tickets")
     end
 
+    it "renders the band's photo as a hero image when attached" do
+      band = create(:band, :approved, name: "The Testers")
+      band.photo.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/band_photo.png")),
+        filename: "band_photo.png",
+        content_type: "image/png"
+      )
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include(rails_blob_path(band.photo, only_path: true))
+    end
+
+    it "falls back to the gradient background when no photo is attached" do
+      band = create(:band, :approved, name: "The Testers")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("bg-gradient-to-br")
+    end
+
     it "shows social links when present" do
       band = create(:band, :approved, name: "The Testers", website_url: "https://the-testers.example.com")
 
