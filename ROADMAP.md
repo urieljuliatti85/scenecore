@@ -1224,15 +1224,50 @@ back at a Solid backend without that connection existing.
 
 ### Storage
 
-* [ ] Verify media storage.
-* [ ] Verify upload limits.
-* [ ] Verify private file access.
+2026-09-15: all three were resolved by work done elsewhere this round;
+recorded here rather than re-audited.
+
+* [x] Verify media storage. Production was writing uploads to the
+      container filesystem (`:local`), so every band photo, album cover
+      and post image was discarded on the next deploy. Now backed by a
+      Railway Volume — see 1.3 and `docs/deployment.md`.
+* [x] Verify upload limits (`HasImage` enforces PNG/JPEG/WebP and a 5MB
+      ceiling for every image attachment: `Band#photo`, `Album#cover`,
+      `Post#image`).
+* [x] Verify private file access (Active Storage blob URLs were publicly
+      readable regardless of the owning record's visibility; now checked
+      by `AuthenticatedBlobsController` — see Phase 7.5).
 
 ### Reliability
 
-* [ ] Verify error handling.
-* [ ] Verify external service failures.
-* [ ] Verify payment provider downtime behavior.
+2026-09-15: audited. App-level error handling was already sound; the
+Spotify client had two real problems, both fixed.
+
+* [x] Verify error handling (`ApplicationController` rescues
+      `Pundit::NotAuthorizedError`; `PublicBandsController` renders a
+      branded 404 for unknown slugs/albums; `AlbumsController` and
+      `BandsController` handle `RecordInvalid`; the standard 400/404/422/500
+      pages exist. No changes needed).
+* [x] Verify external service failures. Spotify is the only external
+      dependency, and two problems were found:
+      (1) **No timeouts.** `Net::HTTP.start` was called without
+      `open_timeout`/`read_timeout`, so it used Ruby's 60s-per-phase
+      default. These calls happen inside a web request and production runs
+      Puma with 3 threads on a single replica, so a slow (not down)
+      Spotify could stall the entire app. Now bounded at 3s connect / 5s
+      read.
+      (2) **Network failures escaped as raw exceptions.** Callers rescue
+      `SpotifyClient::Error` to show "Spotify is unavailable", but
+      `Errno::ECONNREFUSED`, `Net::OpenTimeout`, `SocketError`,
+      `OpenSSL::SSL::SSLError` and friends are not that class, so they
+      bypassed the rescue and became 500s. Confirmed by reproduction
+      before fixing. All connection-level failures and unparseable bodies
+      are now wrapped as `SpotifyClient::Error`, so the intended
+      degradation actually happens — covered by
+      `spec/services/spotify_client_spec.rb` and an end-to-end case in
+      `spec/requests/albums_spec.rb`.
+* [ ] Verify payment provider downtime behavior (blocked — Phase 9
+      skipped, no payment provider integration exists).
 
 ## Exit criteria
 

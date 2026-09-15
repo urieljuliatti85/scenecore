@@ -10,6 +10,27 @@ class SpotifyClient
   API_BASE_URL = "https://api.spotify.com/v1"
   TOKEN_CACHE_KEY = "spotify_client/access_token"
 
+  # Deliberately short: these calls happen inside a web request, and Puma
+  # runs 3 threads per process, so a slow Spotify would otherwise tie up
+  # the whole app waiting on Ruby's 60s default.
+  OPEN_TIMEOUT = 3
+  READ_TIMEOUT = 5
+
+  # Every way the connection itself can fail. Without this they escape as
+  # raw exceptions and the callers' `rescue Error` misses them, turning a
+  # Spotify outage into a 500.
+  NETWORK_ERRORS = [
+    Errno::ECONNREFUSED,
+    Errno::ECONNRESET,
+    Errno::EHOSTUNREACH,
+    Errno::ENETUNREACH,
+    IOError,
+    Net::OpenTimeout,
+    Net::ReadTimeout,
+    OpenSSL::SSL::SSLError,
+    SocketError
+  ].freeze
+
   AlbumResult = Struct.new(:spotify_id, :name, :artist, :image_url, :release_year, keyword_init: true)
   AlbumDetails = Struct.new(:name, :cover_image_url, :tracks, keyword_init: true)
   TrackDetails = Struct.new(:title, :track_number, :spotify_url, keyword_init: true)
@@ -52,10 +73,10 @@ class SpotifyClient
     request = Net::HTTP::Get.new(uri)
     request["Authorization"] = "Bearer #{access_token}"
 
-    response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |http| http.request(request) }
+    response = perform(uri, request)
     raise Error, "Spotify API request failed: #{response.code}" unless response.is_a?(Net::HTTPSuccess)
 
-    JSON.parse(response.body)
+    parse(response)
   end
 
   def access_token
@@ -70,9 +91,24 @@ class SpotifyClient
     request.basic_auth(credentials[:client_id], credentials[:client_secret])
     request.set_form_data(grant_type: "client_credentials")
 
-    response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |http| http.request(request) }
+    response = perform(uri, request)
     raise Error, "Spotify authentication failed: #{response.code}" unless response.is_a?(Net::HTTPSuccess)
 
-    JSON.parse(response.body).fetch("access_token")
+    parse(response).fetch("access_token")
+  end
+
+  def perform(uri, request)
+    Net::HTTP.start(
+      uri.host, uri.port,
+      use_ssl: true, open_timeout: OPEN_TIMEOUT, read_timeout: READ_TIMEOUT
+    ) { |http| http.request(request) }
+  rescue *NETWORK_ERRORS => e
+    raise Error, "Spotify request failed: #{e.class}"
+  end
+
+  def parse(response)
+    JSON.parse(response.body)
+  rescue JSON::ParserError
+    raise Error, "Spotify returned an unreadable response"
   end
 end

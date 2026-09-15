@@ -58,6 +58,22 @@ RSpec.describe "Albums", type: :request do
 
       expect(response).to redirect_to(root_path)
     end
+
+    it "reports Spotify as unavailable, rather than failing, when the network drops" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      sign_in user
+      # Stubbed at the client rather than Net::HTTP so the test doesn't
+      # depend on Spotify credentials being decryptable (CI has no master key).
+      allow_any_instance_of(SpotifyClient).to receive(:search_albums)
+        .and_raise(SpotifyClient::Error, "Spotify request failed: Errno::ECONNREFUSED")
+
+      get search_band_albums_path(band), params: { q: "Discovery" }
+
+      expect(response).to have_http_status(:bad_gateway)
+      expect(JSON.parse(response.body)["error"]).to match(/unavailable/i)
+    end
   end
 
   describe "POST /bands/:band_id/albums" do
