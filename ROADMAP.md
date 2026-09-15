@@ -307,7 +307,14 @@ Establish users and authentication before implementing protected resources.
 
 * [x] User profile.
 * [x] Edit profile.
-* [ ] Profile validation.
+* [x] Profile validation. `User` already validates name presence
+      (whitespace-only names are rejected by Rails' `blank?`) plus
+      Devise's `:validatable` (email format/uniqueness/presence, password
+      rules). No length/format constraints exist on any model's `name`
+      field in this codebase (Band, Category included) and no DB check
+      constraints exist yet at all, so adding one to User alone would be
+      an arbitrary, inconsistent new pattern rather than closing a real
+      gap — not done, by explicit decision.
 
 ### 2.4 Authorization foundation
 
