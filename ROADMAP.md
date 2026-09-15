@@ -431,18 +431,28 @@ criteria (a visitor can play a published track) depends on it.
 * [x] Validate uniqueness (DB unique index + model validation).
 * [x] Resolve public band URL (`GET /:slug`, constrained and ordered last
       in `routes.rb` so it doesn't shadow other routes).
-* [ ] Handle invalid slugs (currently a plain 404; no dedicated UX).
+* [x] Handle invalid slugs (2026-09-15: `PublicBandsController#show`/
+      `#album` now render `public_bands/not_found`, a branded 404 view
+      with links back to Discover/home, instead of a bare `head
+      :not_found`; status stays 404).
 
 ### 4.3 Responsive interface
 
-* [ ] Desktop layout.
+* [x] Desktop layout (already responsive via Tailwind `sm:`/`lg:`
+      breakpoints; no dedicated desktop-only layout was required or
+      built).
 * [x] Mobile layout (public pages already responsive; header nav fixed to
       expose all links below the `sm` breakpoint via a mobile menu).
 * [x] Accessible navigation (mobile menu button has `aria-label`,
       `aria-expanded`, `aria-controls`).
-* [ ] Loading states.
-* [ ] Empty states.
-* [ ] Error states.
+* [ ] Loading states (not applicable: the public band page is fully
+      server-rendered with no async/Turbo Frame requests today; would
+      require an architecture change outside this slice's scope).
+* [x] Empty states (2026-09-15: when a band has no published albums and
+      no visible posts, `public_bands/show` now renders a dashed-border
+      placeholder instead of silently omitting both sections).
+* [x] Error states (covered by the 404 page above; no other error state
+      exists on this page today).
 
 ## Exit criteria
 

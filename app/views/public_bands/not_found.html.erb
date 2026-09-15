@@ -1,0 +1,13 @@
+<section class="px-4 sm:px-6 py-24 max-w-2xl mx-auto text-center">
+  <p class="text-xs sm:text-sm tracking-[0.2em] text-neutral-500 uppercase mb-4">404</p>
+  <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-6">
+    We couldn't find that page
+  </h1>
+  <p class="text-neutral-300 text-base sm:text-lg mb-10">
+    The band or album you're looking for doesn't exist, or is no longer public.
+  </p>
+  <div class="flex flex-wrap items-center justify-center gap-4">
+    <%= link_to "Discover bands", discover_bands_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition" %>
+    <%= link_to "Back to home", root_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
+  </div>
+</section>

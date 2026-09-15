@@ -24,7 +24,7 @@ class PublicBandsController < ApplicationController
     @posts = visible_posts(@band)
     @published_tracks_count = @band.tracks.published.count
   rescue ActiveRecord::RecordNotFound
-    head :not_found
+    render "not_found", status: :not_found
   end
 
   def album
@@ -32,7 +32,7 @@ class PublicBandsController < ApplicationController
     @album = @band.albums.published.find(params[:id])
     @tracks = @album.tracks.published.order(:track_number)
   rescue ActiveRecord::RecordNotFound
-    head :not_found
+    render "not_found", status: :not_found
   end
 
   private
