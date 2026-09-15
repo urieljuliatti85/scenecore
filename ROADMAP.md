@@ -1386,15 +1386,25 @@ that would previously have wiped the database.
 
 ### Email
 
-**Nothing is configured.** `production.rb` leaves
-`action_mailer.smtp_settings` commented out, so no mail can be delivered
-in production. This already matters: Devise's password reset silently
-depends on it, and it blocks adding email confirmation for address
-changes (see Phase 13, Authentication). Needs a provider decision.
+2026-09-15: production was not merely missing mail config — it was
+actively broken. `delivery_method` defaulted to `:smtp` against
+`localhost:25` (nothing listening) with `raise_delivery_errors` defaulting
+to `true`, so **"forgot my password" returned a 500** rather than failing
+quietly. Both sender addresses were also still the generated placeholders
+(`please-change-me-at-...@example.com`, `from@example.com`), which every
+provider rejects.
 
-* [ ] Email provider configured.
-* [ ] Transactional emails tested.
-* [ ] Failure handling tested.
+Delivery is now guarded on `SMTP_ADDRESS`: unset, nothing is attempted and
+nothing raises; set, mail goes over SMTP with errors surfaced. Senders come
+from `MAIL_FROM`.
+
+* [ ] Email provider configured. The app side is ready — set
+      `SMTP_ADDRESS`, `SMTP_USER_NAME`, `SMTP_PASSWORD` and `MAIL_FROM` on
+      the Railway `web` service to activate (Resend chosen; see
+      `docs/deployment.md`). Until then no mail is sent, but nothing 500s.
+* [ ] Transactional emails tested (blocked on the above — nothing can be
+      sent yet).
+* [ ] Failure handling tested (blocked on the above).
 
 ### Webhooks
 
