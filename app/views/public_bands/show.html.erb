@@ -97,4 +97,10 @@
       <% end %>
     </div>
   <% end %>
+
+  <% if @albums.none? && @posts.none? %>
+    <div class="mt-10 rounded-3xl border border-dashed border-neutral-800 px-5 py-10 text-center">
+      <p class="text-neutral-400">No music or posts published yet. Check back soon.</p>
+    </div>
+  <% end %>
 </section>

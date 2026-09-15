@@ -126,6 +126,13 @@ RSpec.describe "Public band pages", type: :request do
       expect(response).to have_http_status(:not_found)
     end
 
+    it "renders a branded 404 page for a nonexistent slug" do
+      get public_band_path("no-such-band")
+
+      expect(response.body).to include("We couldn't find that page")
+      expect(response.body).to include(discover_bands_path)
+    end
+
     it "shows the coming-soon navigation cards" do
       band = create(:band, :approved, name: "The Testers")
 
@@ -204,6 +211,32 @@ RSpec.describe "Public band pages", type: :request do
       get public_band_path(band.slug)
 
       expect(response.body).not_to include("Secret Album")
+    end
+
+    it "shows an empty state when the band has no published albums or posts" do
+      band = create(:band, :approved)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("No music or posts published yet")
+    end
+
+    it "does not show the empty state when the band has a published album" do
+      band = create(:band, :approved)
+      create(:album, :published, band: band)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("No music or posts published yet")
+    end
+
+    it "does not show the empty state when the band has a published post" do
+      band = create(:band, :approved)
+      create(:post, :published, band: band)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("No music or posts published yet")
     end
 
     it "shows the follower count" do
@@ -389,6 +422,15 @@ RSpec.describe "Public band pages", type: :request do
       get public_band_album_path(band.slug, album)
 
       expect(response).to have_http_status(:not_found)
+    end
+
+    it "renders a branded 404 page for a draft album" do
+      band = create(:band, :approved)
+      album = create(:album, band: band)
+
+      get public_band_album_path(band.slug, album)
+
+      expect(response.body).to include("We couldn't find that page")
     end
   end
 
