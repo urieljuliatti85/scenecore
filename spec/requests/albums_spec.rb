@@ -64,7 +64,10 @@ RSpec.describe "Albums", type: :request do
       band = create(:band)
       create(:band_membership, band: band, user: user)
       sign_in user
-      allow(Net::HTTP).to receive(:start).and_raise(Errno::ECONNREFUSED)
+      # Stubbed at the client rather than Net::HTTP so the test doesn't
+      # depend on Spotify credentials being decryptable (CI has no master key).
+      allow_any_instance_of(SpotifyClient).to receive(:search_albums)
+        .and_raise(SpotifyClient::Error, "Spotify request failed: Errno::ECONNREFUSED")
 
       get search_band_albums_path(band), params: { q: "Discovery" }
 
