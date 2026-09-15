@@ -91,6 +91,9 @@
       <h2 class="text-lg font-semibold text-neutral-300">Posts</h2>
       <% @posts.each do |post| %>
         <article class="rounded-3xl bg-gradient-to-br from-neutral-900 to-black border border-neutral-800 px-5 py-5">
+          <% if post.image.attached? %>
+            <%= image_tag post.image, class: "w-full max-h-96 object-cover rounded-2xl mb-4" %>
+          <% end %>
           <h3 class="text-white font-semibold mb-2"><%= post.title %></h3>
           <p class="text-neutral-300 text-sm whitespace-pre-line"><%= post.body %></p>
         </article>

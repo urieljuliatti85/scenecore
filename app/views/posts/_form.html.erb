@@ -22,5 +22,14 @@
     <%= form.select :visibility, Post.visibilities.keys, {}, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
   </div>
 
+  <div>
+    <%= form.label :image, class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <p class="text-xs text-neutral-500 mb-1">PNG, JPEG or WebP, up to 5MB</p>
+    <% if post.image.attached? && post.image.persisted? %>
+      <%= image_tag post.image, class: "w-32 h-32 object-cover rounded-lg mb-2" %>
+    <% end %>
+    <%= form.file_field :image, accept: "image/png,image/jpeg,image/webp", class: "w-full text-sm text-neutral-300 file:mr-4 file:rounded-full file:border-0 file:bg-yellow-400 file:text-black file:font-semibold file:px-4 file:py-2 file:cursor-pointer" %>
+  </div>
+
   <%= form.submit submit_label, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition cursor-pointer self-start" %>
 <% end %>

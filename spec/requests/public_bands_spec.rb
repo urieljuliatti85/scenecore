@@ -287,6 +287,29 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).to include("Public News")
     end
 
+    it "shows a published post's attached image" do
+      band = create(:band, :approved)
+      post_record = create(:post, :published, band: band, title: "Public News")
+      post_record.image.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/band_photo.png")),
+        filename: "band_photo.png",
+        content_type: "image/png"
+      )
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include(rails_blob_path(post_record.image, only_path: true))
+    end
+
+    it "does not show an image element for a post without one" do
+      band = create(:band, :approved)
+      create(:post, :published, band: band, title: "Public News")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("rails/active_storage/blobs")
+    end
+
     it "does not show a draft post" do
       band = create(:band, :approved)
       create(:post, band: band, title: "Draft News")

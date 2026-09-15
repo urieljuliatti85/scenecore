@@ -29,6 +29,34 @@ RSpec.describe "Posts", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
     end
 
+    it "creates a post with an attached image" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      sign_in user
+
+      image = fixture_file_upload("spec/fixtures/files/band_photo.png", "image/png")
+
+      post band_posts_path(band), params: { post: { title: "News", body: "Something happened.", visibility: "public", image: image } }
+
+      expect(Post.last.image).to be_attached
+    end
+
+    it "rejects an attached file that isn't a valid image" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      sign_in user
+
+      image = fixture_file_upload("spec/fixtures/files/invalid_photo.txt", "text/plain")
+
+      expect {
+        post band_posts_path(band), params: { post: { title: "News", visibility: "public", image: image } }
+      }.not_to change(Post, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
     it "requires authentication" do
       band = create(:band)
 
