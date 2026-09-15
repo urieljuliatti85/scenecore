@@ -252,12 +252,15 @@ Create a stable Rails foundation before implementing business features.
 * [x] Define development storage.
 * [ ] Define staging storage. Blocked on a staging environment existing at
       all (see 1.1).
-* [ ] Define production storage. Decision made, not yet implemented: a
-      Railway Volume on `web`, not S3/R2/GCS (see `docs/deployment.md`
-      Storage section for the full reasoning and migration trigger).
-      Currently `production.rb` points Active Storage at `:local`, which
-      does not persist across deploys — a real risk on the live
-      deployment, not just a gap.
+* [x] Define production storage (2026-09-15). A Railway Volume
+      (`scenecore-active-storage`, 500MB) is mounted on the `web` service
+      at `/rails/storage`, with `ACTIVE_STORAGE_PATH` pointing
+      `config/storage.yml`'s new `production` entry at it and
+      `production.rb` using `service: :production`. Before this,
+      production used `:local` — rooted at the container filesystem, so
+      every uploaded band photo, album cover and post image was discarded
+      on the next deploy. See `docs/deployment.md` for the reasoning and
+      the trigger for moving to object storage.
 
 ### 1.4 Testing
 

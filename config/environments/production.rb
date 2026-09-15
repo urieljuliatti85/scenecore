@@ -21,8 +21,10 @@ Rails.application.configure do
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
 
-  # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+  # Disk-backed, but rooted at a Railway Volume mount rather than the
+  # container filesystem, which does not survive deploys (see
+  # config/storage.yml and docs/deployment.md).
+  config.active_storage.service = :production
 
   # Railway terminates TLS at its edge proxy and forwards plain HTTP to the app.
   config.assume_ssl = true
