@@ -43,6 +43,44 @@ Database:
 
 PostgreSQL
 
+### Database persistence — CRITICAL, unresolved (2026-09-15)
+
+The `postgres` service runs the raw `postgres:16` image with **no volume
+attached** (`volumeMounts: []`, verified against the live environment; its
+deploy logs show `initdb` running and no "Mounting volume" line, which the
+`web` service's logs do show). Postgres is therefore writing to the
+container filesystem: **a restart or redeploy of that service destroys the
+entire database** — users, bands, albums, posts, follows.
+
+Railway's backup feature operates on volumes, so no backup can be
+configured until this is fixed either.
+
+**Fixing it requires care, in this order.** Mounting an empty volume at
+`/var/lib/postgresql/data` masks the existing data directory; Postgres
+then runs `initdb` into the empty volume and the database comes up empty,
+with the old data unreachable and lost at the next restart.
+
+1. Dump the current database first:
+
+   ```
+   railway link -p 47c6b007-01a1-49a8-ab16-04e319bf918d
+   railway run --service postgres sh -c \
+     'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner --no-acl' \
+     > scenecore-prod-backup-$(date +%Y%m%d-%H%M).sql
+   ```
+
+   (`railway run` injects the service's variables, so the password never
+   appears on the command line.) Verify the dump is non-empty before
+   continuing.
+
+2. Create a volume on `postgres` mounted at `/var/lib/postgresql/data`.
+   The service restarts and comes up with an empty database.
+
+3. Restore the dump into it, then confirm the app reads real data again.
+
+Until step 2 is done, treat production data as disposable and avoid
+restarting or redeploying the `postgres` service.
+
 ---
 
 ## Background jobs and cache
