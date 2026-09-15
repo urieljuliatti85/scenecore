@@ -1304,8 +1304,12 @@ domain.
       and the trigger for moving back to Solid Queue).
 * [ ] Domain. Only Railway's generated
       `web-production-4c75.up.railway.app` exists; no custom domain is
-      configured (`customDomains: []`). Needs a product decision on the
-      real domain before launch.
+      configured (`customDomains: []`). **No domain has been registered
+      yet** (2026-09-15), so this is a launch-time item, not an
+      infrastructure gap — nothing else is waiting on it except real-user
+      email (Resend requires a verified sending domain, see Email below).
+      The generated Railway domain serves the app over HTTPS in the
+      meantime.
 * [x] HTTPS (`force_ssl` + `assume_ssl` enabled in `production.rb`;
       verified live: `http://` returns 301 and `/up` returns 200 over
       HTTPS).
