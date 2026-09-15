@@ -1294,9 +1294,9 @@ domain.
 * [x] Production application (Railway `web` service, Dockerfile build,
       tracking `main`, single replica in `ams`; deploys on merge and runs
       `db:prepare` via `bin/docker-entrypoint` before booting).
-* [x] PostgreSQL (Railway `postgres` service, `postgres:16`). **Note: it
-      has no volume — see the Database section below. The service runs,
-      but its data does not survive a restart.**
+* [x] PostgreSQL (Railway `postgres` service, `postgres:16`, storing data
+      on the `scenecore-postgres-data` volume — see the Database section
+      below).
 * [x] Storage (Railway Volume `scenecore-active-storage`, 500MB, mounted
       at `/rails/storage`; see 1.3).
 * [x] Background jobs (`:async` in-process, matching a single replica with
@@ -1326,28 +1326,32 @@ domain.
 
 ### Database
 
-**CRITICAL (2026-09-15): the production database has no persistent
-storage.** The `postgres` service runs the raw `postgres:16` image with
-`volumeMounts: []` — verified against the live Railway environment, and
-its deploy logs show `initdb` running with no "Mounting volume" line (the
-`web` service's logs do show one). Postgres is writing to the container
-filesystem, so a restart or redeploy of that service destroys every user,
-band, album, post and follow. This is not theoretical: the project has
-exactly one volume, and it is the Active Storage one on `web`.
+2026-09-15: **the production database had no persistent storage, and now
+does.** The `postgres` service was running the raw `postgres:16` image
+with `volumeMounts: []`, writing to the container filesystem — any restart
+or redeploy destroyed every user, band, album, post and follow. It now
+stores data on the `scenecore-postgres-data` volume (500MB) mounted at
+`/var/lib/postgresql/data`, with `PGDATA` pointed at a `pgdata`
+subdirectory of that mount.
 
-Attaching a volume is not a one-step fix — mounting an empty volume at
-`/var/lib/postgresql/data` masks the existing data directory, Postgres
-runs `initdb` into the empty volume, and the current data becomes
-unreachable. The order must be: dump first, then attach the volume, then
-restore.
+That subdirectory matters: a Railway volume arrives with a `lost+found`
+directory, so `initdb` refuses to use the mount point directly and the
+service crash-loops. The first attempt here did exactly that; setting
+`PGDATA=/var/lib/postgresql/data/pgdata` fixed it. Full procedure,
+including the dump/restore commands that actually work against this setup,
+is in `docs/deployment.md`.
+
+Verified by restarting the `postgres` service and confirming the schema
+(17 migrations) and the existing user row both survived — the operation
+that would previously have wiped the database.
 
 * [x] Production migrations reviewed (17 migrations, none destructive — no
       `drop_table`, `remove_column` or `change_column`; they apply
       automatically via `db:prepare` in `bin/docker-entrypoint`, verified
       working in the deploy logs when `AddEnumCheckConstraints` shipped).
-* [ ] Backup configured. Blocked by the above — Railway's backup feature
-      operates on volumes, so a service with no volume cannot be backed
-      up at all.
+* [ ] Backup configured. No longer blocked — Railway's backup feature
+      operates on volumes, and the database now has one, so scheduled
+      backups can be enabled. Not done yet.
 * [x] Restore procedure documented (`docs/deployment.md` has the working
       dump command and the dump → attach volume → restore order). A
       verified dump was taken 2026-09-15; restoring it has not been
