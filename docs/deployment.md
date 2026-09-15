@@ -45,6 +45,38 @@ PostgreSQL
 
 ---
 
+## Background jobs and cache
+
+**Status (2026-09-15): in-process, deliberately.**
+
+`production.rb` previously configured Solid Queue (jobs), Solid Cache
+(cache) and Solid Cable (Action Cable), but none of them worked:
+`config/database.yml` declares a single database with no `queue`/`cache`/
+`cable` connections, so `db/queue_schema.rb` and `db/cache_schema.rb` are
+never loaded and those tables do not exist. Every job enqueue and cache
+write in production was hitting a missing table. Verified against the live
+environment: the project has only `web` and `postgres` services (no worker),
+and `SOLID_QUEUE_IN_PUMA` — which `config/puma.rb` checks before starting
+an in-Puma worker — is not set, so nothing would have drained the queue
+even with the tables present.
+
+Now: `:async` for Active Job, `:memory_store` for cache, `async` for
+Action Cable. These are in-process, which fits the current shape of
+production (one `web` replica, no application-owned jobs — the only job
+enqueued today is Active Storage's `AnalyzeJob`, and nothing uses Action
+Cable at all).
+
+Migration trigger: in-process adapters are per-process, so queued work is
+lost on restart and never shared between replicas. Before adding a second
+`web` replica, or any job that must survive a restart, add the `queue` and
+`cache` connections to `config/database.yml` (so `db:prepare` creates the
+tables), then move back to Solid Queue/Cache and run a worker — either
+`SOLID_QUEUE_IN_PUMA=true` on `web`, or a dedicated worker service.
+`spec/models/production_backends_spec.rb` fails if production is pointed
+back at a Solid backend before that connection exists.
+
+---
+
 ## Storage
 
 **Status (2026-09-14): unresolved.** `config/environments/production.rb`
@@ -87,9 +119,11 @@ Required variables:
 - [provider credentials]
 - [email credentials]
 
-Currently set on the `web` service in Railway: `APP_HOST`, `DATABASE_URL`,
-`PORT`, `RAILS_ENV`, `RAILS_MASTER_KEY`. No storage or email provider
-credentials are configured yet.
+Currently set on the `web` service in Railway (verified 2026-09-15 against
+the live environment): `APP_HOST`, `DATABASE_URL`, `PORT`, `RAILS_ENV`,
+`RAILS_MASTER_KEY`, plus the `RAILWAY_*` variables Railway injects itself.
+No storage or email provider credentials are configured yet, and
+`SOLID_QUEUE_IN_PUMA` is deliberately not set (see Background jobs above).
 
 Never commit secrets.
 

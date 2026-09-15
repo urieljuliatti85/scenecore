@@ -46,11 +46,22 @@ Rails.application.configure do
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 
-  # Replace the default in-process memory cache store with a durable alternative.
-  config.cache_store = :solid_cache_store
+  # Solid Cache/Queue need their own tables, which this app's single-database
+  # config/database.yml never creates (it declares no `cache`/`queue`
+  # connections, so db/cache_schema.rb and db/queue_schema.rb are never
+  # loaded). Both were configured here but non-functional. Using the
+  # in-process adapters instead, which match what production actually is
+  # right now: a single web replica with no background work of its own —
+  # the only job enqueued today is Active Storage's AnalyzeJob.
+  #
+  # Switch back to Solid Cache/Queue when either becomes untrue: a second
+  # replica (an in-process cache and queue are per-process, so work would be
+  # lost or duplicated) or a job that must survive a restart. That means
+  # adding the `cache`/`queue` connections to database.yml first, so
+  # db:prepare actually creates the tables.
+  config.cache_store = :memory_store
 
-  # Replace the default in-process and non-durable queuing backend for Active Job.
-  config.active_job.queue_adapter = :solid_queue
+  config.active_job.queue_adapter = :async
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.

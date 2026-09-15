@@ -1181,10 +1181,43 @@ management page.
 
 ### Background jobs
 
-* [ ] Identify asynchronous workloads.
-* [ ] Configure retries.
-* [ ] Handle failed jobs.
-* [ ] Verify job idempotency where necessary.
+2026-09-15: audited, including against the live Railway production
+environment. Found that production's job/cache/cable backends were all
+configured but non-functional, and fixed that; there is still no
+application-owned background work to configure retries or idempotency for.
+
+* [x] Identify asynchronous workloads. There are none of the app's own —
+      `app/jobs/` contains only the generated `ApplicationJob` with
+      everything commented out. The only job enqueued today is Active
+      Storage's `AnalyzeJob` (image metadata extraction, on upload).
+* [x] Configure retries. Found and fixed a real problem first:
+      `production.rb` set `queue_adapter = :solid_queue` and
+      `cache_store = :solid_cache_store`, and `cable.yml` set
+      `adapter: solid_cable` — but `config/database.yml` declares a single
+      database with no `queue`/`cache`/`cable` connections, so
+      `db/queue_schema.rb` and `db/cache_schema.rb` are never loaded and
+      those tables do not exist. Every enqueue and cache write in
+      production was hitting a missing table. Confirmed against the live
+      Railway environment: only `web` and `postgres` services exist, no
+      worker service, and `SOLID_QUEUE_IN_PUMA` (which `config/puma.rb`
+      checks) is not set, so nothing would have drained the queue even if
+      the tables existed. Switched to `:async`/`:memory_store`/`async`
+      cable, which match what production actually is: one web replica with
+      no durable background work. Retry configuration is deferred with the
+      workloads themselves — there is nothing to retry yet.
+* [x] Handle failed jobs (nothing to handle: no app-owned jobs, and the
+      backend now actually runs rather than erroring on enqueue).
+* [x] Verify job idempotency where necessary (not applicable yet — no
+      app-owned jobs).
+
+Trigger to revisit: the in-process adapters are per-process, so work is
+lost on restart and not shared between replicas. Before adding a second
+`web` replica or any job that must survive a restart, add the
+`queue`/`cache` connections to `database.yml` so `db:prepare` creates the
+tables, then move back to Solid Queue/Cache and run a worker (either
+`SOLID_QUEUE_IN_PUMA=true` or a dedicated service). A guard spec
+(`spec/models/production_backends_spec.rb`) fails if production is pointed
+back at a Solid backend without that connection existing.
 
 ### Storage
 
