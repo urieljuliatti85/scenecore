@@ -642,9 +642,24 @@ Test:
 
 ### 10.5 File protection
 
-* [ ] Protected files are not exposed through predictable URLs.
-* [ ] Direct access is authorized.
-* [ ] Authorization is enforced server-side.
+2026-09-15: audited while adding Post#image (see 10.2). Found and fixed a
+real gap — Active Storage's default blob redirect route is publicly
+accessible to anyone with the URL, forever, regardless of the owning
+record's visibility (Rails' own controller source code warns about this
+explicitly). A draft album's cover, a pending band's photo, and a
+followers-only post's image were all reachable by direct URL with no
+authorization check. Fixed by routing blob redirects through
+`AuthenticatedBlobsController`, which checks `AttachmentVisibility`
+(same public/approved/published/followers rules `PublicBandsController`
+already applies, plus band-membership access for the management area)
+before redirecting to the file.
+
+* [x] Protected files are not exposed through predictable URLs (URLs were
+      already signed; the gap was authorization, not guessability — see
+      above).
+* [x] Direct access is authorized (`AuthenticatedBlobsController`).
+* [x] Authorization is enforced server-side (`AttachmentVisibility`,
+      covered by `spec/requests/authenticated_blobs_spec.rb`).
 
 ## Exit criteria
 
