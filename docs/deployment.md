@@ -229,8 +229,41 @@ Deliberately not set: `SOLID_QUEUE_IN_PUMA` (see Background jobs above).
 - `SENTRY_DSN` on `web` — error monitoring is wired up but inert without
   it. Nothing is reported until this is set; see the Monitoring note
   below.
-- Email provider credentials — no SMTP is configured, so no mail can be
-  delivered (this silently affects Devise password reset).
+- Email provider credentials — see Email below. No mail is sent until
+  they are set.
+
+## Email
+
+**Status (2026-09-15): wired up, not yet activated.**
+
+Production used to be worse than unconfigured: `delivery_method` defaulted
+to `:smtp` against `localhost:25` with nothing listening, and
+`raise_delivery_errors` defaults to `true` — so a password reset raised and
+the user got a **500**. Both sender addresses were still Rails'/Devise's
+generated placeholders.
+
+Now `config/environments/production.rb` only attempts delivery when
+`SMTP_ADDRESS` is present. Without it, `perform_deliveries` is off and
+nothing raises; the password-reset page still reports success, which is
+what Devise does for unknown addresses anyway.
+
+To activate, set these on the `web` service:
+
+| Variable | Value |
+|---|---|
+| `SMTP_ADDRESS` | `smtp.resend.com` |
+| `SMTP_PORT` | `587` (the default if unset) |
+| `SMTP_USER_NAME` | `resend` |
+| `SMTP_PASSWORD` | the Resend API key |
+| `MAIL_FROM` | a verified sender, e.g. `no-reply@yourdomain` |
+
+Resend requires the sending domain to be verified before it will accept
+mail from it; their test domain works for a first check. `MAIL_FROM` feeds
+both `Devise.mailer_sender` and `ApplicationMailer`'s default `from`.
+
+What depends on this today: Devise password reset (`:recoverable` is
+enabled and reachable from the sign-in page). Adding email confirmation for
+address changes — the gap recorded in Phase 13 — also waits on it.
 
 ## Monitoring
 
