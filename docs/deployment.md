@@ -43,43 +43,59 @@ Database:
 
 PostgreSQL
 
-### Database persistence — CRITICAL, unresolved (2026-09-15)
+### Database persistence — resolved 2026-09-15
 
-The `postgres` service runs the raw `postgres:16` image with **no volume
-attached** (`volumeMounts: []`, verified against the live environment; its
-deploy logs show `initdb` running and no "Mounting volume" line, which the
-`web` service's logs do show). Postgres is therefore writing to the
-container filesystem: **a restart or redeploy of that service destroys the
-entire database** — users, bands, albums, posts, follows.
+The `postgres` service stores its data on the Railway Volume
+`scenecore-postgres-data` (500MB, region `ams`), mounted at
+`/var/lib/postgresql/data`, with **`PGDATA` set to
+`/var/lib/postgresql/data/pgdata`**.
 
-Railway's backup feature operates on volumes, so no backup can be
-configured until this is fixed either.
+That `PGDATA` variable is not optional — see below.
 
-**Fixing it requires care, in this order.** Mounting an empty volume at
-`/var/lib/postgresql/data` masks the existing data directory; Postgres
-then runs `initdb` into the empty volume and the database comes up empty,
-with the old data unreachable and lost at the next restart.
+Before this, the service ran the raw `postgres:16` image with no volume at
+all, writing to the container filesystem, so any restart or redeploy
+destroyed the entire database. Verified fixed by restarting the service
+and confirming the data survived.
 
-1. Dump the current database first:
+**`PGDATA` must point at a subdirectory of the mount, not the mount
+itself.** A Railway volume arrives containing a `lost+found` directory, so
+`initdb` refuses to use the mount point directly and the service
+crash-loops with:
 
-   ```
-   railway link -p 47c6b007-01a1-49a8-ab16-04e319bf918d
-   railway run --service postgres sh -c \
-     'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner --no-acl' \
-     > scenecore-prod-backup-$(date +%Y%m%d-%H%M).sql
-   ```
+```
+initdb: error: directory "/var/lib/postgresql/data" exists but is not empty
+initdb: detail: It contains a lost+found directory, perhaps due to it being a mount point.
+initdb: hint: Using a mount point directly as the data directory is not recommended.
+Create a subdirectory under the mount point.
+```
 
-   (`railway run` injects the service's variables, so the password never
-   appears on the command line.) Verify the dump is non-empty before
-   continuing.
+This is exactly what happened on the first attempt here. Setting
+`PGDATA=/var/lib/postgresql/data/pgdata` resolved it.
 
-2. Create a volume on `postgres` mounted at `/var/lib/postgresql/data`.
-   The service restarts and comes up with an empty database.
+**Dumping the database.** `railway run` executes locally and cannot reach
+the database (it only has an internal Railway address, and there is no TCP
+proxy). Run `pg_dump` from inside the `web` container instead, which has
+`postgresql-client` installed and reaches the database over the internal
+network:
 
-3. Restore the dump into it, then confirm the app reads real data again.
+```
+railway ssh --service web sh -c 'pg_dump "$DATABASE_URL" --no-owner --no-acl' \
+  > scenecore-prod-backup-$(date +%Y%m%d-%H%M).sql
+```
 
-Until step 2 is done, treat production data as disposable and avoid
-restarting or redeploying the `postgres` service.
+Restore the same way, with `psql` in place of `pg_dump`. Note that a full
+dump also contains `CREATE TABLE` statements, which conflict with the
+tables `db:prepare` creates on boot — to restore data only, extract the
+relevant `COPY` blocks. After restoring rows with explicit ids, reset the
+sequence or the next insert collides:
+
+```
+SELECT setval(pg_get_serial_sequence('users', 'id'), (SELECT MAX(id) FROM users));
+```
+
+**Still missing:** scheduled backups. Railway's backup feature operates on
+volumes, so this is now possible — it just has not been configured yet
+(see ROADMAP.md Phase 15).
 
 ---
 
