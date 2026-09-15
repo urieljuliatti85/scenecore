@@ -1398,13 +1398,22 @@ Delivery is now guarded on `SMTP_ADDRESS`: unset, nothing is attempted and
 nothing raises; set, mail goes over SMTP with errors surfaced. Senders come
 from `MAIL_FROM`.
 
-* [ ] Email provider configured. The app side is ready — set
-      `SMTP_ADDRESS`, `SMTP_USER_NAME`, `SMTP_PASSWORD` and `MAIL_FROM` on
-      the Railway `web` service to activate (Resend chosen; see
-      `docs/deployment.md`). Until then no mail is sent, but nothing 500s.
-* [ ] Transactional emails tested (blocked on the above — nothing can be
-      sent yet).
-* [ ] Failure handling tested (blocked on the above).
+* [x] Email provider configured (2026-09-15: Resend over SMTP, credentials
+      on the Railway `web` service. Note `SMTP_PORT` is **2587** — Railway
+      blocks 587 and 465, verified from inside the container; see
+      `docs/deployment.md`).
+* [x] Transactional emails tested (a real message was sent from production
+      and delivered — `SENT OK`, not just a green config check).
+* [ ] Failure handling tested. Not exercised: what a user sees when Resend
+      is down or rejects a message. `raise_delivery_errors` is on once SMTP
+      is configured, so a failure currently surfaces as a 500 on the
+      password-reset request — worth handling before real users depend on
+      it.
+
+**Still not usable by real users.** The sender is `onboarding@resend.dev`,
+Resend's test domain, which only delivers to the account owner's own
+address. Real delivery needs a verified domain in Resend, which wants the
+custom domain still open in Infrastructure above.
 
 ### Webhooks
 
