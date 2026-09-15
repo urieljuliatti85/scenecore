@@ -52,6 +52,18 @@ RSpec.describe "Band member invitation", type: :system do
   # retries once and keeps screenshots/log as an artifact from the first
   # attempt specifically so this stays investigable by whoever picks it up
   # next.
+  #
+  # 2026-09-15: CI now runs this file in its own rspec process, after the
+  # rest of spec/system, which leans on exactly that one confirmed property.
+  # It is mitigation, not a fix — the spec still runs and still has to pass,
+  # and the cause is still unknown. It was done because the flake had blocked
+  # three unrelated documentation PRs in a day, and on the last one survived
+  # four consecutive attempts (the job's own retry plus a manual re-run),
+  # where previously a single re-run had been enough.
+  #
+  # If this starts failing *in isolation*, that is new information and worth
+  # investigating rather than retrying: it would rule out the cross-spec
+  # interference theory that this split is built on.
   it "lets an administrator add a member who can see the band but not manage its members" do
     admin = create(:user, name: "Alice")
     new_member = create(:user, name: "Bob", email: "bob@example.com")
