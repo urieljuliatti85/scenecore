@@ -227,7 +227,12 @@ Create a stable Rails foundation before implementing business features.
 * [x] Configure PostgreSQL.
 * [x] Configure environment variables.
 * [x] Configure development environment.
-* [ ] Configure production environment.
+* [ ] Configure production environment. Partially done: a `production`
+      Railway environment exists and is live (`web` + `postgres`
+      services, `web` tracking `main`) — see `docs/deployment.md`. Not
+      done: no staging environment exists yet (despite the deploy flow
+      describing one), and Active Storage/Postgres volumes are unresolved
+      (see 1.3).
 
 ### 1.2 Frontend
 
@@ -245,8 +250,14 @@ Create a stable Rails foundation before implementing business features.
 
 * [x] Configure Active Storage.
 * [x] Define development storage.
-* [ ] Define staging storage.
-* [ ] Define production storage.
+* [ ] Define staging storage. Blocked on a staging environment existing at
+      all (see 1.1).
+* [ ] Define production storage. Decision made, not yet implemented: a
+      Railway Volume on `web`, not S3/R2/GCS (see `docs/deployment.md`
+      Storage section for the full reasoning and migration trigger).
+      Currently `production.rb` points Active Storage at `:local`, which
+      does not persist across deploys — a real risk on the live
+      deployment, not just a gap.
 
 ### 1.4 Testing
 
