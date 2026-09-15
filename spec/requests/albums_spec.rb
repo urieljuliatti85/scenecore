@@ -37,14 +37,14 @@ RSpec.describe "Albums", type: :request do
       create(:band_membership, band: band, user: user)
       sign_in user
 
-      result = SpotifyClient::AlbumResult.new(spotify_id: "abc123", name: "Discovery", artist: "Daft Punk", image_url: "https://example.com/cover.jpg", release_year: "2001")
+      result = SpotifyClient::AlbumResult.new(spotify_id: "4uLU6hMCjMI75M1A2tKUQC", name: "Discovery", artist: "Daft Punk", image_url: "https://example.com/cover.jpg", release_year: "2001")
       allow_any_instance_of(SpotifyClient).to receive(:search_albums).with("Discovery").and_return([ result ])
 
       get search_band_albums_path(band), params: { q: "Discovery" }
 
       expect(response).to have_http_status(:ok)
       body = JSON.parse(response.body)
-      expect(body.first["spotify_id"]).to eq("abc123")
+      expect(body.first["spotify_id"]).to eq("4uLU6hMCjMI75M1A2tKUQC")
       expect(body.first["name"]).to eq("Discovery")
     end
 
@@ -77,10 +77,10 @@ RSpec.describe "Albums", type: :request do
       band = create(:band)
       create(:band_membership, band: band, user: user)
       sign_in user
-      allow_any_instance_of(SpotifyClient).to receive(:fetch_album).with("abc123").and_return(fetched_album)
+      allow_any_instance_of(SpotifyClient).to receive(:fetch_album).with("4uLU6hMCjMI75M1A2tKUQC").and_return(fetched_album)
 
       expect {
-        post band_albums_path(band), params: { spotify_album_id: "abc123" }
+        post band_albums_path(band), params: { spotify_album_id: "4uLU6hMCjMI75M1A2tKUQC" }
       }.to change(Album, :count).by(1).and change(Track, :count).by(2)
 
       album = Album.last
@@ -104,6 +104,19 @@ RSpec.describe "Albums", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
     end
 
+    it "does not create anything when the Spotify album id has an invalid format" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      sign_in user
+
+      expect {
+        post band_albums_path(band), params: { spotify_album_id: "../../etc/passwd" }
+      }.not_to change(Album, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
     it "does not create anything when Spotify import fails" do
       user = create(:user)
       band = create(:band)
@@ -112,7 +125,7 @@ RSpec.describe "Albums", type: :request do
       allow_any_instance_of(SpotifyClient).to receive(:fetch_album).and_raise(SpotifyClient::Error)
 
       expect {
-        post band_albums_path(band), params: { spotify_album_id: "abc123" }
+        post band_albums_path(band), params: { spotify_album_id: "4uLU6hMCjMI75M1A2tKUQC" }
       }.not_to change(Album, :count)
 
       expect(response).to have_http_status(:bad_gateway)
@@ -122,7 +135,7 @@ RSpec.describe "Albums", type: :request do
       band = create(:band)
 
       expect {
-        post band_albums_path(band), params: { spotify_album_id: "abc123" }
+        post band_albums_path(band), params: { spotify_album_id: "4uLU6hMCjMI75M1A2tKUQC" }
       }.not_to change(Album, :count)
 
       expect(response).to redirect_to(new_user_session_path)
@@ -135,7 +148,7 @@ RSpec.describe "Albums", type: :request do
       sign_in outsider
 
       expect {
-        post band_albums_path(band), params: { spotify_album_id: "abc123" }
+        post band_albums_path(band), params: { spotify_album_id: "4uLU6hMCjMI75M1A2tKUQC" }
       }.not_to change(Album, :count)
 
       expect(response).to redirect_to(root_path)
