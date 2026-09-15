@@ -1140,11 +1140,44 @@ Find obvious production problems before launch.
 
 ### Database
 
-* [ ] Review indexes.
-* [ ] Review foreign keys.
-* [ ] Review constraints.
-* [ ] Identify N+1 queries.
-* [ ] Review expensive queries.
+2026-09-15: Database section audited. Indexes and foreign keys were
+already correct — no changes needed. Two real problems found and fixed:
+the database had no CHECK constraints at all, and one N+1 in the band
+management page.
+
+* [x] Review indexes (every foreign key is indexed, and the composite
+      indexes match the queries actually run: `albums(band_id, status)`,
+      `tracks(album_id, status)`, `posts(band_id, status, visibility)`,
+      plus unique indexes on `bands.slug`, `categories.slug`,
+      `users.email`, `band_memberships(user_id, band_id)` and
+      `follows(user_id, band_id)`. No changes needed).
+* [x] Review foreign keys (all eight associations have one; no orphan
+      columns found. No changes needed).
+* [x] Review constraints. Found: the database had **zero** CHECK
+      constraints, so every enum-backed column (`bands.status`,
+      `band_memberships.role`, `albums.status`, `tracks.status`,
+      `posts.status`, `posts.visibility`) was a free-form string
+      enforced only by model validations — which `update_all` bypasses,
+      and `AlbumsController`/`Admin::AlbumsController` use `update_all`
+      on `status` in three places today. Added CHECK constraints for all
+      six (see `AddEnumCheckConstraints`), covered by
+      `spec/models/database_constraints_spec.rb`.
+* [x] Identify N+1 queries. Found one: `bands/show.html.erb` eager-loaded
+      `:tracks` and then called `album.tracks.order(:track_number)` inside
+      the loop, which discards the preloaded association and issues a
+      fresh query per album (measured: 4 track queries for 3 albums, vs 1
+      after). Fixed by sorting the loaded association in memory; regression
+      guard in `spec/requests/bands_spec.rb`. Checked the other views that
+      walk associations (`admin/albums`, `admin/privileges`,
+      `band_memberships`, `search`, `pages/home`, `public_bands`) — all
+      already eager-load correctly.
+* [ ] Review expensive queries. Not done — needs production data volume
+      to be meaningful, and production currently has no real traffic.
+      One known inefficiency recorded for when it does: `public_bands#index`
+      loads every follower record via `includes(:followers)` purely to call
+      `followers.size` for a count, and sorts in Ruby rather than SQL.
+      Fine at current scale, wrong shape at large scale — revisit with a
+      counter cache or a `COUNT` aggregate when there's data to measure.
 
 ### Background jobs
 

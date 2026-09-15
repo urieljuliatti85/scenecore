@@ -84,6 +84,26 @@ RSpec.describe "Bands", type: :request do
 
       expect(response).to have_http_status(:ok)
     end
+
+    it "does not run one track query per album" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      3.times do |i|
+        album = create(:album, band: band)
+        create(:track, album: album, track_number: i + 1)
+      end
+      sign_in user
+
+      track_queries = 0
+      subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*, payload|
+        track_queries += 1 if payload[:sql].include?('"tracks"') && payload[:name] != "SCHEMA"
+      end
+      get band_path(band)
+      ActiveSupport::Notifications.unsubscribe(subscriber)
+
+      expect(track_queries).to eq(1)
+    end
   end
 
   describe "band isolation" do
