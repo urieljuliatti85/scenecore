@@ -1,0 +1,49 @@
+<% content_for :title, "Subscriptions — Admin — SceneCore" %>
+
+<div class="max-w-4xl">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl font-extrabold tracking-tight">Subscriptions</h1>
+  </div>
+
+  <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mb-8">
+    <div class="flex items-center gap-2">
+      <span class="text-xs uppercase tracking-wide text-neutral-600">Level</span>
+      <%= link_to "All", admin_subscriptions_path(status: params[:status]), class: "text-sm text-neutral-400 hover:text-white transition" %>
+      <% Subscription.levels.keys.each do |level| %>
+        <%= link_to level.humanize, admin_subscriptions_path(level: level, status: params[:status]), class: "text-sm text-neutral-400 hover:text-white transition" %>
+      <% end %>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <span class="text-xs uppercase tracking-wide text-neutral-600">Status</span>
+      <%= link_to "All", admin_subscriptions_path(level: params[:level]), class: "text-sm text-neutral-400 hover:text-white transition" %>
+      <% Subscription.statuses.keys.each do |status| %>
+        <%= link_to status.humanize, admin_subscriptions_path(level: params[:level], status: status), class: "text-sm text-neutral-400 hover:text-white transition" %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @subscriptions.empty? %>
+    <p class="text-neutral-500">No subscriptions found.</p>
+  <% else %>
+    <ul class="space-y-3">
+      <% @subscriptions.each do |subscription| %>
+        <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <p class="font-semibold text-white"><%= subscription.user.name %></p>
+            <p class="text-sm text-neutral-500">
+              <%= link_to subscription.band.name, band_path(subscription.band), class: "hover:text-white transition" %>
+            </p>
+            <p class="text-xs text-neutral-600 mt-1 font-mono break-all">
+              <%= subscription.stripe_subscription_id.presence || "no Stripe subscription" %>
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= subscription.level.humanize %></span>
+            <span class="text-xs uppercase tracking-wide rounded-full px-3 py-1 border <%= subscription.active? ? "border-green-900 text-green-400" : "border-neutral-700 text-neutral-500" %>"><%= subscription.status.humanize %></span>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>
