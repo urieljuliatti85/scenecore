@@ -203,4 +203,36 @@ RSpec.describe "Subscriptions", type: :request do
       expect(response).to redirect_to(new_user_session_path)
     end
   end
+
+  describe "GET /subscriptions" do
+    it "lists only the signed-in user's subscriptions" do
+      user = create(:user)
+      band = create(:band, :approved, name: "My Band")
+      create(:subscription, :active, user: user, band: band, level: :supporter)
+      create(:subscription, :active, band: create(:band, :approved, name: "Someone Else's Band"))
+      sign_in user
+
+      get subscriptions_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("My Band")
+      expect(response.body).not_to include("Someone Else's Band")
+    end
+
+    it "shows an empty state when the user has no subscriptions" do
+      user = create(:user)
+      sign_in user
+
+      get subscriptions_path
+
+      expect(response.body).to include("You haven")
+      expect(response.body).to include("subscribed to any bands yet")
+    end
+
+    it "requires authentication" do
+      get subscriptions_path
+
+      expect(response).to redirect_to(new_user_session_path)
+    end
+  end
 end
