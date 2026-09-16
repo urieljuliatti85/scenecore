@@ -36,5 +36,18 @@
     <%= form.file_field :image, accept: "image/png,image/jpeg,image/webp", class: "w-full text-sm text-neutral-300 file:mr-4 file:rounded-full file:border-0 file:bg-yellow-400 file:text-black file:font-semibold file:px-4 file:py-2 file:cursor-pointer" %>
   </div>
 
+  <div>
+    <%= form.label :attachments, "Composition files", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <p class="text-xs text-neutral-500 mb-1">Demos, rehearsal recordings, or lyrics. WAV, MP3, or PDF, up to 25MB each.</p>
+    <% if post.attachments.attached? %>
+      <ul class="text-sm text-neutral-400 mb-2 space-y-1">
+        <% post.attachments.each do |attachment| %>
+          <li><%= attachment.filename %></li>
+        <% end %>
+      </ul>
+    <% end %>
+    <%= form.file_field :attachments, multiple: true, accept: "audio/wav,audio/mpeg,application/pdf", class: "w-full text-sm text-neutral-300 file:mr-4 file:rounded-full file:border-0 file:bg-yellow-400 file:text-black file:font-semibold file:px-4 file:py-2 file:cursor-pointer" %>
+  </div>
+
   <%= form.submit submit_label, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition cursor-pointer self-start" %>
 <% end %>

@@ -168,6 +168,15 @@
           <% end %>
           <h3 class="text-white font-semibold mb-2"><%= post.title %></h3>
           <div class="text-neutral-300 text-sm"><%= post.body %></div>
+          <% if post.attachments.attached? %>
+            <ul class="mt-4 flex flex-col gap-1.5">
+              <% post.attachments.each do |attachment| %>
+                <li>
+                  <%= link_to attachment.filename, rails_blob_path(attachment, disposition: "attachment"), class: "text-sm text-yellow-400 hover:text-yellow-300 transition" %>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
         </article>
       <% end %>
     </div>
