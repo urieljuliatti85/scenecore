@@ -1,5 +1,5 @@
 class PagesController < ApplicationController
-  skip_before_action :authenticate_user!, only: [ :home, :how_it_works, :contact, :support ]
+  skip_before_action :authenticate_user!, only: [ :home, :how_it_works, :support ]
 
   def home
     @featured_band = Band.featured.with_attached_photo.first
@@ -8,9 +8,6 @@ class PagesController < ApplicationController
   end
 
   def how_it_works
-  end
-
-  def contact
   end
 
   def support

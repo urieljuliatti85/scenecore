@@ -97,7 +97,8 @@ Rails.application.routes.draw do
   get "/search", to: "search#index", as: :search
 
   get "/how-it-works", to: "pages#how_it_works", as: :how_it_works
-  get "/contact", to: "pages#contact", as: :contact
+  get "/contact", to: "contact_messages#new", as: :contact
+  post "/contact", to: "contact_messages#create"
   get "/support", to: "pages#support", as: :support
 
   # Public band page and album detail, resolved by slug. Must stay last

@@ -217,10 +217,14 @@ Required variables:
 - [email credentials]
 
 Currently set on the `web` service in Railway (verified 2026-09-15 against
-the live environment): `ACTIVE_STORAGE_PATH`, `APP_HOST`, `DATABASE_URL`,
-`MAIL_FROM`, `PORT`, `RAILS_ENV`, `RAILS_MASTER_KEY`, `SENTRY_DSN`,
-`SMTP_ADDRESS`, `SMTP_PASSWORD`, `SMTP_PORT`, `SMTP_USER_NAME`, plus the
-`RAILWAY_*` variables Railway injects itself.
+the live environment): `ACTIVE_STORAGE_PATH`, `APP_HOST`, `CONTACT_EMAIL`,
+`DATABASE_URL`, `MAIL_FROM`, `PORT`, `RAILS_ENV`, `RAILS_MASTER_KEY`,
+`SENTRY_DSN`, `SMTP_ADDRESS`, `SMTP_PASSWORD`, `SMTP_PORT`,
+`SMTP_USER_NAME`, plus the `RAILWAY_*` variables Railway injects itself.
+
+`CONTACT_EMAIL` is where contact-form messages are delivered. It is
+optional: when unset, messages are still stored in `contact_messages` and
+nothing is lost — they just are not emailed to anyone.
 
 On `postgres`: `PGDATA` (see Database persistence above) and the
 `POSTGRES_*` credentials. On `postgres-backup`: `DATABASE_URL` (assembled
