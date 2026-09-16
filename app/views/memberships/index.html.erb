@@ -1,6 +1,9 @@
 <section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
   <div class="flex items-center justify-between mb-8">
     <h1 class="text-3xl font-extrabold tracking-tight"><%= @band.name %> — Supporters</h1>
+    <% if policy(Membership.new(band: @band)).create? %>
+      <%= link_to "Add supporter", new_band_membership_path(@band), class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition" %>
+    <% end %>
   </div>
 
   <% if @memberships.empty? %>
@@ -15,7 +18,15 @@
               <%= membership.level.humanize %> · <%= membership.status.humanize %>
             </p>
           </div>
-          <p class="text-xs text-neutral-500">Since <%= membership.created_at.to_date %></p>
+          <div class="flex items-center gap-3">
+            <p class="text-xs text-neutral-500">Since <%= membership.created_at.to_date %></p>
+            <% if policy(membership).update? %>
+              <%= link_to "Edit", edit_band_membership_path(@band, membership), class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-2 hover:border-neutral-500 transition" %>
+            <% end %>
+            <% if policy(membership).destroy? %>
+              <%= button_to "Remove", band_membership_path(@band, membership), method: :delete, class: "rounded-full border border-red-900 text-red-400 text-sm font-semibold px-4 py-2 hover:border-red-700 transition cursor-pointer" %>
+            <% end %>
+          </div>
         </li>
       <% end %>
     </ul>
