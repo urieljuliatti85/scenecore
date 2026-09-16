@@ -88,13 +88,22 @@ RSpec.describe AttachmentVisibility do
         expect(described_class.visible?(post, user: user)).to be true
       end
 
-      it "is never visible to a non-member when subscribers-only" do
+      it "is not visible to a follower without a membership when fan-only" do
         band = create(:band, :approved)
-        post = create(:post, :published, :subscribers_only, band: band)
+        post = create(:post, :published, :fan_only, band: band)
         user = create(:user)
         create(:follow, band: band, user: user)
 
         expect(described_class.visible?(post, user: user)).to be false
+      end
+
+      it "is visible to a user with an active Fan membership when fan-only" do
+        band = create(:band, :approved)
+        post = create(:post, :published, :fan_only, band: band)
+        user = create(:user)
+        create(:membership, band: band, user: user, level: :fan)
+
+        expect(described_class.visible?(post, user: user)).to be true
       end
 
       it "is visible to a band member even when a draft" do

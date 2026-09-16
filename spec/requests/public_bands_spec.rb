@@ -359,16 +359,64 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).to include("Followers News")
     end
 
-    it "never shows a subscribers-only post, even to a follower" do
+    it "does not show a fan-only post to a mere follower without a membership" do
       user = create(:user)
       band = create(:band, :approved)
-      create(:post, :published, :subscribers_only, band: band, title: "Subscribers News")
+      create(:post, :published, :fan_only, band: band, title: "Fan News")
       create(:follow, user: user, band: band)
       sign_in user
 
       get public_band_path(band.slug)
 
-      expect(response.body).not_to include("Subscribers News")
+      expect(response.body).not_to include("Fan News")
+    end
+
+    it "shows a fan-only post to a user with an active Fan membership" do
+      user = create(:user)
+      band = create(:band, :approved)
+      create(:post, :published, :fan_only, band: band, title: "Fan News")
+      create(:membership, band: band, user: user, level: :fan)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Fan News")
+    end
+
+    it "shows a supporter-only post to a Core Member (higher levels see lower-level content)" do
+      user = create(:user)
+      band = create(:band, :approved)
+      create(:post, :published, :supporter_only, band: band, title: "Supporter News")
+      create(:membership, band: band, user: user, level: :core_member)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Supporter News")
+    end
+
+    it "does not show a core-member-only post to a Fan" do
+      user = create(:user)
+      band = create(:band, :approved)
+      create(:post, :published, :core_member_only, band: band, title: "Core News")
+      create(:membership, band: band, user: user, level: :fan)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Core News")
+    end
+
+    it "does not show a paused membership's level-gated post" do
+      user = create(:user)
+      band = create(:band, :approved)
+      create(:post, :published, :fan_only, band: band, title: "Fan News")
+      create(:membership, band: band, user: user, level: :fan, status: :paused)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Fan News")
     end
 
     it "shows a published upcoming event to an anonymous visitor" do
