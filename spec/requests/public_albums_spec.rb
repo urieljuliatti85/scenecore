@@ -40,6 +40,40 @@ RSpec.describe "Public album pages", type: :request do
 
       expect(response).to have_http_status(:not_found)
     end
+
+    it "returns 404 for an anonymous visitor during the album's early access window" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band, early_access_level: :supporter, early_access_until: 1.day.from_now)
+
+      get public_album_path(band.slug, album)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns 404 for a signed-in user below the required early access level" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band, early_access_level: :supporter, early_access_until: 1.day.from_now)
+      fan = create(:user)
+      create(:membership, band: band, user: fan, level: :fan)
+      sign_in fan
+
+      get public_album_path(band.slug, album)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "shows the album to a signed-in user who meets the required early access level" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band, early_access_level: :supporter, early_access_until: 1.day.from_now, title: "Early Album")
+      supporter = create(:user)
+      create(:membership, band: band, user: supporter, level: :supporter)
+      sign_in supporter
+
+      get public_album_path(band.slug, album)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Early Album")
+    end
   end
 
   describe "PUT /:slug/albums/:album_id/rating" do

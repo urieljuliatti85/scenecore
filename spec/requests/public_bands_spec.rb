@@ -221,6 +221,27 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).not_to include("Secret Album")
     end
 
+    it "hides an album still in early access from a visitor without the required membership" do
+      band = create(:band, :approved)
+      create(:album, :published, band: band, title: "Early Album", early_access_level: :supporter, early_access_until: 1.day.from_now)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Early Album")
+    end
+
+    it "shows an album still in early access to a member who meets the required level" do
+      band = create(:band, :approved)
+      create(:album, :published, band: band, title: "Early Album", early_access_level: :supporter, early_access_until: 1.day.from_now)
+      supporter = create(:user)
+      create(:membership, band: band, user: supporter, level: :supporter)
+      sign_in supporter
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Early Album")
+    end
+
     it "shows an empty state when the band has no published albums, posts or events" do
       band = create(:band, :approved)
 

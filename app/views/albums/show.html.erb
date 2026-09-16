@@ -16,6 +16,11 @@
       <div class="flex flex-wrap items-center gap-3">
         <h1 class="text-3xl font-extrabold tracking-tight"><%= @album.title %></h1>
         <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= @album.status %></span>
+        <% if @album.in_early_access? %>
+          <span class="text-xs uppercase tracking-wide text-yellow-400 border border-yellow-900 rounded-full px-3 py-1">
+            <%= @album.early_access_level.humanize %>+ early access until <%= @album.early_access_until.strftime("%b %-d, %Y %H:%M") %>
+          </span>
+        <% end %>
       </div>
 
       <%# The href is assembled from a literal plus the validated id, so the

@@ -11,9 +11,12 @@ class Album < ApplicationRecord
 
   enum :status, { draft: "draft", published: "published" },
        default: :draft, validate: true
+  enum :early_access_level, Membership::LEVELS.index_with(&:itself), prefix: :early_access, validate: { allow_nil: true }
 
   validates :title, presence: true
   validates :spotify_id, format: { with: SPOTIFY_ID_FORMAT }, allow_nil: true
+  validates :early_access_until, presence: true, if: :early_access_level?
+  validates :early_access_level, presence: true, if: :early_access_until?
 
   # An album is a pointer to Spotify rather than a track listing of its
   # own, so the link is derived from the id captured at import instead of
@@ -49,6 +52,19 @@ class Album < ApplicationRecord
 
   def ratings_count
     ratings.count
+  end
+
+  def in_early_access?
+    early_access_level.present? && early_access_until.present? && early_access_until > Time.current
+  end
+
+  def visible_to?(user)
+    return true unless in_early_access?
+
+    return false if user.nil?
+
+    membership = band.memberships.find_by(user: user)
+    membership.present? && membership.can_access?(early_access_level)
   end
 
   private

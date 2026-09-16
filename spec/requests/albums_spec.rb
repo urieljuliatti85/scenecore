@@ -500,6 +500,21 @@ RSpec.describe "Albums", type: :request do
       expect(album.reload.cover).to be_attached
     end
 
+    it "lets a band member configure early access" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      album = create(:album, band: band)
+      sign_in user
+
+      patch band_album_path(band, album), params: { album: { early_access_level: "supporter", early_access_until: 1.day.from_now } }
+
+      expect(response).to redirect_to(band_path(band))
+      album.reload
+      expect(album.early_access_level).to eq("supporter")
+      expect(album.early_access_until).to be_present
+    end
+
     it "rejects a non-image file and re-renders the form without erroring" do
       user = create(:user)
       band = create(:band)

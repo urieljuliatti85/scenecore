@@ -164,6 +164,6 @@ class AlbumsController < ApplicationController
   end
 
   def album_params
-    params.require(:album).permit(:cover)
+    params.require(:album).permit(:cover, :early_access_level, :early_access_until)
   end
 end
