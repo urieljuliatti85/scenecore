@@ -7,6 +7,7 @@ class Band < ApplicationRecord
   has_many :band_memberships, dependent: :destroy
   has_many :members, through: :band_memberships, source: :user
   has_many :memberships, dependent: :destroy
+  has_many :subscriptions, dependent: :destroy
   has_many :albums, dependent: :destroy
   has_many :follows, dependent: :destroy
   has_many :followers, through: :follows, source: :user
