@@ -6,6 +6,7 @@ class Album < ApplicationRecord
 
   belongs_to :band
   has_many :admin_action_logs, as: :subject, dependent: :destroy
+  has_many :ratings, dependent: :destroy
   has_image :cover
 
   enum :status, { draft: "draft", published: "published" },
@@ -40,6 +41,14 @@ class Album < ApplicationRecord
     return url_for(cover) if cover.attached?
 
     spotify_cover_url
+  end
+
+  def average_rating
+    ratings.average(:score)&.round(1)
+  end
+
+  def ratings_count
+    ratings.count
   end
 
   private

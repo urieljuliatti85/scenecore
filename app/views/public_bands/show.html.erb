@@ -89,10 +89,7 @@
       <h2 class="text-lg font-semibold text-neutral-300 mb-4">Albums</h2>
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         <% @albums.each do |album| %>
-          <%# Albums imported before spotify_id existed have no link, so the
-              card stays a plain tile rather than promising Spotify and going
-              nowhere. %>
-          <% card_body = capture do %>
+          <%= link_to public_album_path(@band.slug, album), class: "group rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden transition hover:border-neutral-600" do %>
             <div class="aspect-square bg-neutral-800 flex items-center justify-center">
               <% if album.cover_url.present? %>
                 <%= image_tag album.cover_url, class: "w-full h-full object-cover group-hover:scale-105 transition duration-300" %>
@@ -102,20 +99,17 @@
             </div>
             <div class="p-4">
               <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= album.title %></p>
-              <% if album.spotify_link_id %>
+              <% if album.ratings_count.positive? %>
+                <p class="text-sm text-neutral-500 group-hover:text-neutral-300 transition">
+                  <span class="text-yellow-400">★</span> <%= album.average_rating %> (<%= album.ratings_count %>)
+                </p>
+              <% elsif album.spotify_link_id %>
                 <p class="text-sm text-neutral-500 group-hover:text-neutral-300 transition flex items-center gap-1.5">
                   <%= render "shared/spotify_icon", classes: "h-4 w-4 shrink-0" %>
                   Listen on Spotify
                 </p>
               <% end %>
             </div>
-          <% end %>
-
-          <% card_classes = "group rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden transition" %>
-          <% if (spotify_album_id = album.spotify_link_id) %>
-            <%= link_to card_body, "https://open.spotify.com/album/#{spotify_album_id}", target: "_blank", rel: "noopener", class: "#{card_classes} hover:border-neutral-600" %>
-          <% else %>
-            <div class="<%= card_classes %>"><%= card_body %></div>
           <% end %>
         <% end %>
       </div>

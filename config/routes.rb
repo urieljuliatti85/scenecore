@@ -130,5 +130,9 @@ Rails.application.routes.draw do
 
   # Public band page and album detail, resolved by slug. Must stay last
   # so they don't shadow any of the routes declared above.
-  get "/:slug", to: "public_bands#show", as: :public_band, constraints: { slug: /[a-z0-9\-]+/ }
+  constraints(slug: /[a-z0-9\-]+/) do
+    get "/:slug", to: "public_bands#show", as: :public_band
+    get "/:slug/albums/:id", to: "public_albums#show", as: :public_album
+    put "/:slug/albums/:album_id/rating", to: "ratings#upsert", as: :album_rating
+  end
 end
