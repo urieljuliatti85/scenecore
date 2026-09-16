@@ -89,7 +89,7 @@ Os três planos iniciais são:
 Preço:
 
 ```text
-R$ 10
+US$ 3
 ```
 
 Também deve existir representação em dólar quando a interface ou configuração exigir conversão.
@@ -115,7 +115,7 @@ Promessa:
 Preço:
 
 ```text
-R$ 25
+US$ 5
 ```
 
 Benefícios:
@@ -140,7 +140,7 @@ Promessa:
 Preço:
 
 ```text
-R$ 50
+US$ 8
 ```
 
 Benefícios:
