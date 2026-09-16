@@ -4,6 +4,7 @@ class Post < ApplicationRecord
   include MembershipGatedVisibility
 
   belongs_to :band
+  has_many :comments, dependent: :destroy
 
   has_image :image
   has_attachments :attachments

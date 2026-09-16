@@ -28,7 +28,7 @@ class PublicBandsController < ApplicationController
     # content"). Each view decides how to render a locked card by calling
     # `visible_to?`/`required_level` on the record itself.
     @albums = @band.albums.published.with_attached_cover.order(created_at: :desc)
-    @posts = @band.posts.published.with_attached_image.order(created_at: :desc)
+    @posts = @band.posts.published.with_attached_image.includes(comments: :user).order(created_at: :desc)
     @events = @band.events.published.upcoming
     @polls = @band.polls.published.order(created_at: :desc)
   rescue ActiveRecord::RecordNotFound
