@@ -1788,6 +1788,46 @@ management page.
       Fine at current scale, wrong shape at large scale — revisit with a
       counter cache or a `COUNT` aggregate when there's data to measure.
 
+### Band panel layout: albums and posts as cards
+
+Decided 2026-09-16. `bands/show.html.erb` currently renders every album
+with all of its tracks inline, and every post with its full body. Both
+become cards, each linking to a screen of its own.
+
+This is not a new feature and does not expand the MVP: the public side
+already works exactly this way (`PublicBandsController#show` lists albums,
+`#album` shows the tracks at `/:slug/albums/:id`), so this brings the
+management area to parity with a pattern the app already uses.
+
+* [x] Albums render as a card — cover, title, status, track count —
+      linking to an album screen listing that album's tracks.
+* [x] Posts render as a card rather than the full body inline, linking to
+      a post screen.
+* [x] `AlbumsController#show` plus route and view. The management
+      controller currently has `new`, `edit`, `update`, `search`,
+      `create`, `publish` and `unpublish` but **no `show`** — tracks exist
+      only inside the band view today.
+* [x] `AlbumPolicy#show?`. It does not exist, and `ApplicationPolicy`
+      denies by default, so without it the album screen 403s for the
+      band's own members. The default fails safe rather than leaking, but
+      it has to be written deliberately.
+* [x] Equivalent screen and policy for posts.
+
+Decided 2026-09-16: publish/unpublish/edit stay on the card, and are
+repeated on the album/post screen. The card keeps one-click access to the
+actions a band uses most.
+
+Implemented 2026-09-16.
+
+This was expected to shrink the authorization N+1 described below. **It
+did not** — measured on a band with 4 albums of 10 tracks and 3 posts,
+the page went from 26 queries to 27. The earlier estimate (roughly 220
+policy queries dropping to 20) was wrong: it was read from the code
+rather than measured, and it missed that the per-record policies resolve
+`record.band` from an already-loaded association, so the tracks were
+never issuing a query each. The layout change stands on its own merits;
+it is not a performance fix, and the N+1 items below are unaffected.
+
 ### Band panel query patterns
 
 Identified 2026-09-16 while analysing proposed band-panel widgets (see
@@ -1798,33 +1838,29 @@ at current volume, but it should be addressed **before** new widgets are
 added, because the first item gets worse with each one rather than merely
 bigger.
 
-* [ ] Authorization N+1 in `bands/show.html.erb`. The view calls
-      `policy(...)` twelve times, most of them inside the album, track
-      and post loops. `AlbumPolicy`, `PostPolicy` and `TrackPolicy` each
-      resolve membership with
-      `record.band.band_memberships.exists?(user_id:)`. Pundit memoizes
-      per record, so every album, track and post instantiates its own
-      policy and issues its own query — all asking the identical
-      question, "is this user a member of this band?". `BandPolicy`
-      memoizes correctly (`@membership ||=`), which does not help, since
-      the memoization is per policy instance.
+* [ ] Authorization N+1 in `bands/show.html.erb`. `AlbumPolicy` and
+      `PostPolicy` each resolve membership with
+      `record.band.band_memberships.exists?(user_id:)`, and Pundit
+      memoizes per record, so every album and post instantiates its own
+      policy — all asking the identical question, "is this user a member
+      of this band?". `BandPolicy` memoizes correctly (`@membership ||=`),
+      which does not help, since the memoization is per policy instance.
 
-      Estimated by reading the code, not measured: roughly 250 redundant
-      queries for a band with 20 albums of 10 tracks and 30 posts.
-      Confirm with query logging before fixing. The fix is cheap and
-      local — resolve the membership once per request and have the
-      policies consult that, changing where the answer comes from rather
-      than the authorization rules themselves.
+      The card layout above reduced how many records the page renders but
+      did **not** fix this: measured at 26 queries before and 27 after,
+      because the per-record policies resolve `record.band` from an
+      already-loaded association rather than querying for it. The
+      redundant work is real but smaller than a code reading suggests —
+      measure before fixing, and do not assume the estimate.
 
-* [ ] Missing preload in `BandsController#show`. The action is empty. The
-      view's `@band.albums.includes(:tracks)` covers albums and tracks,
-      but `@band.posts` has no `includes`, so each attached `post.image`
-      hits Active Storage separately.
+      The fix is cheap and local — resolve the membership once per request
+      and have the policies consult that, changing where the answer comes
+      from rather than the authorization rules themselves.
 
-* [ ] No pagination anywhere on the panel. The view loads every album,
-      track and post the band has, unbounded. Fine at ten posts, wrong at
-      five hundred. Not worth doing before the N+1 above, and not worth
-      doing at all until there is a band large enough to notice.
+* [ ] No pagination anywhere on the panel. The band page loads every
+      album and post the band has, and the album screen every track,
+      all unbounded. Fine at ten posts, wrong at five hundred. Not worth
+      doing until there is a band large enough to notice.
 
 * [ ] `Band#followers_count` calls `followers.size` with no counter
       cache, emitting a `COUNT` per call. Same shape as the

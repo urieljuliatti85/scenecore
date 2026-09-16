@@ -1,6 +1,53 @@
 require "rails_helper"
 
 RSpec.describe "Posts", type: :request do
+  describe "GET /bands/:band_id/posts/:id" do
+    it "requires authentication" do
+      post_record = create(:post)
+
+      get band_post_path(post_record.band, post_record)
+
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it "shows the post body to a band member" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      post_record = create(:post, band: band, title: "On tour", body: "We are playing in Recife")
+      sign_in user
+
+      get band_post_path(band, post_record)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("On tour")
+      expect(response.body).to include("We are playing in Recife")
+    end
+
+    it "prevents a member of another band from viewing the post" do
+      outsider = create(:user)
+      create(:band_membership, band: create(:band), user: outsider)
+      post_record = create(:post)
+      sign_in outsider
+
+      get band_post_path(post_record.band, post_record)
+
+      expect(response).to redirect_to(root_path)
+    end
+
+    it "does not expose a post belonging to a different band" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      other_post = create(:post)
+      sign_in user
+
+      get band_post_path(band, other_post)
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
   describe "POST /bands/:band_id/posts" do
     it "creates a post for a band member" do
       user = create(:user)

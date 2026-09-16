@@ -1,0 +1,37 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <%= link_to band_path(@band), class: "text-sm text-neutral-400 hover:text-white transition" do %>
+    &larr; <%= @band.name %>
+  <% end %>
+
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <h1 class="text-3xl font-extrabold tracking-tight"><%= @post.title %></h1>
+    <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= @post.status %></span>
+    <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= @post.visibility %></span>
+  </div>
+
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <% if policy(@post).publish? && @post.draft? %>
+      <%= button_to "Publish", publish_band_post_path(@band, @post), method: :patch, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+    <% end %>
+
+    <% if policy(@post).unpublish? && @post.published? %>
+      <%= button_to "Unpublish", unpublish_band_post_path(@band, @post), method: :patch, class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
+    <% end %>
+
+    <% if policy(@post).update? %>
+      <%= link_to "Edit", edit_band_post_path(@band, @post), class: "text-sm text-neutral-400 hover:text-white transition" %>
+    <% end %>
+
+    <% if policy(@post).destroy? %>
+      <%= button_to "Delete", band_post_path(@band, @post), method: :delete, class: "text-sm text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this post?" } } %>
+    <% end %>
+  </div>
+
+  <% if @post.image.attached? %>
+    <%= image_tag @post.image, class: "mt-8 w-full rounded-2xl border border-neutral-800" %>
+  <% end %>
+
+  <% if @post.body.present? %>
+    <p class="mt-8 text-neutral-300 whitespace-pre-line"><%= @post.body %></p>
+  <% end %>
+</section>

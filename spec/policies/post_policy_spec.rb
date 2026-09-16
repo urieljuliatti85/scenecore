@@ -6,7 +6,7 @@ RSpec.describe PostPolicy do
   let(:band) { create(:band) }
   let(:post) { build(:post, band: band) }
 
-  %i[create? update? destroy? publish? unpublish?].each do |action|
+  %i[show? create? update? destroy? publish? unpublish?].each do |action|
     describe "##{action}" do
       context "when user is an administrator of the band" do
         let(:user) { create(:user) }

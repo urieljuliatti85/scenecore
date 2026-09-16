@@ -65,7 +65,7 @@ Rails.application.routes.draw do
     end
 
     resources :band_memberships, only: [ :index, :new, :create, :edit, :update, :destroy ], path: "members"
-    resources :albums, only: [ :new, :create, :edit, :update ] do
+    resources :albums, only: [ :new, :create, :show, :edit, :update ] do
       member do
         patch :publish
         patch :unpublish
@@ -76,7 +76,7 @@ Rails.application.routes.draw do
     end
     resources :tracks, only: [ :edit, :update ]
     resource :follow, only: [ :create, :destroy ]
-    resources :posts, only: [ :new, :create, :edit, :update, :destroy ] do
+    resources :posts, only: [ :new, :create, :show, :edit, :update, :destroy ] do
       member do
         patch :publish
         patch :unpublish

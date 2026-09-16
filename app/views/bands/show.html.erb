@@ -33,69 +33,76 @@
     <% end %>
   </div>
 
-  <% if policy(@band).show? && @band.albums.any? %>
-    <div class="mt-10 flex flex-col gap-8">
-      <% @band.albums.includes(:tracks).each do |album| %>
-        <div>
-          <div class="flex flex-wrap items-center gap-3 mb-3">
-            <h2 class="text-lg font-semibold text-neutral-300">
-              <%= album.title %>
-              <span class="text-xs uppercase tracking-wide text-neutral-500 ml-2"><%= album.status %></span>
-            </h2>
-
-            <% if policy(album).publish? && album.draft? %>
-              <%= button_to "Publish", publish_band_album_path(@band, album), method: :patch, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+  <% if policy(@band).show? && @albums.any? %>
+    <div class="mt-10">
+      <h2 class="text-lg font-semibold text-neutral-300 mb-4">Albums</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <% @albums.each do |album| %>
+          <div class="group rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden hover:border-neutral-600 transition">
+            <%= link_to band_album_path(@band, album), class: "block" do %>
+              <div class="aspect-square bg-neutral-800 flex items-center justify-center">
+                <% if album.cover_url.present? %>
+                  <%= image_tag album.cover_url, class: "w-full h-full object-cover group-hover:scale-105 transition duration-300" %>
+                <% else %>
+                  <span class="text-neutral-600 text-sm">No cover</span>
+                <% end %>
+              </div>
+              <div class="p-4">
+                <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= album.title %></p>
+                <p class="text-sm text-neutral-500">
+                  <%= pluralize(@track_counts.fetch(album.id, 0), "track") %>
+                  <span class="uppercase tracking-wide ml-1"><%= album.status %></span>
+                </p>
+              </div>
             <% end %>
 
-            <% if policy(album).unpublish? && album.published? %>
-              <%= button_to "Unpublish", unpublish_band_album_path(@band, album), method: :patch, class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
-            <% end %>
+            <div class="px-4 pb-4 flex flex-wrap items-center gap-2">
+              <% if policy(album).publish? && album.draft? %>
+                <%= button_to "Publish", publish_band_album_path(@band, album), method: :patch, class: "rounded-full bg-yellow-400 text-black text-xs font-semibold px-3 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+              <% end %>
 
-            <% if policy(album).update? %>
-              <%= link_to "Edit", edit_band_album_path(@band, album), class: "text-sm text-neutral-400 hover:text-white transition" %>
-            <% end %>
+              <% if policy(album).unpublish? && album.published? %>
+                <%= button_to "Unpublish", unpublish_band_album_path(@band, album), method: :patch, class: "rounded-full border border-neutral-700 text-white text-xs font-semibold px-3 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
+              <% end %>
+
+              <% if policy(album).update? %>
+                <%= link_to "Edit", edit_band_album_path(@band, album), class: "text-xs text-neutral-400 hover:text-white transition" %>
+              <% end %>
+            </div>
           </div>
-          <ul class="flex flex-col gap-2">
-            <% album.tracks.sort_by(&:track_number).each do |track| %>
-              <li class="flex items-center justify-between gap-3 rounded-lg border border-neutral-800 px-4 py-3">
-                <div>
-                  <span class="text-neutral-500 text-sm mr-2"><%= track.track_number %></span>
-                  <span class="text-white"><%= track.title %></span>
-                  <span class="text-xs uppercase tracking-wide text-neutral-500 ml-2"><%= track.status %></span>
-                </div>
-                <%= link_to "Edit", edit_band_track_path(@band, track), class: "text-sm text-neutral-400 hover:text-white transition" %>
-              </li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
+        <% end %>
+      </div>
     </div>
   <% end %>
 
-  <% if policy(@band).show? && @band.posts.any? %>
-    <div class="mt-10 flex flex-col gap-4">
-      <h2 class="text-lg font-semibold text-neutral-300">Posts</h2>
-      <% @band.posts.order(created_at: :desc).each do |post| %>
-        <div class="rounded-lg border border-neutral-800 px-4 py-3">
-          <div class="flex flex-wrap items-center gap-3 mb-2">
-            <span class="text-white font-medium"><%= post.title %></span>
-            <span class="text-xs uppercase tracking-wide text-neutral-500"><%= post.status %></span>
-            <span class="text-xs uppercase tracking-wide text-neutral-500"><%= post.visibility %></span>
-
-            <% if policy(post).publish? && post.draft? %>
-              <%= button_to "Publish", publish_band_post_path(@band, post), method: :patch, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+  <% if policy(@band).show? && @posts.any? %>
+    <div class="mt-10">
+      <h2 class="text-lg font-semibold text-neutral-300 mb-4">Posts</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <% @posts.each do |post| %>
+          <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden hover:border-neutral-600 transition">
+            <%= link_to band_post_path(@band, post), class: "block px-5 py-4" do %>
+              <p class="font-semibold text-white"><%= post.title %></p>
+              <p class="text-xs uppercase tracking-wide text-neutral-500 mt-1">
+                <%= post.status %> &middot; <%= post.visibility %>
+              </p>
             <% end %>
 
-            <% if policy(post).unpublish? && post.published? %>
-              <%= button_to "Unpublish", unpublish_band_post_path(@band, post), method: :patch, class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
-            <% end %>
+            <div class="px-5 pb-4 flex flex-wrap items-center gap-2">
+              <% if policy(post).publish? && post.draft? %>
+                <%= button_to "Publish", publish_band_post_path(@band, post), method: :patch, class: "rounded-full bg-yellow-400 text-black text-xs font-semibold px-3 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+              <% end %>
 
-            <%= link_to "Edit", edit_band_post_path(@band, post), class: "text-sm text-neutral-400 hover:text-white transition" %>
-            <%= button_to "Delete", band_post_path(@band, post), method: :delete, class: "text-sm text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this post?" } } %>
+              <% if policy(post).unpublish? && post.published? %>
+                <%= button_to "Unpublish", unpublish_band_post_path(@band, post), method: :patch, class: "rounded-full border border-neutral-700 text-white text-xs font-semibold px-3 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
+              <% end %>
+
+              <%= link_to "Edit", edit_band_post_path(@band, post), class: "text-xs text-neutral-400 hover:text-white transition" %>
+              <%= button_to "Delete", band_post_path(@band, post), method: :delete, class: "text-xs text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this post?" } } %>
+            </div>
           </div>
-          <p class="text-neutral-300 text-sm"><%= post.body %></p>
-        </div>
-      <% end %>
+        <% end %>
+      </div>
     </div>
   <% end %>
 </section>
