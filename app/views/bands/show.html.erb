@@ -13,6 +13,7 @@
       <%= link_to "Add Album", new_band_album_path(@band), class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition" %>
       <%= link_to "New Post", new_band_post_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
       <%= link_to "Add Event", new_band_event_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
+      <%= link_to "New Poll", new_band_poll_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
     <% end %>
 
     <% if policy(@band).update? %>

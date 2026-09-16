@@ -1,0 +1,41 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-xl mx-auto">
+  <%= link_to band_path(@band), class: "text-sm text-neutral-400 hover:text-white transition" do %>
+    &larr; <%= @band.name %>
+  <% end %>
+
+  <div class="mt-4 flex items-center gap-3">
+    <h1 class="text-3xl font-extrabold tracking-tight"><%= @poll.question %></h1>
+    <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= @poll.status %></span>
+  </div>
+
+  <div class="mt-6 flex flex-wrap items-center gap-3">
+    <% if policy(@poll).publish? && @poll.draft? %>
+      <%= button_to "Publish", publish_band_poll_path(@band, @poll), method: :patch, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+    <% end %>
+    <% if policy(@poll).unpublish? && @poll.published? %>
+      <%= button_to "Unpublish", unpublish_band_poll_path(@band, @poll), method: :patch, class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
+    <% end %>
+    <% if policy(@poll).update? %>
+      <%= link_to "Edit", edit_band_poll_path(@band, @poll), class: "text-sm text-neutral-400 hover:text-white transition" %>
+    <% end %>
+    <% if policy(@poll).destroy? %>
+      <%= button_to "Delete", band_poll_path(@band, @poll), method: :delete, class: "text-sm text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this poll?" } } %>
+    <% end %>
+  </div>
+
+  <div class="mt-8 space-y-3">
+    <% total_votes = @poll.poll_options.sum(&:votes_count) %>
+    <% @poll.poll_options.each do |option| %>
+      <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4">
+        <div class="flex items-center justify-between">
+          <span class="text-white"><%= option.label %></span>
+          <span class="text-sm text-neutral-500"><%= option.votes_count %> <%= "vote".pluralize(option.votes_count) %></span>
+        </div>
+        <% percentage = total_votes.positive? ? (option.votes_count.to_f / total_votes * 100).round : 0 %>
+        <div class="mt-2 h-1.5 rounded-full bg-neutral-800 overflow-hidden">
+          <div class="h-full bg-yellow-400" style="width: <%= percentage %>%"></div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</section>

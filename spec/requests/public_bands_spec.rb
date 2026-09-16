@@ -463,6 +463,46 @@ RSpec.describe "Public band pages", type: :request do
 
       expect(response.body).not_to include("No music, posts or shows published yet")
     end
+
+    it "shows a published poll's question to an anonymous visitor" do
+      band = create(:band, :approved)
+      create(:poll, :published, band: band, question: "Which song should we play live?")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Which song should we play live?")
+    end
+
+    it "does not show a draft poll" do
+      band = create(:band, :approved)
+      create(:poll, band: band, question: "Draft Poll Question")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Draft Poll Question")
+    end
+
+    it "does not show a fan-only poll to an anonymous visitor" do
+      band = create(:band, :approved)
+      create(:poll, :published, :fan_only, band: band, question: "Fan Poll Question")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Fan Poll Question")
+    end
+
+    it "shows a fan-only poll to a user with an active Fan membership" do
+      band = create(:band, :approved)
+      poll = create(:poll, :published, :fan_only, band: band, question: "Fan Poll Question")
+      user = create(:user)
+      create(:membership, band: band, user: user, level: :fan)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Fan Poll Question")
+      poll.poll_options.each { |option| expect(response.body).to include(option.label) }
+    end
   end
 
   describe "route precedence" do
