@@ -132,26 +132,40 @@
       <h2 class="text-lg font-semibold text-neutral-300 mb-4">Albums</h2>
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         <% @albums.each do |album| %>
-          <%= link_to public_album_path(@band.slug, album), class: "group rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden transition hover:border-neutral-600" do %>
-            <div class="aspect-square bg-neutral-800 flex items-center justify-center">
-              <% if album.cover_url.present? %>
-                <%= image_tag album.cover_url, class: "w-full h-full object-cover group-hover:scale-105 transition duration-300" %>
-              <% else %>
-                <span class="text-neutral-600 text-sm">No cover</span>
-              <% end %>
-            </div>
-            <div class="p-4">
-              <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= album.title %></p>
-              <% if album.ratings_count.positive? %>
-                <p class="text-sm text-neutral-500 group-hover:text-neutral-300 transition">
-                  <span class="text-yellow-400">★</span> <%= album.average_rating %> (<%= album.ratings_count %>)
+          <% if album.visible_to?(current_user) %>
+            <%= link_to public_album_path(@band.slug, album), class: "group rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden transition hover:border-neutral-600" do %>
+              <div class="aspect-square bg-neutral-800 flex items-center justify-center">
+                <% if album.cover_url.present? %>
+                  <%= image_tag album.cover_url, class: "w-full h-full object-cover group-hover:scale-105 transition duration-300" %>
+                <% else %>
+                  <span class="text-neutral-600 text-sm">No cover</span>
+                <% end %>
+              </div>
+              <div class="p-4">
+                <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= album.title %></p>
+                <% if album.ratings_count.positive? %>
+                  <p class="text-sm text-neutral-500 group-hover:text-neutral-300 transition">
+                    <span class="text-yellow-400">★</span> <%= album.average_rating %> (<%= album.ratings_count %>)
+                  </p>
+                <% elsif album.spotify_link_id %>
+                  <p class="text-sm text-neutral-500 group-hover:text-neutral-300 transition flex items-center gap-1.5">
+                    <%= render "shared/spotify_icon", classes: "h-4 w-4 shrink-0" %>
+                    Listen on Spotify
+                  </p>
+                <% end %>
+              </div>
+            <% end %>
+          <% else %>
+            <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden opacity-75">
+              <div class="aspect-square bg-neutral-800 flex items-center justify-center">
+                <span class="text-neutral-600 text-3xl" aria-hidden="true">🔒</span>
+              </div>
+              <div class="p-4">
+                <p class="font-semibold text-white"><%= album.title %></p>
+                <p class="text-xs text-neutral-500 mt-1">
+                  <%= album.required_level&.humanize %> early access
                 </p>
-              <% elsif album.spotify_link_id %>
-                <p class="text-sm text-neutral-500 group-hover:text-neutral-300 transition flex items-center gap-1.5">
-                  <%= render "shared/spotify_icon", classes: "h-4 w-4 shrink-0" %>
-                  Listen on Spotify
-                </p>
-              <% end %>
+              </div>
             </div>
           <% end %>
         <% end %>
@@ -164,19 +178,24 @@
       <h2 class="text-lg font-semibold text-neutral-300">Posts</h2>
       <% @posts.each do |post| %>
         <article id="post-<%= post.id %>" class="rounded-3xl bg-gradient-to-br from-neutral-900 to-black border border-neutral-800 px-5 py-5 scroll-mt-24">
-          <% if post.image.attached? %>
-            <%= image_tag post.image, class: "w-full max-h-96 object-cover rounded-2xl mb-4" %>
-          <% end %>
-          <h3 class="text-white font-semibold mb-2"><%= post.title %></h3>
-          <div class="text-neutral-300 text-sm"><%= post.body %></div>
-          <% if post.attachments.attached? %>
-            <ul class="mt-4 flex flex-col gap-1.5">
-              <% post.attachments.each do |attachment| %>
-                <li>
-                  <%= link_to attachment.filename, rails_blob_path(attachment, disposition: "attachment"), class: "text-sm text-yellow-400 hover:text-yellow-300 transition" %>
-                </li>
-              <% end %>
-            </ul>
+          <% if post.visible_to?(current_user, following: @following) %>
+            <% if post.image.attached? %>
+              <%= image_tag post.image, class: "w-full max-h-96 object-cover rounded-2xl mb-4" %>
+            <% end %>
+            <h3 class="text-white font-semibold mb-2"><%= post.title %></h3>
+            <div class="text-neutral-300 text-sm"><%= post.body %></div>
+            <% if post.attachments.attached? %>
+              <ul class="mt-4 flex flex-col gap-1.5">
+                <% post.attachments.each do |attachment| %>
+                  <li>
+                    <%= link_to attachment.filename, rails_blob_path(attachment, disposition: "attachment"), class: "text-sm text-yellow-400 hover:text-yellow-300 transition" %>
+                  </li>
+                <% end %>
+              </ul>
+            <% end %>
+          <% else %>
+            <h3 class="text-white font-semibold"><%= post.title %></h3>
+            <%= render "shared/locked_content_notice", required_level: post.required_level %>
           <% end %>
         </article>
       <% end %>

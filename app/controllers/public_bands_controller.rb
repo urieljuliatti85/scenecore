@@ -19,25 +19,19 @@ class PublicBandsController < ApplicationController
 
   def show
     @band = Band.approved.with_attached_photo.includes(:category).find_by!(slug: params[:slug])
-    @albums = @band.albums.published.with_attached_cover.select { |album| album.visible_to?(current_user) }
     @following = current_user.present? && @band.follows.exists?(user: current_user)
     @membership = current_user.present? ? @band.memberships.find_by(user: current_user) : nil
-    @posts = visible_posts(@band)
+
+    # Every published item is listed, visible or not — a locked item shows
+    # its title with an upgrade prompt instead of disappearing, per
+    # docs/band-admin.md §37 ("do not silently hide the existence of
+    # content"). Each view decides how to render a locked card by calling
+    # `visible_to?`/`required_level` on the record itself.
+    @albums = @band.albums.published.with_attached_cover.order(created_at: :desc)
+    @posts = @band.posts.published.with_attached_image.order(created_at: :desc)
     @events = @band.events.published.upcoming
-    @polls = visible_polls(@band)
+    @polls = @band.polls.published.order(created_at: :desc)
   rescue ActiveRecord::RecordNotFound
     render "not_found", status: :not_found
-  end
-
-  private
-
-  def visible_posts(band)
-    band.posts.published.with_attached_image.order(created_at: :desc)
-        .select { |post| post.visible_to?(current_user, following: @following) }
-  end
-
-  def visible_polls(band)
-    band.polls.published.order(created_at: :desc)
-        .select { |poll| poll.visible_to?(current_user, following: @following) }
   end
 end

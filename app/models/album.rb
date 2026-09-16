@@ -67,6 +67,13 @@ class Album < ApplicationRecord
     membership.present? && membership.can_access?(early_access_level)
   end
 
+  # The minimum Membership level a viewer needs to see this right now, or
+  # nil when it's already public — used by the public band page to explain
+  # a locked album instead of just omitting it (docs/band-admin.md §37).
+  def required_level
+    early_access_level if in_early_access?
+  end
+
   private
 
   def url_for(attachment)

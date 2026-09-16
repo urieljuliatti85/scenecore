@@ -221,13 +221,18 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).not_to include("Secret Album")
     end
 
-    it "hides an album still in early access from a visitor without the required membership" do
+    it "shows an album still in early access as locked, without linking to it, for a visitor without the required membership" do
       band = create(:band, :approved)
-      create(:album, :published, band: band, title: "Early Album", early_access_level: :supporter, early_access_until: 1.day.from_now)
+      album = create(:album, :published, band: band, title: "Early Album", early_access_level: :supporter, early_access_until: 1.day.from_now)
 
       get public_band_path(band.slug)
 
-      expect(response.body).not_to include("Early Album")
+      # The title is shown deliberately (docs/band-admin.md §37 — don't
+      # silently hide that the content exists), but the album page itself
+      # stays out of reach.
+      expect(response.body).to include("Early Album")
+      expect(response.body).to include("Supporter early access")
+      expect(response.body).not_to include(public_album_path(band.slug, album))
     end
 
     it "shows an album still in early access to a member who meets the required level" do
@@ -348,24 +353,28 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).not_to include("Draft News")
     end
 
-    it "does not show a followers-only post to an anonymous visitor" do
+    it "locks a followers-only post for an anonymous visitor, showing its title but not its body" do
       band = create(:band, :approved)
-      create(:post, :published, :followers_only, band: band, title: "Followers News")
+      create(:post, :published, :followers_only, band: band, title: "Followers News", body: "Secret body text")
 
       get public_band_path(band.slug)
 
-      expect(response.body).not_to include("Followers News")
+      expect(response.body).to include("Followers News")
+      expect(response.body).to include("Available to followers")
+      expect(response.body).not_to include("Secret body text")
     end
 
-    it "does not show a followers-only post to an authenticated non-follower" do
+    it "locks a followers-only post for an authenticated non-follower" do
       user = create(:user)
       band = create(:band, :approved)
-      create(:post, :published, :followers_only, band: band, title: "Followers News")
+      create(:post, :published, :followers_only, band: band, title: "Followers News", body: "Secret body text")
       sign_in user
 
       get public_band_path(band.slug)
 
-      expect(response.body).not_to include("Followers News")
+      expect(response.body).to include("Followers News")
+      expect(response.body).to include("Follow this band to unlock")
+      expect(response.body).not_to include("Secret body text")
     end
 
     it "shows a followers-only post to an authenticated follower" do
@@ -380,16 +389,18 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).to include("Followers News")
     end
 
-    it "does not show a fan-only post to a mere follower without a membership" do
+    it "locks a fan-only post for a mere follower without a membership, prompting an upgrade" do
       user = create(:user)
       band = create(:band, :approved)
-      create(:post, :published, :fan_only, band: band, title: "Fan News")
+      create(:post, :published, :fan_only, band: band, title: "Fan News", body: "Secret body text")
       create(:follow, user: user, band: band)
       sign_in user
 
       get public_band_path(band.slug)
 
-      expect(response.body).not_to include("Fan News")
+      expect(response.body).to include("Fan News")
+      expect(response.body).to include("Upgrade to Fan")
+      expect(response.body).not_to include("Secret body text")
     end
 
     it "shows a fan-only post to a user with an active Fan membership" do
@@ -416,28 +427,31 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).to include("Supporter News")
     end
 
-    it "does not show a core-member-only post to a Fan" do
+    it "locks a core-member-only post for a Fan, prompting an upgrade" do
       user = create(:user)
       band = create(:band, :approved)
-      create(:post, :published, :core_member_only, band: band, title: "Core News")
+      create(:post, :published, :core_member_only, band: band, title: "Core News", body: "Secret body text")
       create(:membership, band: band, user: user, level: :fan)
       sign_in user
 
       get public_band_path(band.slug)
 
-      expect(response.body).not_to include("Core News")
+      expect(response.body).to include("Core News")
+      expect(response.body).to include("Upgrade to Core member")
+      expect(response.body).not_to include("Secret body text")
     end
 
-    it "does not show a paused membership's level-gated post" do
+    it "locks a level-gated post when the membership is paused" do
       user = create(:user)
       band = create(:band, :approved)
-      create(:post, :published, :fan_only, band: band, title: "Fan News")
+      create(:post, :published, :fan_only, band: band, title: "Fan News", body: "Secret body text")
       create(:membership, band: band, user: user, level: :fan, status: :paused)
       sign_in user
 
       get public_band_path(band.slug)
 
-      expect(response.body).not_to include("Fan News")
+      expect(response.body).to include("Fan News")
+      expect(response.body).not_to include("Secret body text")
     end
 
     it "shows a published upcoming event to an anonymous visitor" do
@@ -503,13 +517,16 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).not_to include("Draft Poll Question")
     end
 
-    it "does not show a fan-only poll to an anonymous visitor" do
+    it "locks a fan-only poll for an anonymous visitor, showing its question but not its options" do
       band = create(:band, :approved)
-      create(:poll, :published, :fan_only, band: band, question: "Fan Poll Question")
+      poll = create(:poll, :published, :fan_only, band: band, question: "Fan Poll Question")
+      poll.poll_options.first.update!(label: "Secret Option Label")
 
       get public_band_path(band.slug)
 
-      expect(response.body).not_to include("Fan Poll Question")
+      expect(response.body).to include("Fan Poll Question")
+      expect(response.body).to include("Available to Fans and above")
+      expect(response.body).not_to include("Secret Option Label")
     end
 
     it "shows a fan-only poll to a user with an active Fan membership" do
