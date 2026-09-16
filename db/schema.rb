@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_16_165532) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_16_190202) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -236,6 +236,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_165532) do
     t.check_constraint "score >= 1 AND score <= 5", name: "ratings_score_check"
   end
 
+  create_table "stripe_webhook_events", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "event_type", null: false
+    t.datetime "processed_at"
+    t.string "stripe_event_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["stripe_event_id"], name: "index_stripe_webhook_events_on_stripe_event_id", unique: true
+  end
+
+  create_table "subscriptions", force: :cascade do |t|
+    t.bigint "band_id", null: false
+    t.datetime "created_at", null: false
+    t.string "level", null: false
+    t.string "status", default: "pending", null: false
+    t.string "stripe_checkout_session_id"
+    t.string "stripe_customer_id", null: false
+    t.string "stripe_subscription_id"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["band_id"], name: "index_subscriptions_on_band_id"
+    t.index ["stripe_checkout_session_id"], name: "index_subscriptions_on_stripe_checkout_session_id", unique: true
+    t.index ["stripe_subscription_id"], name: "index_subscriptions_on_stripe_subscription_id", unique: true
+    t.index ["user_id", "band_id"], name: "index_subscriptions_on_user_id_and_band_id", unique: true
+    t.index ["user_id"], name: "index_subscriptions_on_user_id"
+    t.check_constraint "level::text = ANY (ARRAY['fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[])", name: "subscriptions_level_check"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'active'::character varying, 'past_due'::character varying, 'cancelled'::character varying, 'expired'::character varying]::text[])", name: "subscriptions_status_check"
+  end
+
   create_table "tracks", force: :cascade do |t|
     t.bigint "album_id", null: false
     t.datetime "created_at", null: false
@@ -282,5 +310,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_165532) do
   add_foreign_key "posts", "bands"
   add_foreign_key "ratings", "albums"
   add_foreign_key "ratings", "users"
+  add_foreign_key "subscriptions", "bands"
+  add_foreign_key "subscriptions", "users"
   add_foreign_key "tracks", "albums"
 end
