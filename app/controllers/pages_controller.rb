@@ -5,6 +5,8 @@ class PagesController < ApplicationController
     @featured_band = Band.featured.with_attached_photo.first
     @featured_albums = Album.published.joins(:band).where(bands: { status: :approved })
       .with_attached_cover.includes(:band).order(created_at: :desc).limit(3)
+    @latest_posts = Post.published.visibility_public.joins(:band).where(bands: { status: :approved })
+      .with_attached_image.with_rich_text_body.includes(:band).order(created_at: :desc).limit(3)
   end
 
   def how_it_works

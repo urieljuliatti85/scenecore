@@ -2,6 +2,8 @@ module AttachmentVisibility
   module_function
 
   def visible?(record, user:)
+    record = record.record if record.is_a?(ActionText::RichText)
+
     band_member?(record, user) || publicly_visible?(record, user)
   end
 

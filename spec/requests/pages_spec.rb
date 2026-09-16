@@ -138,6 +138,63 @@ RSpec.describe "Pages", type: :request do
 
         expect(response.body).not_to include("Feature Music Albums")
       end
+
+      it "shows up to 3 published public posts from any approved band" do
+        band = create(:band, :approved, name: "Farscape")
+        create(:post, :published, band: band, title: "On tour", body: "We are hitting the road next month.")
+
+        get root_path
+
+        expect(response.body).to include("Latest from the bands")
+        expect(response.body).to include("On tour")
+        expect(response.body).to include("We are hitting the road next month.")
+        expect(response.body).to include("Farscape")
+      end
+
+      it "links each latest post to the band's public page, anchored at the post" do
+        band = create(:band, :approved, name: "Farscape")
+        post_record = create(:post, :published, band: band, title: "On tour")
+
+        get root_path
+
+        expect(response.body).to include("#{public_band_path(band.slug)}#post-#{post_record.id}")
+      end
+
+      it "does not show a draft post" do
+        band = create(:band, :approved, name: "Farscape")
+        create(:post, band: band, title: "Secret News")
+
+        get root_path
+
+        expect(response.body).not_to include("Secret News")
+      end
+
+      it "does not show a followers-only post" do
+        band = create(:band, :approved, name: "Farscape")
+        create(:post, :published, :followers_only, band: band, title: "Followers News")
+
+        get root_path
+
+        expect(response.body).not_to include("Followers News")
+      end
+
+      it "does not show a published post from a non-approved band" do
+        create(:band, :approved, name: "Farscape")
+        other_band = create(:band, name: "Pending Band Two")
+        create(:post, :published, band: other_band, title: "Hidden News")
+
+        get root_path
+
+        expect(response.body).not_to include("Hidden News")
+      end
+
+      it "does not show the latest posts section when there are none" do
+        create(:band, :approved, name: "Farscape")
+
+        get root_path
+
+        expect(response.body).not_to include("Latest from the bands")
+      end
     end
   end
 

@@ -14,7 +14,12 @@
 
   <div>
     <%= form.label :body, class: "block text-sm font-medium text-neutral-300 mb-1" %>
-    <%= form.text_area :body, rows: 6, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    <%= form.rich_text_area :body,
+          class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white",
+          data: {
+            direct_upload_url: post_direct_uploads_path,
+            blob_url_template: rails_authenticated_service_blob_url(":signed_id", ":filename")
+          } %>
   </div>
 
   <div>

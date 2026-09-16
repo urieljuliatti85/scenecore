@@ -60,6 +60,32 @@
     </section>
   <% end %>
 
+  <% if @latest_posts.any? %>
+    <section class="px-4 sm:px-6 py-16 sm:py-24 max-w-6xl mx-auto">
+      <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 text-center">Latest from the bands</h2>
+      <p class="text-neutral-500 mb-12 text-center">What bands on SceneCore are sharing with their fans right now.</p>
+
+      <div class="grid sm:grid-cols-3 gap-6 text-left">
+        <% @latest_posts.each do |post| %>
+          <%= link_to "#{public_band_path(post.band.slug)}#post-#{post.id}", class: "group rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden hover:border-neutral-600 transition flex flex-col" do %>
+            <% if post.image.attached? %>
+              <div class="aspect-video overflow-hidden bg-neutral-900">
+                <%= image_tag post.image, class: "w-full h-full object-cover group-hover:scale-105 transition duration-300" %>
+              </div>
+            <% end %>
+
+            <div class="px-5 py-4 flex flex-col flex-1">
+              <p class="text-xs text-neutral-500 mb-1"><%= post.band.name %></p>
+              <h3 class="font-semibold text-white group-hover:text-yellow-400 transition mb-2"><%= post.title %></h3>
+              <p class="text-sm text-neutral-400 line-clamp-3 flex-1"><%= post.body.to_plain_text.truncate(160) %></p>
+              <p class="text-xs text-neutral-500 mt-3">Read more &rarr;</p>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
   <section class="px-4 sm:px-6 pb-20 sm:pb-28 max-w-6xl mx-auto">
     <%= render "shared/coming_soon_cards" %>
   </section>
