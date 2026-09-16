@@ -7,6 +7,18 @@ class MembershipPolicy < ApplicationPolicy
     administrator_of_band? || user&.platform_admin?
   end
 
+  def create?
+    administrator_of_band?
+  end
+
+  def update?
+    administrator_of_band?
+  end
+
+  def destroy?
+    administrator_of_band?
+  end
+
   class Scope < Scope
     def resolve
       return scope.none if user.nil?
