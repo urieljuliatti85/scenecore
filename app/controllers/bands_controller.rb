@@ -29,6 +29,7 @@ class BandsController < ApplicationController
     @albums = @band.albums.with_attached_cover
     @posts = @band.posts.order(created_at: :desc)
     @events = @band.events.chronological
+    @polls = @band.polls.order(created_at: :desc)
   end
 
   def edit
