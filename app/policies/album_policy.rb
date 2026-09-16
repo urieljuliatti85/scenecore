@@ -1,4 +1,8 @@
 class AlbumPolicy < ApplicationPolicy
+  def show?
+    member?
+  end
+
   def create?
     member?
   end

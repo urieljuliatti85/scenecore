@@ -2,11 +2,17 @@ class AlbumsController < ApplicationController
   SPOTIFY_ID_FORMAT = /\A[a-zA-Z0-9]{22}\z/
 
   before_action :set_band
-  before_action :set_album, only: [ :edit, :update, :publish, :unpublish ]
+  before_action :set_album, only: [ :show, :edit, :update, :publish, :unpublish ]
 
   def new
     @album = @band.albums.new
     authorize @album
+  end
+
+  def show
+    authorize @album
+
+    @tracks = @album.tracks.order(:track_number)
   end
 
   def edit

@@ -1,9 +1,13 @@
 class PostsController < ApplicationController
   before_action :set_band
-  before_action :set_post, only: [ :edit, :update, :destroy, :publish, :unpublish ]
+  before_action :set_post, only: [ :show, :edit, :update, :destroy, :publish, :unpublish ]
 
   def new
     @post = @band.posts.new
+    authorize @post
+  end
+
+  def show
     authorize @post
   end
 

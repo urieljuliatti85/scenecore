@@ -1,0 +1,55 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <%= link_to band_path(@band), class: "text-sm text-neutral-400 hover:text-white transition" do %>
+    &larr; <%= @band.name %>
+  <% end %>
+
+  <div class="mt-4 flex flex-col sm:flex-row gap-6">
+    <div class="w-full sm:w-48 aspect-square rounded-2xl border border-neutral-800 bg-neutral-800 overflow-hidden flex items-center justify-center shrink-0">
+      <% if @album.cover_url.present? %>
+        <%= image_tag @album.cover_url, class: "w-full h-full object-cover" %>
+      <% else %>
+        <span class="text-neutral-600 text-sm">No cover</span>
+      <% end %>
+    </div>
+
+    <div class="flex-1">
+      <div class="flex flex-wrap items-center gap-3">
+        <h1 class="text-3xl font-extrabold tracking-tight"><%= @album.title %></h1>
+        <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= @album.status %></span>
+      </div>
+
+      <p class="text-neutral-500 mt-2"><%= pluralize(@tracks.size, "track") %></p>
+
+      <div class="mt-4 flex flex-wrap items-center gap-3">
+        <% if policy(@album).publish? && @album.draft? %>
+          <%= button_to "Publish", publish_band_album_path(@band, @album), method: :patch, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+        <% end %>
+
+        <% if policy(@album).unpublish? && @album.published? %>
+          <%= button_to "Unpublish", unpublish_band_album_path(@band, @album), method: :patch, class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
+        <% end %>
+
+        <% if policy(@album).update? %>
+          <%= link_to "Edit", edit_band_album_path(@band, @album), class: "text-sm text-neutral-400 hover:text-white transition" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <% if @tracks.any? %>
+    <ul class="mt-10 flex flex-col gap-2">
+      <% @tracks.each do |track| %>
+        <li class="flex items-center justify-between gap-3 rounded-lg border border-neutral-800 px-4 py-3">
+          <div>
+            <span class="text-neutral-500 text-sm mr-2"><%= track.track_number %></span>
+            <span class="text-white"><%= track.title %></span>
+            <span class="text-xs uppercase tracking-wide text-neutral-500 ml-2"><%= track.status %></span>
+          </div>
+          <%= link_to "Edit", edit_band_track_path(@band, track), class: "text-sm text-neutral-400 hover:text-white transition" %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="mt-10 text-neutral-500">This album has no tracks.</p>
+  <% end %>
+</section>
