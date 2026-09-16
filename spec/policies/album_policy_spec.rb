@@ -21,6 +21,12 @@ RSpec.describe AlbumPolicy do
       it { is_expected.not_to be_show }
     end
 
+    context "when user is a platform administrator not in the band" do
+      let(:user) { create(:user, :platform_admin) }
+
+      it { is_expected.to be_show }
+    end
+
     context "when user is nil" do
       let(:user) { nil }
 
@@ -56,6 +62,12 @@ RSpec.describe AlbumPolicy do
       it { is_expected.not_to be_create }
     end
 
+    context "when user is a platform administrator not in the band" do
+      let(:user) { create(:user, :platform_admin) }
+
+      it { is_expected.to be_create }
+    end
+
     context "when user is anonymous" do
       let(:user) { nil }
 
@@ -76,6 +88,12 @@ RSpec.describe AlbumPolicy do
 
       it { is_expected.not_to be_search }
     end
+
+    context "when user is a platform administrator not in the band" do
+      let(:user) { create(:user, :platform_admin) }
+
+      it { is_expected.to be_search }
+    end
   end
 
   describe "#publish?" do
@@ -91,6 +109,12 @@ RSpec.describe AlbumPolicy do
 
       it { is_expected.not_to be_publish }
     end
+
+    context "when user is a platform administrator not in the band" do
+      let(:user) { create(:user, :platform_admin) }
+
+      it { is_expected.to be_publish }
+    end
   end
 
   describe "#unpublish?" do
@@ -105,6 +129,12 @@ RSpec.describe AlbumPolicy do
       let(:user) { create(:user) }
 
       it { is_expected.not_to be_unpublish }
+    end
+
+    context "when user is a platform administrator not in the band" do
+      let(:user) { create(:user, :platform_admin) }
+
+      it { is_expected.to be_unpublish }
     end
   end
 end

@@ -35,6 +35,12 @@ RSpec.describe EventPolicy do
         it { expect(subject.public_send(action)).to be false }
       end
 
+      context "when user is a platform administrator not in the band" do
+        let(:user) { create(:user, :platform_admin) }
+
+        it { expect(subject.public_send(action)).to be true }
+      end
+
       context "when user is anonymous" do
         let(:user) { nil }
 
