@@ -26,6 +26,8 @@ class PollPolicy < ApplicationPolicy
   private
 
   def member?
-    record.band.band_memberships.exists?(user_id: user&.id)
+    return false if user.nil?
+
+    user.platform_admin? || record.band.band_memberships.exists?(user_id: user.id)
   end
 end
