@@ -1,0 +1,46 @@
+<% content_for :title, "Memberships — Admin — SceneCore" %>
+
+<div class="max-w-3xl">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl font-extrabold tracking-tight">Memberships</h1>
+  </div>
+
+  <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mb-8">
+    <div class="flex items-center gap-2">
+      <span class="text-xs uppercase tracking-wide text-neutral-600">Level</span>
+      <%= link_to "All", admin_memberships_path(status: params[:status]), class: "text-sm text-neutral-400 hover:text-white transition" %>
+      <% Membership.levels.keys.each do |level| %>
+        <%= link_to level.humanize, admin_memberships_path(level: level, status: params[:status]), class: "text-sm text-neutral-400 hover:text-white transition" %>
+      <% end %>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <span class="text-xs uppercase tracking-wide text-neutral-600">Status</span>
+      <%= link_to "All", admin_memberships_path(level: params[:level]), class: "text-sm text-neutral-400 hover:text-white transition" %>
+      <% Membership.statuses.keys.each do |status| %>
+        <%= link_to status.humanize, admin_memberships_path(level: params[:level], status: status), class: "text-sm text-neutral-400 hover:text-white transition" %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @memberships.empty? %>
+    <p class="text-neutral-500">No memberships found.</p>
+  <% else %>
+    <ul class="space-y-3">
+      <% @memberships.each do |membership| %>
+        <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-center justify-between">
+          <div>
+            <p class="font-semibold text-white"><%= membership.user.name %></p>
+            <p class="text-sm text-neutral-500">
+              <%= link_to membership.band.name, band_path(membership.band), class: "hover:text-white transition" %>
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= membership.level.humanize %></span>
+            <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= membership.status.humanize %></span>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>
