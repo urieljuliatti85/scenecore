@@ -6,10 +6,7 @@ class Admin::AlbumsController < Admin::BaseController
   end
 
   def unpublish
-    ActiveRecord::Base.transaction do
-      @album.draft!
-      @album.tracks.update_all(status: Track.statuses[:draft])
-    end
+    @album.draft!
 
     AdminActionLog.create!(actor: current_user, action: "moderate_unpublish_album", subject: @album)
 

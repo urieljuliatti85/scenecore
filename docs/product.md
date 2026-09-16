@@ -489,6 +489,11 @@ Credits
 Player/file when applicable
 External links
 
+Not built, and not currently planned: as of 2026-09-16 the implementation
+holds albums only and links out to Spotify for listening (see Journey 3
+and the Music rules). This per-track description remains the longer-term
+product vision, not a statement about the system as it stands.
+
 Thus, SceneCore can also function as a historical catalog of the scene's production.
 
 4. Promoting Shows
@@ -781,10 +786,15 @@ for phases not yet built (Store, Payments, Subscriptions, Events).
 
 *Built (Phase 5).*
 
-1. Visitor opens a band's public page or an album's page.
-2. Visitor sees published albums and tracks.
-3. Visitor plays a track via the embedded Spotify player.
-4. Draft tracks and tracks without a Spotify link are never shown.
+1. Visitor opens a band's public page.
+2. Visitor sees the band's published albums as cover-and-title cards.
+3. Visitor opens an album on Spotify to listen ("Listen on Spotify").
+4. Draft albums are never shown.
+
+Revised 2026-09-16: SceneCore no longer mirrors Spotify's track listing or
+embeds a per-track player. An album is a pointer to Spotify, which keeps
+the band's streams, counts and distribution exactly where they already
+are.
 
 ### Journey 4 — Create an Account
 
@@ -1001,18 +1011,25 @@ this section rather than repeated inline.
 - Only approved bands are reachable at `GET /:slug`.
 - Pending, rejected, and suspended bands return the same not-found response
   a visitor would see for a nonexistent slug (no status leak).
-- The public page never exposes draft albums, draft tracks, or non-public
-  posts, regardless of how the URL is reached.
+- The public page never exposes draft albums or non-public posts,
+  regardless of how the URL is reached.
 
 ### Music
 
-- A track belongs to exactly one album, which belongs to exactly one band.
-- Draft tracks and albums are not publicly accessible under any route.
-- Published tracks are publicly accessible only through their band's public
-  page.
-- A track cannot be published without a valid Spotify track URL.
-- Publishing/unpublishing an album cascades to its tracks as documented in
-  ROADMAP.md 5.4.
+Revised 2026-09-16. An album is a link out to Spotify rather than a track
+listing SceneCore holds, so the per-track rules below no longer apply.
+
+- An album belongs to exactly one band.
+- Draft albums are not publicly accessible under any route.
+- Published albums are publicly accessible only through their band's
+  public page.
+- An album's audio is never hosted by SceneCore: listening happens on
+  Spotify, reached from the album's cover card.
+
+Previously: a track belonged to exactly one album; draft tracks were not
+publicly accessible; a track could not be published without a valid
+Spotify track URL; and publishing or unpublishing an album cascaded to its
+tracks.
 
 ### Followers
 

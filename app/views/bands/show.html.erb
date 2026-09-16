@@ -49,10 +49,7 @@
               </div>
               <div class="p-4">
                 <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= album.title %></p>
-                <p class="text-sm text-neutral-500">
-                  <%= pluralize(@track_counts.fetch(album.id, 0), "track") %>
-                  <span class="uppercase tracking-wide ml-1"><%= album.status %></span>
-                </p>
+                <p class="text-sm text-neutral-500 uppercase tracking-wide"><%= album.status %></p>
               </div>
             <% end %>
 

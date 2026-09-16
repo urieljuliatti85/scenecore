@@ -58,7 +58,8 @@ Connects users and bands.
 
 ### Purpose
 
-Groups a band's tracks into a release.
+A band's release, shown as cover and title and linking out to Spotify for
+listening.
 
 ### Attributes
 
@@ -66,13 +67,17 @@ Groups a band's tracks into a release.
 - title
 - status
 - cover
+- spotify_id
+- spotify_cover_url
 - created_at
 - updated_at
 
 ### Rules
 
 - An album belongs to one band.
-- An album has many tracks.
+- An album is a pointer to Spotify, not a track listing. SceneCore stores
+  the album's Spotify id at import and derives the listen link from it;
+  it does not mirror the album's tracks.
 - Draft albums are not publicly accessible.
 - Published albums may be publicly accessible.
 
@@ -80,23 +85,19 @@ Groups a band's tracks into a release.
 
 ## Tracks
 
-### Attributes
+**Superseded 2026-09-16.** Albums link out to Spotify instead of
+mirroring its catalogue, so nothing creates, reads or renders a track any
+more.
 
-- album_id
-- title
-- track_number
-- status
-- spotify_url
-- created_at
-- updated_at
+The table and model are deliberately kept for now: they still hold the
+rows imported under the old behaviour, and dropping them would be an
+irreversible migration for a decision only days old. Remove both once the
+new shape has settled.
 
-### Rules
-
-- A track belongs to one album (and, through it, to one band).
-- A track's audio is not hosted by SceneCore — it links to the
-  corresponding Spotify track, and playback uses Spotify's embed.
-- Draft tracks are not publicly accessible.
-- Published tracks may be publicly accessible.
+The previous rules were: a track belonged to one album (and through it to
+one band); its audio was never hosted by SceneCore but linked to the
+corresponding Spotify track, played through Spotify's embed; draft tracks
+were not publicly accessible and published ones could be.
 
 ---
 
@@ -121,4 +122,4 @@ Band
   └── has_many Products
 
 Album
-  └── has_many Tracks
+  └── (links out to Spotify; no Tracks association since 2026-09-16)

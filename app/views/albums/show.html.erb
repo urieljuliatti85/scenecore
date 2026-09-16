@@ -18,7 +18,12 @@
         <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= @album.status %></span>
       </div>
 
-      <p class="text-neutral-500 mt-2"><%= pluralize(@tracks.size, "track") %></p>
+      <%# The href is assembled from a literal plus the validated id, so the
+          scheme and host are fixed here rather than coming out of the
+          database. See Album#spotify_url for the id check. %>
+      <% if (spotify_album_id = @album.spotify_link_id) %>
+        <%= link_to "Listen on Spotify", "https://open.spotify.com/album/#{spotify_album_id}", target: "_blank", rel: "noopener", class: "mt-4 inline-block rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition" %>
+      <% end %>
 
       <div class="mt-4 flex flex-wrap items-center gap-3">
         <% if policy(@album).publish? && @album.draft? %>
@@ -53,20 +58,4 @@
     </div>
   <% end %>
 
-  <% if @tracks.any? %>
-    <ul class="mt-10 flex flex-col gap-2">
-      <% @tracks.each do |track| %>
-        <li class="flex items-center justify-between gap-3 rounded-lg border border-neutral-800 px-4 py-3">
-          <div>
-            <span class="text-neutral-500 text-sm mr-2"><%= track.track_number %></span>
-            <span class="text-white"><%= track.title %></span>
-            <span class="text-xs uppercase tracking-wide text-neutral-500 ml-2"><%= track.status %></span>
-          </div>
-          <%= link_to "Edit", edit_band_track_path(@band, track), class: "text-sm text-neutral-400 hover:text-white transition" %>
-        </li>
-      <% end %>
-    </ul>
-  <% else %>
-    <p class="mt-10 text-neutral-500">This album has no tracks.</p>
-  <% end %>
 </section>

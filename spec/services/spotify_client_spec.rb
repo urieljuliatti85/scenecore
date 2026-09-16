@@ -53,28 +53,30 @@ RSpec.describe SpotifyClient do
   end
 
   describe "#fetch_album" do
-    it "maps Spotify's album response into AlbumDetails with ordered tracks" do
+    it "maps Spotify's album response into AlbumDetails" do
       stub_http_response(body: {
         name: "Discovery",
-        images: [ { url: "https://i.scdn.co/image/discovery-cover.jpg" } ],
-        tracks: {
-          items: [
-            { name: "One More Time", track_number: 1, external_urls: { spotify: "https://open.spotify.com/track/0DiWol3AO6WpXZgp0goxAV" } },
-            { name: "Aerodynamic", track_number: 2, external_urls: { spotify: "https://open.spotify.com/track/2xLMifQCjDGFmkHkpNLD9h" } }
-          ]
-        }
+        images: [ { url: "https://i.scdn.co/image/discovery-cover.jpg" } ]
       })
 
       album = client.fetch_album("abc123")
 
       expect(album.name).to eq("Discovery")
       expect(album.cover_image_url).to eq("https://i.scdn.co/image/discovery-cover.jpg")
-      expect(album.tracks.size).to eq(2)
-      expect(album.tracks.first).to have_attributes(
-        title: "One More Time",
-        track_number: 1,
-        spotify_url: "https://open.spotify.com/track/0DiWol3AO6WpXZgp0goxAV"
-      )
+    end
+
+    # SceneCore links out to Spotify instead of mirroring its catalogue,
+    # so a track listing in the response is ignored rather than stored.
+    it "ignores the track listing Spotify returns" do
+      stub_http_response(body: {
+        name: "Discovery",
+        images: [ { url: "https://i.scdn.co/image/discovery-cover.jpg" } ],
+        tracks: { items: [ { name: "One More Time", track_number: 1 } ] }
+      })
+
+      album = client.fetch_album("abc123")
+
+      expect(album).not_to respond_to(:tracks)
     end
 
     it "returns a nil cover_image_url when Spotify has no image for the album" do

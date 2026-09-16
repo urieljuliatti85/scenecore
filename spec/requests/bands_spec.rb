@@ -85,14 +85,13 @@ RSpec.describe "Bands", type: :request do
       expect(response).to have_http_status(:ok)
     end
 
-    it "does not run one track query per album" do
+    # The panel used to count tracks per album. Albums link out to Spotify
+    # now, so the page has no reason to touch that table at all.
+    it "does not query tracks" do
       user = create(:user)
       band = create(:band)
       create(:band_membership, band: band, user: user)
-      3.times do |i|
-        album = create(:album, band: band)
-        create(:track, album: album, track_number: i + 1)
-      end
+      3.times { create(:album, band: band) }
       sign_in user
 
       track_queries = 0
@@ -102,7 +101,7 @@ RSpec.describe "Bands", type: :request do
       get band_path(band)
       ActiveSupport::Notifications.unsubscribe(subscriber)
 
-      expect(track_queries).to eq(1)
+      expect(track_queries).to eq(0)
     end
   end
 

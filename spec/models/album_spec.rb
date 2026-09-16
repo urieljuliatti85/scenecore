@@ -35,12 +35,40 @@ RSpec.describe Album, type: :model do
     expect(album.band).to eq(band)
   end
 
-  it "destroys its tracks when destroyed" do
-    album = create(:album)
-    track = create(:track, album: album)
+  describe "#spotify_url" do
+    it "derives the album link from the imported Spotify id" do
+      album = build(:album, spotify_id: "4aawyAB9vmqN3uQ7FjRGTy")
 
-    expect { album.destroy }.to change(Track, :count).by(-1)
-    expect { track.reload }.to raise_error(ActiveRecord::RecordNotFound)
+      expect(album.spotify_url).to eq("https://open.spotify.com/album/4aawyAB9vmqN3uQ7FjRGTy")
+    end
+
+    it "is nil for an album that was not imported from Spotify" do
+      expect(build(:album, spotify_id: nil).spotify_url).to be_nil
+    end
+
+    # The value goes straight into an href, so a row written outside the
+    # model's validation (console, fixture, a future import path) must not
+    # be able to put a hostile scheme or another host in front of a visitor.
+    it "refuses anything that is not a Spotify id" do
+      hostile = [
+        "javascript:alert(1)",
+        "https://evil.com/x",
+        "' onmouseover='alert(1)",
+        "../../etc/passwd",
+        "4aawyAB9vmqN3uQ7FjRGT"
+      ]
+
+      hostile.each do |value|
+        expect(build(:album, spotify_id: value).spotify_url).to be_nil
+      end
+    end
+
+    it "rejects a malformed Spotify id on save" do
+      album = build(:album, spotify_id: "javascript:alert(1)")
+
+      expect(album).not_to be_valid
+      expect(album.errors[:spotify_id]).to be_present
+    end
   end
 
   it "destroys its admin action logs when destroyed" do

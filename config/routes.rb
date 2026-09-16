@@ -80,7 +80,6 @@ Rails.application.routes.draw do
         get :search
       end
     end
-    resources :tracks, only: [ :edit, :update ]
     resource :follow, only: [ :create, :destroy ]
     resources :posts, only: [ :new, :create, :show, :edit, :update, :destroy ] do
       member do
@@ -107,6 +106,5 @@ Rails.application.routes.draw do
 
   # Public band page and album detail, resolved by slug. Must stay last
   # so they don't shadow any of the routes declared above.
-  get "/:slug/albums/:id", to: "public_bands#album", as: :public_band_album, constraints: { slug: /[a-z0-9\-]+/ }
   get "/:slug", to: "public_bands#show", as: :public_band, constraints: { slug: /[a-z0-9\-]+/ }
 end

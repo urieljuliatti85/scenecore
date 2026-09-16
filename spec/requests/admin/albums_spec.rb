@@ -44,17 +44,15 @@ RSpec.describe "Admin::Albums", type: :request do
   end
 
   describe "PATCH /admin/albums/:id/unpublish" do
-    it "unpublishes an album and its tracks, regardless of which band owns it" do
+    it "unpublishes an album regardless of which band owns it" do
       admin = create(:user, :platform_admin)
       band = create(:band)
       album = create(:album, :published, band: band)
-      track = create(:track, :published, album: album)
       sign_in admin
 
       patch unpublish_admin_album_path(album)
 
       expect(album.reload.status).to eq("draft")
-      expect(track.reload.status).to eq("draft")
       expect(response).to redirect_to(admin_albums_path)
     end
 
