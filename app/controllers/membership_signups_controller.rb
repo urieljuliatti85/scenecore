@@ -15,6 +15,14 @@ class MembershipSignupsController < ApplicationController
     end
   end
 
+  def destroy
+    @membership = @band.memberships.find_by!(user: current_user)
+    authorize @membership, :cancel?
+
+    @membership.update!(status: :cancelled)
+    redirect_to public_band_path(@band.slug), notice: "Your membership with #{@band.name} has been cancelled."
+  end
+
   private
 
   def set_band
