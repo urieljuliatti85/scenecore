@@ -69,7 +69,7 @@ Rails.application.routes.draw do
       resources :privileges, only: [ :index, :create, :update ]
     end
     resources :users, only: [ :index ]
-    resources :memberships, only: [ :index ] do
+    resources :memberships, only: [ :index, :edit, :update, :destroy ] do
       member do
         patch :pause
         patch :cancel
