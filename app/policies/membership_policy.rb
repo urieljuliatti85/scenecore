@@ -19,6 +19,13 @@ class MembershipPolicy < ApplicationPolicy
     administrator_of_band?
   end
 
+  def moderate?
+    administrator_of_band? || user&.platform_admin?
+  end
+  alias_method :pause?, :moderate?
+  alias_method :cancel?, :moderate?
+  alias_method :reactivate?, :moderate?
+
   class Scope < Scope
     def resolve
       return scope.none if user.nil?

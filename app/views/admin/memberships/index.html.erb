@@ -38,6 +38,16 @@
           <div class="flex items-center gap-2">
             <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= membership.level.humanize %></span>
             <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= membership.status.humanize %></span>
+
+            <% if membership.active? %>
+              <%= button_to "Pause", pause_admin_membership_path(membership), method: :patch, class: "text-xs font-medium text-yellow-400 hover:text-yellow-300 transition cursor-pointer" %>
+              <%= button_to "Cancel", cancel_admin_membership_path(membership), method: :patch, class: "text-xs font-medium text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Cancel this membership?" } } %>
+            <% elsif membership.paused? %>
+              <%= button_to "Reactivate", reactivate_admin_membership_path(membership), method: :patch, class: "text-xs font-medium text-green-400 hover:text-green-300 transition cursor-pointer" %>
+              <%= button_to "Cancel", cancel_admin_membership_path(membership), method: :patch, class: "text-xs font-medium text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Cancel this membership?" } } %>
+            <% elsif membership.cancelled? || membership.expired? %>
+              <%= button_to "Reactivate", reactivate_admin_membership_path(membership), method: :patch, class: "text-xs font-medium text-green-400 hover:text-green-300 transition cursor-pointer" %>
+            <% end %>
           </div>
         </li>
       <% end %>
