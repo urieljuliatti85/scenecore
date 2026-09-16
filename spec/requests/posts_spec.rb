@@ -212,6 +212,31 @@ RSpec.describe "Posts", type: :request do
 
       expect(response).to redirect_to(root_path)
     end
+
+    it "does not log an audit entry when the band deletes its own post" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      post_record = create(:post, band: band)
+      sign_in user
+
+      expect {
+        delete band_post_path(band, post_record)
+      }.not_to change(AdminActionLog, :count)
+    end
+
+    it "logs an audit entry when a platform admin deletes another band's post" do
+      band = create(:band)
+      post_record = create(:post, band: band)
+      admin = create(:user, :platform_admin)
+      sign_in admin
+
+      delete band_post_path(band, post_record)
+
+      log = AdminActionLog.last
+      expect(log.action).to eq("moderate_delete_post")
+      expect(log.actor).to eq(admin)
+    end
   end
 
   describe "PATCH /bands/:band_id/posts/:id/publish" do
@@ -252,6 +277,32 @@ RSpec.describe "Posts", type: :request do
       patch unpublish_band_post_path(band, post_record)
 
       expect(post_record.reload.status).to eq("draft")
+    end
+
+    it "does not log an audit entry when the band unpublishes its own post" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      post_record = create(:post, :published, band: band)
+      sign_in user
+
+      expect {
+        patch unpublish_band_post_path(band, post_record)
+      }.not_to change(AdminActionLog, :count)
+    end
+
+    it "logs an audit entry when a platform admin unpublishes another band's post" do
+      band = create(:band)
+      post_record = create(:post, :published, band: band)
+      admin = create(:user, :platform_admin)
+      sign_in admin
+
+      patch unpublish_band_post_path(band, post_record)
+
+      log = AdminActionLog.last
+      expect(log.action).to eq("moderate_unpublish_post")
+      expect(log.actor).to eq(admin)
+      expect(log.subject).to eq(post_record)
     end
   end
 end

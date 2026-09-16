@@ -87,6 +87,7 @@ Rails.application.routes.draw do
       end
     end
     resources :categories, only: [ :index, :new, :create, :edit, :update, :destroy ]
+    resources :audit_logs, only: [ :index ]
   end
 
   resources :bands, only: [ :index, :new, :create, :show, :edit, :update ] do

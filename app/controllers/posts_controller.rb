@@ -39,6 +39,7 @@ class PostsController < ApplicationController
   def destroy
     authorize @post
 
+    log_platform_moderation("moderate_delete_post")
     @post.destroy
     redirect_to band_path(@band), notice: "Post deleted."
   end
@@ -53,6 +54,7 @@ class PostsController < ApplicationController
   def unpublish
     authorize @post
 
+    log_platform_moderation("moderate_unpublish_post")
     @post.draft!
     redirect_to band_path(@band), notice: "Post unpublished."
   end
@@ -65,6 +67,17 @@ class PostsController < ApplicationController
 
   def set_post
     @post = @band.posts.find(params[:id])
+  end
+
+  # Platform moderation must be auditable (docs/community.md §11) — a band
+  # acting on its own post is ordinary content management, not moderation,
+  # so this only logs when a platform admin reaches into a band they don't
+  # belong to.
+  def log_platform_moderation(action)
+    return unless current_user.platform_admin?
+    return if @band.band_memberships.exists?(user_id: current_user.id)
+
+    AdminActionLog.create!(actor: current_user, action: action, subject: @post)
   end
 
   def post_params
