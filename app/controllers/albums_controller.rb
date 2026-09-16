@@ -21,6 +21,12 @@ class AlbumsController < ApplicationController
   def update
     authorize @album
 
+    spotify_id = params[:spotify_album_id]
+
+    if spotify_id.present?
+      return link_to_spotify(spotify_id)
+    end
+
     if @album.update(album_params)
       redirect_to band_path(@band), notice: "Album updated."
     else
@@ -109,6 +115,32 @@ class AlbumsController < ApplicationController
   end
 
   private
+
+  # Points an existing album at a Spotify release: albums added before
+  # spotify_id existed have no link, and the only other way to get one was
+  # to delete the album and import it again, losing its publication state.
+  #
+  # Title is deliberately left alone. The band may have corrected it, and
+  # this action is about attaching the link, not re-importing the record.
+  def link_to_spotify(spotify_id)
+    unless spotify_id.to_s.match?(SPOTIFY_ID_FORMAT)
+      @album.errors.add(:base, "Select an album from the search results.")
+      return render :edit, status: :unprocessable_entity
+    end
+
+    details = SpotifyClient.new.fetch_album(spotify_id)
+
+    @album.spotify_id = spotify_id
+    @album.spotify_cover_url = details.cover_image_url
+    @album.save!
+
+    redirect_to band_album_path(@band, @album), notice: "Album linked to Spotify."
+  rescue SpotifyClient::Error
+    @album.errors.add(:base, "Could not reach Spotify right now. Please try again.")
+    render :edit, status: :bad_gateway
+  rescue ActiveRecord::RecordInvalid
+    render :edit, status: :unprocessable_entity
+  end
 
   def import_album(spotify_id)
     details = SpotifyClient.new.fetch_album(spotify_id)
