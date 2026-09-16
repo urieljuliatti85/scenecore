@@ -4,6 +4,7 @@ class Post < ApplicationRecord
   belongs_to :band
 
   has_image :image
+  has_rich_text :body
 
   enum :status, { draft: "draft", published: "published" },
        default: :draft, validate: true

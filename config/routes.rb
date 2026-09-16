@@ -21,6 +21,13 @@ Rails.application.routes.draw do
   get "/rails/active_storage/blobs/redirect/:signed_id/*filename", to: "authenticated_blobs#show"
   get "/rails/active_storage/blobs/:signed_id/*filename", to: "authenticated_blobs#show"
 
+  # Same neutralization for Active Storage's own direct_uploads route (also
+  # unauthenticated by default): app routes take precedence, so this
+  # shadows it with a 404 rather than leaving an endpoint that lets anyone
+  # mint Active Storage blobs. The authenticated equivalent used by the
+  # Trix editor is DirectUploadsController, routed below as post_direct_uploads.
+  post "/rails/active_storage/direct_uploads", to: proc { [ 404, {}, [] ] }
+
   direct :rails_authenticated_storage_redirect do |model, options|
     expires_in = options.delete(:expires_in) { ActiveStorage.urls_expire_in }
     expires_at = options.delete(:expires_at)
@@ -35,6 +42,15 @@ Rails.application.routes.draw do
     sessions: "users/sessions",
     passwords: "users/passwords"
   }
+
+  # Active Storage's own direct_uploads route is unauthenticated by default
+  # (ActiveStorage::BaseController doesn't inherit from ApplicationController),
+  # so this is a separate route gated behind authenticate_user! and restricted
+  # to the same image types/size HasImage enforces elsewhere. The Trix editor
+  # is pointed at it explicitly via rich_text_area's direct_upload_url option
+  # (see app/views/posts/_form.html.erb) instead of the default rails_direct_uploads.
+  post "/posts/direct_uploads", to: "direct_uploads#create", as: :post_direct_uploads
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

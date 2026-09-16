@@ -149,4 +149,49 @@ RSpec.describe "Authenticated blob access", type: :request do
       expect(response).to have_http_status(:redirect)
     end
   end
+
+  describe "an image embedded in a post's rich text body" do
+    def attach_embed(post_record)
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io: File.open(Rails.root.join("spec/fixtures/files/band_photo.png")),
+        filename: "band_photo.png",
+        content_type: "image/png"
+      )
+      post_record.update!(body: ActionText::Content.new.append_attachables([ blob ]))
+      post_record.body.embeds.first
+    end
+
+    it "is reachable by anyone when the post is published and public" do
+      band = create(:band, :approved)
+      post_record = create(:post, :published, band: band)
+      image = attach_embed(post_record)
+
+      get rails_blob_path(image, only_path: true)
+
+      expect(response).to have_http_status(:redirect)
+    end
+
+    it "is not reachable by a visitor when the post is a draft" do
+      band = create(:band, :approved)
+      post_record = create(:post, band: band)
+      image = attach_embed(post_record)
+
+      get rails_blob_path(image, only_path: true)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "is reachable by a band member even when the post is a draft" do
+      band = create(:band, :approved)
+      post_record = create(:post, band: band)
+      user = create(:user)
+      create(:band_membership, band: band, user: user)
+      image = attach_embed(post_record)
+      sign_in user
+
+      get rails_blob_path(image, only_path: true)
+
+      expect(response).to have_http_status(:redirect)
+    end
+  end
 end
