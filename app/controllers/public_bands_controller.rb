@@ -34,4 +34,11 @@ class PublicBandsController < ApplicationController
   rescue ActiveRecord::RecordNotFound
     render "not_found", status: :not_found
   end
+
+  def subscriptions
+    @band = Band.approved.with_attached_photo.find_by!(slug: params[:slug])
+    @membership = current_user.present? ? @band.memberships.find_by(user: current_user) : nil
+  rescue ActiveRecord::RecordNotFound
+    render "not_found", status: :not_found
+  end
 end
