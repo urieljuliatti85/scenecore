@@ -26,4 +26,15 @@ module MembershipGatedVisibility
 
     membership.present? && membership.can_access?(visibility)
   end
+
+  # The minimum thing a viewer needs to see this right now, or nil when
+  # it's already public — used by the public band page to explain locked
+  # content instead of just omitting it (docs/band-admin.md §37). Distinct
+  # from "followers", which isn't a paid Membership level.
+  def required_level
+    return nil if visibility_public?
+    return nil if visibility_followers?
+
+    visibility
+  end
 end

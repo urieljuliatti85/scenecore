@@ -124,6 +124,20 @@ RSpec.describe Post, type: :model do
     end
   end
 
+  describe "#required_level" do
+    it "is nil when the post is public" do
+      expect(build(:post, visibility: :public).required_level).to be_nil
+    end
+
+    it "is nil when the post is followers-only, since that is not a paid level" do
+      expect(build(:post, :followers_only).required_level).to be_nil
+    end
+
+    it "returns the membership level for a level-gated post" do
+      expect(build(:post, :supporter_only).required_level).to eq("supporter")
+    end
+  end
+
   it "belongs to a band" do
     band = create(:band)
     post = create(:post, band: band)

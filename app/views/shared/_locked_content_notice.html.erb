@@ -1,0 +1,20 @@
+<div class="mt-2 flex items-center gap-3 rounded-xl border border-neutral-800 bg-black/30 px-4 py-3">
+  <span class="text-neutral-500 text-lg" aria-hidden="true">🔒</span>
+  <div class="text-sm">
+    <% if required_level.present? %>
+      <p class="text-neutral-400">Available to <%= required_level.humanize %>s and above.</p>
+      <% if user_signed_in? %>
+        <p class="text-yellow-400 mt-0.5">Upgrade to <%= required_level.humanize %> to unlock this.</p>
+      <% else %>
+        <p class="mt-0.5"><%= link_to "Sign in", new_user_session_path, class: "text-yellow-400 hover:text-yellow-300 transition" %> to see membership options.</p>
+      <% end %>
+    <% else %>
+      <p class="text-neutral-400">Available to followers.</p>
+      <% if user_signed_in? %>
+        <p class="text-yellow-400 mt-0.5">Follow this band to unlock this.</p>
+      <% else %>
+        <p class="mt-0.5"><%= link_to "Sign in", new_user_session_path, class: "text-yellow-400 hover:text-yellow-300 transition" %> and follow this band to unlock this.</p>
+      <% end %>
+    <% end %>
+  </div>
+</div>

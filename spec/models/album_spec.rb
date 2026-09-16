@@ -247,4 +247,22 @@ RSpec.describe Album, type: :model do
       expect(album.visible_to?(nil)).to be true
     end
   end
+
+  describe "#required_level" do
+    it "is nil when no early access is configured" do
+      expect(build(:album).required_level).to be_nil
+    end
+
+    it "is nil once the early access window has passed" do
+      album = build(:album, early_access_level: :supporter, early_access_until: 1.day.ago)
+
+      expect(album.required_level).to be_nil
+    end
+
+    it "returns the early access level while the window is still open" do
+      album = build(:album, early_access_level: :supporter, early_access_until: 1.day.from_now)
+
+      expect(album.required_level).to eq("supporter")
+    end
+  end
 end
