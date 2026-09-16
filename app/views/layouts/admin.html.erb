@@ -35,6 +35,7 @@
             <%= admin_nav_link "Subscriptions", admin_subscriptions_path, current: request.path.start_with?(admin_subscriptions_path) %>
             <%= admin_nav_link "Moderation", admin_albums_path, current: request.path.start_with?(admin_albums_path) %>
             <%= admin_nav_link "Categories", admin_categories_path, current: request.path.start_with?(admin_categories_path) %>
+            <%= admin_nav_link "Audit Log", admin_audit_logs_path, current: request.path.start_with?(admin_audit_logs_path) %>
           </div>
         </nav>
       </div>

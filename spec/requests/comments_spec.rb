@@ -100,6 +100,18 @@ RSpec.describe "Comments", type: :request do
       expect(Comment.exists?(comment.id)).to be false
     end
 
+    it "does not log an audit entry when the author deletes their own comment" do
+      band = create(:band, :approved)
+      post_record = create(:post, :published, band: band, visibility: :public)
+      author = create(:user)
+      comment = create(:comment, post: post_record, user: author)
+      sign_in author
+
+      expect {
+        delete post_comment_path(band.slug, post_record, comment)
+      }.not_to change(AdminActionLog, :count)
+    end
+
     it "lets a member of the band delete a comment on the band's post" do
       band = create(:band, :approved)
       post_record = create(:post, :published, band: band, visibility: :public)
@@ -113,6 +125,19 @@ RSpec.describe "Comments", type: :request do
       expect(Comment.exists?(comment.id)).to be false
     end
 
+    it "does not log an audit entry when the band deletes a comment on its own post" do
+      band = create(:band, :approved)
+      post_record = create(:post, :published, band: band, visibility: :public)
+      comment = create(:comment, post: post_record)
+      band_member = create(:user)
+      create(:band_membership, band: band, user: band_member)
+      sign_in band_member
+
+      expect {
+        delete post_comment_path(band.slug, post_record, comment)
+      }.not_to change(AdminActionLog, :count)
+    end
+
     it "lets a platform administrator delete any comment" do
       band = create(:band, :approved)
       post_record = create(:post, :published, band: band, visibility: :public)
@@ -123,6 +148,20 @@ RSpec.describe "Comments", type: :request do
       delete post_comment_path(band.slug, post_record, comment)
 
       expect(Comment.exists?(comment.id)).to be false
+    end
+
+    it "logs an audit entry when a platform admin deletes another band's comment" do
+      band = create(:band, :approved)
+      post_record = create(:post, :published, band: band, visibility: :public)
+      comment = create(:comment, post: post_record)
+      admin = create(:user, :platform_admin)
+      sign_in admin
+
+      delete post_comment_path(band.slug, post_record, comment)
+
+      log = AdminActionLog.last
+      expect(log.action).to eq("moderate_delete_comment")
+      expect(log.actor).to eq(admin)
     end
 
     it "returns 404 when an unrelated fan tries to delete someone else's comment" do

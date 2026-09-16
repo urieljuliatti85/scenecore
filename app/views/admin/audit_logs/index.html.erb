@@ -1,0 +1,27 @@
+<% content_for :title, "Audit Log — Admin — SceneCore" %>
+
+<div class="max-w-3xl">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-2">Audit Log</h1>
+  <p class="text-neutral-500 mb-8">Platform-level actions taken on bands' content and accounts.</p>
+
+  <% if @audit_logs.empty? %>
+    <p class="text-neutral-500">No actions logged yet.</p>
+  <% else %>
+    <ul class="space-y-3">
+      <% @audit_logs.each do |log| %>
+        <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4">
+          <div class="flex items-center justify-between gap-4">
+            <p class="font-semibold text-white"><%= log.action.humanize %></p>
+            <time class="text-sm text-neutral-500" datetime="<%= log.created_at.iso8601 %>"><%= log.created_at.strftime("%d %b %Y · %H:%M") %></time>
+          </div>
+          <p class="text-sm text-neutral-500 mt-1">
+            by <%= log.actor.name %> on <%= log.subject_type %> #<%= log.subject_id %>
+            <% if log.subject.present? %>
+              (<%= admin_audit_subject_label(log.subject) %>)
+            <% end %>
+          </p>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>
