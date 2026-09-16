@@ -74,30 +74,24 @@ RSpec.describe MembershipPolicy do
     end
   end
 
-  describe "#create?, #update?, #destroy?" do
+  describe "#create?" do
     context "when user is an administrator of the band" do
       let(:user) { create(:user) }
       before { create(:band_membership, :administrator, band: band, user: user) }
 
       it { is_expected.to be_create }
-      it { is_expected.to be_update }
-      it { is_expected.to be_destroy }
     end
 
     context "when user is a platform administrator" do
       let(:user) { create(:user, :platform_admin) }
 
       it { is_expected.not_to be_create }
-      it { is_expected.not_to be_update }
-      it { is_expected.not_to be_destroy }
     end
 
     context "when user only owns the membership" do
       let(:user) { owner }
 
       it { is_expected.not_to be_create }
-      it { is_expected.not_to be_update }
-      it { is_expected.not_to be_destroy }
     end
 
     context "when user is an administrator of a different band" do
@@ -105,16 +99,80 @@ RSpec.describe MembershipPolicy do
       before { create(:band_membership, :administrator, band: create(:band), user: user) }
 
       it { is_expected.not_to be_create }
-      it { is_expected.not_to be_update }
-      it { is_expected.not_to be_destroy }
     end
 
     context "when user is anonymous" do
       let(:user) { nil }
 
       it { is_expected.not_to be_create }
-      it { is_expected.not_to be_update }
+    end
+  end
+
+  describe "#destroy?" do
+    context "when user is an administrator of the band" do
+      let(:user) { create(:user) }
+      before { create(:band_membership, :administrator, band: band, user: user) }
+
+      it { is_expected.to be_destroy }
+    end
+
+    context "when user is a platform administrator" do
+      let(:user) { create(:user, :platform_admin) }
+
+      it { is_expected.to be_destroy }
+    end
+
+    context "when user only owns the membership" do
+      let(:user) { owner }
+
       it { is_expected.not_to be_destroy }
+    end
+
+    context "when user is an administrator of a different band" do
+      let(:user) { create(:user) }
+      before { create(:band_membership, :administrator, band: create(:band), user: user) }
+
+      it { is_expected.not_to be_destroy }
+    end
+
+    context "when user is anonymous" do
+      let(:user) { nil }
+
+      it { is_expected.not_to be_destroy }
+    end
+  end
+
+  describe "#update?" do
+    context "when user is an administrator of the band" do
+      let(:user) { create(:user) }
+      before { create(:band_membership, :administrator, band: band, user: user) }
+
+      it { is_expected.to be_update }
+    end
+
+    context "when user is a platform administrator" do
+      let(:user) { create(:user, :platform_admin) }
+
+      it { is_expected.to be_update }
+    end
+
+    context "when user only owns the membership" do
+      let(:user) { owner }
+
+      it { is_expected.not_to be_update }
+    end
+
+    context "when user is an administrator of a different band" do
+      let(:user) { create(:user) }
+      before { create(:band_membership, :administrator, band: create(:band), user: user) }
+
+      it { is_expected.not_to be_update }
+    end
+
+    context "when user is anonymous" do
+      let(:user) { nil }
+
+      it { is_expected.not_to be_update }
     end
   end
 

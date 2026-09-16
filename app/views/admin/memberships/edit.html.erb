@@ -1,0 +1,25 @@
+<% content_for :title, "Edit membership — Admin — SceneCore" %>
+
+<div class="max-w-xl">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-2">Edit membership</h1>
+  <p class="text-neutral-500 mb-8"><%= @membership.user.name %> · <%= @membership.band.name %></p>
+
+  <%= form_with model: @membership, url: admin_membership_path(@membership), class: "flex flex-col gap-5" do |form| %>
+    <% if @membership.errors.any? %>
+      <ul class="rounded-xl border border-red-900 bg-red-950/40 text-red-400 text-sm p-4 space-y-1">
+        <% @membership.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <div>
+      <%= form.label :level, class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.select :level, Membership.levels.keys.map { |level| [ level.humanize, level ] }, {}, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    </div>
+
+    <%= form.submit "Update level", class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition cursor-pointer self-start" %>
+  <% end %>
+
+  <%= link_to "Back to memberships", admin_memberships_path, class: "inline-block mt-6 text-sm text-neutral-400 hover:text-white transition" %>
+</div>
