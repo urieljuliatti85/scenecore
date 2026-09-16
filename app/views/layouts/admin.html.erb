@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Admin — SceneCore" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-neutral-950 text-white min-h-screen sm:flex" data-controller="mobile-menu">
+    <aside
+      id="admin-sidebar-panel"
+      data-mobile-menu-target="panel"
+      class="hidden sm:flex w-64 shrink-0 bg-black border-r border-neutral-800 flex-col justify-between fixed sm:static inset-y-0 left-0 z-40 sm:h-screen sm:sticky sm:top-0"
+    >
+      <div>
+        <div class="px-6 py-6 border-b border-neutral-800">
+          <p class="font-extrabold tracking-tight">SceneCore</p>
+          <p class="text-xs uppercase tracking-wide text-neutral-500">Administração</p>
+        </div>
+
+        <nav class="px-3 py-6">
+          <p class="px-3 text-xs uppercase tracking-wide text-neutral-600 mb-2">Gestão</p>
+          <div class="flex flex-col gap-1">
+            <%= admin_nav_link "Dashboard", admin_root_path, current: request.path == admin_root_path %>
+            <%= admin_nav_link "Bands", admin_bands_path, current: request.path.start_with?(admin_bands_path) %>
+            <%= admin_nav_link "Users", admin_users_path, current: request.path.start_with?(admin_users_path) %>
+            <%= admin_nav_link "Moderation", admin_albums_path, current: request.path.start_with?(admin_albums_path) %>
+            <%= admin_nav_link "Categories", admin_categories_path, current: request.path.start_with?(admin_categories_path) %>
+          </div>
+        </nav>
+      </div>
+
+      <div class="px-3 py-6 border-t border-neutral-800 flex flex-col gap-1">
+        <%= link_to "Ver site", root_path, class: "rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-900 transition" %>
+        <%= button_to "Sair", destroy_user_session_path, method: :delete, class: "text-left w-full rounded-lg px-3 py-2 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-900 transition cursor-pointer" %>
+      </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0">
+      <header class="border-b border-neutral-800 bg-black/60 px-4 sm:px-8 py-4 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            class="sm:hidden h-9 w-9 flex items-center justify-center text-neutral-300 hover:text-white shrink-0"
+            aria-label="Open menu"
+            aria-expanded="false"
+            aria-controls="admin-sidebar-panel"
+            data-mobile-menu-target="button"
+            data-action="mobile-menu#toggle"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="h-6 w-6">
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+          </button>
+
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-yellow-400">SceneCore</p>
+            <p class="text-sm text-neutral-400">Área administrativa</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="h-9 w-9 rounded-full bg-yellow-400 text-black font-semibold flex items-center justify-center shrink-0">
+            <%= current_user.name.first.upcase %>
+          </div>
+          <div class="text-right hidden sm:block">
+            <p class="text-sm font-semibold leading-tight">Administrador</p>
+            <p class="text-xs text-neutral-500 leading-tight"><%= current_user.email %></p>
+          </div>
+        </div>
+      </header>
+
+      <% if notice %>
+        <p class="bg-neutral-900 border-b border-neutral-800 text-yellow-400 text-sm text-center py-2 px-4"><%= notice %></p>
+      <% end %>
+      <% if alert %>
+        <p class="bg-neutral-900 border-b border-neutral-800 text-red-400 text-sm text-center py-2 px-4"><%= alert %></p>
+      <% end %>
+
+      <main class="flex-1 px-4 sm:px-8 py-10">
+        <%= yield %>
+      </main>
+    </div>
+  </body>
+</html>

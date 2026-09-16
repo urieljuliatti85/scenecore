@@ -1,9 +1,8 @@
-<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
-  <h1 class="text-3xl font-extrabold tracking-tight mb-6">Admin</h1>
-  <%= render "admin/nav" %>
+<% content_for :title, "Categories — Admin — SceneCore" %>
 
+<div class="max-w-3xl">
   <div class="flex items-center justify-between mb-8">
-    <h2 class="text-xl font-semibold">Categories</h2>
+    <h1 class="text-3xl font-extrabold tracking-tight">Categories</h1>
     <%= link_to "New category", new_admin_category_path, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-2 hover:bg-yellow-300 transition" %>
   </div>
 
@@ -39,4 +38,4 @@
       <% end %>
     </ul>
   <% end %>
-</section>
+</div>

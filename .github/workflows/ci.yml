@@ -125,6 +125,16 @@ jobs:
       - name: Prepare test database
         run: bin/rails db:test:prepare
 
+      # System specs drive a real browser, so they need the actual
+      # compiled CSS present — app/assets/builds/tailwind.css is
+      # gitignored and normally produced by `bin/dev`'s watcher, which
+      # doesn't run here. Without this, pages render with no stylesheet
+      # at all, silently passing any assertion that happens to rely on
+      # Tailwind CSS (e.g. a `hidden` class) rather than an HTML
+      # attribute to hide an element.
+      - name: Build Tailwind CSS
+        run: bin/rails tailwindcss:build
+
       # band_member_invite_spec.rb runs on its own, after the rest. The one
       # confirmed property of its long-standing flake (see the comment at the
       # top of that file) is that it only reproduces when the whole system
