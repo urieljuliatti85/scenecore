@@ -163,6 +163,43 @@ RSpec.describe "Authenticated blob access", type: :request do
     end
   end
 
+  describe "a post's composition journal attachment" do
+    def attach_pdf(record)
+      record.attachments.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/demo.pdf")),
+        filename: "demo.pdf",
+        content_type: "application/pdf"
+      )
+      record.attachments.first
+    end
+
+    it "is not reachable by a follower without a membership when the post is supporter-only" do
+      band = create(:band, :approved)
+      post_record = create(:post, :published, :supporter_only, band: band)
+      attachment = attach_pdf(post_record)
+      user = create(:user)
+      create(:follow, band: band, user: user)
+      sign_in user
+
+      get rails_blob_path(attachment, only_path: true)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "is reachable by a user with an active Supporter membership when the post is supporter-only" do
+      band = create(:band, :approved)
+      post_record = create(:post, :published, :supporter_only, band: band)
+      attachment = attach_pdf(post_record)
+      user = create(:user)
+      create(:membership, band: band, user: user, level: :supporter)
+      sign_in user
+
+      get rails_blob_path(attachment, only_path: true)
+
+      expect(response).to have_http_status(:redirect)
+    end
+  end
+
   describe "an image embedded in a post's rich text body" do
     def attach_embed(post_record)
       blob = ActiveStorage::Blob.create_and_upload!(

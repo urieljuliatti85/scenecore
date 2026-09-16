@@ -175,4 +175,66 @@ RSpec.describe Post, type: :model do
       expect(post).to be_valid
     end
   end
+
+  describe "attachments" do
+    it "accepts a valid attachment" do
+      post = build(:post)
+      post.attachments.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/demo.pdf")),
+        filename: "demo.pdf",
+        content_type: "application/pdf"
+      )
+
+      expect(post).to be_valid
+    end
+
+    it "rejects a disallowed content type" do
+      post = build(:post)
+      post.attachments.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/invalid_photo.txt")),
+        filename: "invalid_photo.txt",
+        content_type: "text/plain"
+      )
+
+      expect(post).not_to be_valid
+      expect(post.errors[:attachments]).to be_present
+    end
+
+    it "rejects a file larger than the maximum size" do
+      post = build(:post)
+      post.attachments.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/demo.pdf")),
+        filename: "demo.pdf",
+        content_type: "application/pdf"
+      )
+      allow(post.attachments.first).to receive(:byte_size).and_return(HasAttachments::ATTACHMENT_MAX_SIZE + 1)
+
+      expect(post).not_to be_valid
+      expect(post.errors[:attachments]).to be_present
+    end
+
+    it "is valid without any attachments" do
+      post = build(:post)
+
+      expect(post.attachments).not_to be_attached
+      expect(post).to be_valid
+    end
+
+    it "accepts multiple attachments" do
+      post = build(:post)
+      post.attachments.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/demo.pdf")),
+        filename: "lyrics.pdf",
+        content_type: "application/pdf"
+      )
+      post.attachments.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/demo.pdf")),
+        filename: "notes.pdf",
+        content_type: "application/pdf"
+      )
+
+      expect(post).to be_valid
+      expect(post.attachments.count).to eq(2)
+    end
+  end
 end

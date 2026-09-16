@@ -104,6 +104,34 @@ RSpec.describe "Posts", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
     end
 
+    it "creates a post with attached composition files" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      sign_in user
+
+      attachment = fixture_file_upload("spec/fixtures/files/demo.pdf", "application/pdf")
+
+      post band_posts_path(band), params: { post: { title: "Composition Journal", body: "How this song was made.", visibility: "supporter", attachments: [ attachment ] } }
+
+      expect(Post.last.attachments).to be_attached
+    end
+
+    it "rejects a composition file with a disallowed content type" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      sign_in user
+
+      attachment = fixture_file_upload("spec/fixtures/files/invalid_photo.txt", "text/plain")
+
+      expect {
+        post band_posts_path(band), params: { post: { title: "Composition Journal", visibility: "supporter", attachments: [ attachment ] } }
+      }.not_to change(Post, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
     it "requires authentication" do
       band = create(:band)
 

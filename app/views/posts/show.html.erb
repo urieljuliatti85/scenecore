@@ -34,4 +34,17 @@
   <% if @post.body.present? %>
     <div class="mt-8 text-neutral-300"><%= @post.body %></div>
   <% end %>
+
+  <% if @post.attachments.attached? %>
+    <div class="mt-8">
+      <h2 class="text-sm font-semibold text-neutral-300 mb-2">Attachments</h2>
+      <ul class="flex flex-col gap-1.5">
+        <% @post.attachments.each do |attachment| %>
+          <li>
+            <%= link_to attachment.filename, rails_blob_path(attachment, disposition: "attachment"), class: "text-sm text-yellow-400 hover:text-yellow-300 transition" %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
 </section>
