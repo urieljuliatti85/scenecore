@@ -13,4 +13,25 @@ class User < ApplicationRecord
   has_many :poll_votes, dependent: :destroy
 
   validates :name, presence: true
+
+  before_destroy :ensure_not_last_platform_admin
+  before_update :ensure_not_demoting_last_platform_admin, if: :platform_admin_changed?
+
+  private
+
+  def ensure_not_last_platform_admin
+    return unless platform_admin?
+    return unless User.where(platform_admin: true).where.not(id: id).none?
+
+    errors.add(:base, "cannot remove the last platform administrator")
+    throw :abort
+  end
+
+  def ensure_not_demoting_last_platform_admin
+    return unless platform_admin_was && !platform_admin?
+    return unless User.where(platform_admin: true).where.not(id: id).none?
+
+    errors.add(:base, "cannot demote the last platform administrator")
+    throw :abort
+  end
 end

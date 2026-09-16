@@ -53,4 +53,42 @@ RSpec.describe User, type: :model do
 
     expect { user.destroy }.to change(Follow, :count).by(-1)
   end
+
+  describe "last platform admin protection" do
+    it "prevents destroying the only platform admin" do
+      admin = create(:user, :platform_admin)
+
+      expect(admin.destroy).to be false
+      expect(admin.errors[:base]).to include("cannot remove the last platform administrator")
+      expect(User.exists?(admin.id)).to be true
+    end
+
+    it "allows destroying a platform admin when another one exists" do
+      admin = create(:user, :platform_admin)
+      create(:user, :platform_admin)
+
+      expect(admin.destroy).to be_truthy
+    end
+
+    it "prevents demoting the only platform admin" do
+      admin = create(:user, :platform_admin)
+
+      expect(admin.update(platform_admin: false)).to be false
+      expect(admin.errors[:base]).to include("cannot demote the last platform administrator")
+      expect(admin.reload.platform_admin?).to be true
+    end
+
+    it "allows demoting a platform admin when another one exists" do
+      admin = create(:user, :platform_admin)
+      create(:user, :platform_admin)
+
+      expect(admin.update(platform_admin: false)).to be true
+    end
+
+    it "allows destroying a non-admin user" do
+      user = create(:user)
+
+      expect(user.destroy).to be_truthy
+    end
+  end
 end
