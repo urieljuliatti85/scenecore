@@ -1,6 +1,9 @@
 class Membership < ApplicationRecord
   LEVELS = %w[fan supporter core_member].freeze
 
+  # docs/memberships.md §3 — USD monthly prices, stored as integer cents.
+  PRICES_IN_CENTS = { "fan" => 300, "supporter" => 500, "core_member" => 800 }.freeze
+
   belongs_to :user
   belongs_to :band
 

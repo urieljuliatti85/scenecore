@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_16_190202) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_16_190951) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -78,6 +78,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_190202) do
     t.index ["spotify_id"], name: "index_albums_on_spotify_id"
     t.check_constraint "early_access_level IS NULL OR (early_access_level::text = ANY (ARRAY['fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[]))", name: "albums_early_access_level_check"
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "albums_status_check"
+  end
+
+  create_table "band_membership_prices", force: :cascade do |t|
+    t.bigint "band_id", null: false
+    t.datetime "created_at", null: false
+    t.string "level", null: false
+    t.string "stripe_price_id", null: false
+    t.string "stripe_product_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["band_id", "level"], name: "index_band_membership_prices_on_band_id_and_level", unique: true
+    t.index ["band_id"], name: "index_band_membership_prices_on_band_id"
+    t.check_constraint "level::text = ANY (ARRAY['fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[])", name: "band_membership_prices_level_check"
   end
 
   create_table "band_memberships", force: :cascade do |t|
@@ -285,15 +297,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_190202) do
     t.boolean "platform_admin", default: false, null: false
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
+    t.string "stripe_customer_id"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["stripe_customer_id"], name: "index_users_on_stripe_customer_id", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "admin_action_logs", "users", column: "actor_id"
   add_foreign_key "albums", "bands"
+  add_foreign_key "band_membership_prices", "bands"
   add_foreign_key "band_memberships", "bands"
   add_foreign_key "band_memberships", "users"
   add_foreign_key "bands", "categories"
