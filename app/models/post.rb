@@ -12,6 +12,8 @@ class Post < ApplicationRecord
 
   enum :status, { draft: "draft", published: "published" },
        default: :draft, validate: true
+  enum :post_type, { announcement: "announcement", composition_journal: "composition_journal" },
+       default: :announcement, validate: true
 
   validates :title, presence: true
 end

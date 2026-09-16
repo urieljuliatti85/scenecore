@@ -365,6 +365,40 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).to include("Public News")
     end
 
+    it "labels a composition journal entry visible to the viewer" do
+      band = create(:band, :approved)
+      create(:post, :published, :composition_journal, band: band, title: "How this song was born")
+      user = create(:user)
+      create(:membership, band: band, user: user, level: :supporter)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Composition Journal")
+      expect(response.body).to include("How this song was born")
+    end
+
+    it "does not label a locked composition journal entry the viewer cannot see" do
+      band = create(:band, :approved)
+      create(:post, :published, :composition_journal, band: band, title: "How this song was born")
+      user = create(:user)
+      create(:membership, band: band, user: user, level: :fan)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Composition Journal")
+    end
+
+    it "does not label a regular announcement post" do
+      band = create(:band, :approved)
+      create(:post, :published, band: band, title: "Regular update")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Composition Journal")
+    end
+
     it "shows a published post's attached image" do
       band = create(:band, :approved)
       post_record = create(:post, :published, band: band, title: "Public News")

@@ -76,6 +76,28 @@ RSpec.describe "Posts", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
     end
 
+    it "creates a composition journal entry" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      sign_in user
+
+      post band_posts_path(band), params: { post: { title: "How this song was born", body: "Notes.", visibility: "supporter", post_type: "composition_journal" } }
+
+      expect(Post.last.post_type).to eq("composition_journal")
+    end
+
+    it "defaults post_type to announcement when not specified" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      sign_in user
+
+      post band_posts_path(band), params: { post: { title: "News", body: "Something happened.", visibility: "public" } }
+
+      expect(Post.last.post_type).to eq("announcement")
+    end
+
     it "creates a post with an attached image" do
       user = create(:user)
       band = create(:band)
