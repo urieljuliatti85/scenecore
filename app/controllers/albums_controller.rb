@@ -1,5 +1,6 @@
 class AlbumsController < ApplicationController
-  SPOTIFY_ID_FORMAT = /\A[a-zA-Z0-9]{22}\z/
+  # Single source of truth lives on the model, which also validates it.
+  SPOTIFY_ID_FORMAT = Album::SPOTIFY_ID_FORMAT
 
   before_action :set_band
   before_action :set_album, only: [ :show, :edit, :update, :publish, :unpublish, :refetch_cover, :cover_from_url ]

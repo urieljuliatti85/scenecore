@@ -77,15 +77,15 @@
             </div>
             <div class="p-4">
               <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= album.title %></p>
-              <% if album.spotify_url.present? %>
+              <% if album.spotify_link_id %>
                 <p class="text-sm text-neutral-500 group-hover:text-neutral-300 transition">Listen on Spotify</p>
               <% end %>
             </div>
           <% end %>
 
           <% card_classes = "group rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden transition" %>
-          <% if album.spotify_url.present? %>
-            <%= link_to card_body, album.spotify_url, target: "_blank", rel: "noopener", class: "#{card_classes} hover:border-neutral-600" %>
+          <% if (spotify_album_id = album.spotify_link_id) %>
+            <%= link_to card_body, "https://open.spotify.com/album/#{spotify_album_id}", target: "_blank", rel: "noopener", class: "#{card_classes} hover:border-neutral-600" %>
           <% else %>
             <div class="<%= card_classes %>"><%= card_body %></div>
           <% end %>

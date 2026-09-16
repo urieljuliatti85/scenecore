@@ -18,8 +18,11 @@
         <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= @album.status %></span>
       </div>
 
-      <% if @album.spotify_url.present? %>
-        <%= link_to "Listen on Spotify", @album.spotify_url, target: "_blank", rel: "noopener", class: "mt-4 inline-block rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition" %>
+      <%# The href is assembled from a literal plus the validated id, so the
+          scheme and host are fixed here rather than coming out of the
+          database. See Album#spotify_url for the id check. %>
+      <% if (spotify_album_id = @album.spotify_link_id) %>
+        <%= link_to "Listen on Spotify", "https://open.spotify.com/album/#{spotify_album_id}", target: "_blank", rel: "noopener", class: "mt-4 inline-block rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition" %>
       <% end %>
 
       <div class="mt-4 flex flex-wrap items-center gap-3">
