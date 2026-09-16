@@ -24,7 +24,7 @@
 
   <div>
     <%= form.label :visibility, class: "block text-sm font-medium text-neutral-300 mb-1" %>
-    <%= form.select :visibility, Post.visibilities.keys, {}, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    <%= form.select :visibility, Post.visibilities.keys.map { |v| [ v.humanize, v ] }, {}, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
   </div>
 
   <div>

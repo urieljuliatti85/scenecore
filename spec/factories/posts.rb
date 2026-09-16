@@ -14,8 +14,16 @@ FactoryBot.define do
       visibility { :followers }
     end
 
-    trait :subscribers_only do
-      visibility { :subscribers }
+    trait :fan_only do
+      visibility { :fan }
+    end
+
+    trait :supporter_only do
+      visibility { :supporter }
+    end
+
+    trait :core_member_only do
+      visibility { :core_member }
     end
   end
 end

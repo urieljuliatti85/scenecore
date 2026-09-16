@@ -20,17 +20,10 @@ module AttachmentVisibility
     when Album
       record.published? && record.band.approved?
     when Post
-      record.published? && record.band.approved? && post_visibility_allowed?(record, user)
+      record.published? && record.band.approved? && record.visible_to?(user)
     else
       false
     end
-  end
-
-  def post_visibility_allowed?(post, user)
-    return true if post.visibility_public?
-    return false unless post.visibility_followers?
-
-    user.present? && post.band.follows.exists?(user: user)
   end
 
   def band_for(record)

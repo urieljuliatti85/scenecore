@@ -123,9 +123,9 @@ RSpec.describe "Authenticated blob access", type: :request do
       expect(response).to have_http_status(:redirect)
     end
 
-    it "is not reachable by a non-member even when the post is published, subscribers-only" do
+    it "is not reachable by a follower without a membership when the post is fan-only" do
       band = create(:band, :approved)
-      post_record = create(:post, :published, :subscribers_only, band: band)
+      post_record = create(:post, :published, :fan_only, band: band)
       image = attach_image(post_record, :image)
       user = create(:user)
       create(:follow, band: band, user: user)
@@ -134,6 +134,19 @@ RSpec.describe "Authenticated blob access", type: :request do
       get rails_blob_path(image, only_path: true)
 
       expect(response).to have_http_status(:not_found)
+    end
+
+    it "is reachable by a user with an active Fan membership when the post is fan-only" do
+      band = create(:band, :approved)
+      post_record = create(:post, :published, :fan_only, band: band)
+      image = attach_image(post_record, :image)
+      user = create(:user)
+      create(:membership, band: band, user: user, level: :fan)
+      sign_in user
+
+      get rails_blob_path(image, only_path: true)
+
+      expect(response).to have_http_status(:redirect)
     end
 
     it "is reachable by a band member even when the post is a draft" do

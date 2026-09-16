@@ -30,9 +30,7 @@ class PublicBandsController < ApplicationController
   private
 
   def visible_posts(band)
-    visibilities = [ Post.visibilities[:public] ]
-    visibilities << Post.visibilities[:followers] if @following
-
-    band.posts.published.where(visibility: visibilities).with_attached_image.order(created_at: :desc)
+    band.posts.published.with_attached_image.order(created_at: :desc)
+        .select { |post| post.visible_to?(current_user, following: @following) }
   end
 end
