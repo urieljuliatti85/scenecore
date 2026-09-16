@@ -131,7 +131,7 @@
   <% end %>
 
   <% if @posts.any? %>
-    <div class="mt-10 flex flex-col gap-6">
+    <div id="posts" class="mt-10 flex flex-col gap-6 scroll-mt-24">
       <h2 class="text-lg font-semibold text-neutral-300">Posts</h2>
       <% @posts.each do |post| %>
         <article id="post-<%= post.id %>" class="rounded-3xl bg-gradient-to-br from-neutral-900 to-black border border-neutral-800 px-5 py-5 scroll-mt-24">
