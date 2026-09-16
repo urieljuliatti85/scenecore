@@ -221,12 +221,12 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).not_to include("Secret Album")
     end
 
-    it "shows an empty state when the band has no published albums or posts" do
+    it "shows an empty state when the band has no published albums, posts or events" do
       band = create(:band, :approved)
 
       get public_band_path(band.slug)
 
-      expect(response.body).to include("No music or posts published yet")
+      expect(response.body).to include("No music, posts or shows published yet")
     end
 
     it "does not show the empty state when the band has a published album" do
@@ -235,7 +235,7 @@ RSpec.describe "Public band pages", type: :request do
 
       get public_band_path(band.slug)
 
-      expect(response.body).not_to include("No music or posts published yet")
+      expect(response.body).not_to include("No music, posts or shows published yet")
     end
 
     it "does not show the empty state when the band has a published post" do
@@ -244,7 +244,7 @@ RSpec.describe "Public band pages", type: :request do
 
       get public_band_path(band.slug)
 
-      expect(response.body).not_to include("No music or posts published yet")
+      expect(response.body).not_to include("No music, posts or shows published yet")
     end
 
     it "shows the follower count" do
@@ -369,6 +369,51 @@ RSpec.describe "Public band pages", type: :request do
       get public_band_path(band.slug)
 
       expect(response.body).not_to include("Subscribers News")
+    end
+
+    it "shows a published upcoming event to an anonymous visitor" do
+      band = create(:band, :approved)
+      create(:event, :published, band: band, title: "Album release show")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Album release show")
+    end
+
+    it "shows the event's ticket link" do
+      band = create(:band, :approved)
+      create(:event, :published, band: band, ticket_url: "https://sympla.com.br/show")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("https://sympla.com.br/show")
+    end
+
+    it "does not show a draft event" do
+      band = create(:band, :approved)
+      create(:event, band: band, title: "Secret Show")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Secret Show")
+    end
+
+    it "does not show a published event that already happened" do
+      band = create(:band, :approved)
+      create(:event, :published, :past, band: band, title: "Old Show")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Old Show")
+    end
+
+    it "does not show the empty state when the band has a published event" do
+      band = create(:band, :approved)
+      create(:event, :published, band: band)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("No music, posts or shows published yet")
     end
   end
 

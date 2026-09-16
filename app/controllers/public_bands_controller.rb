@@ -22,6 +22,7 @@ class PublicBandsController < ApplicationController
     @albums = @band.albums.published.with_attached_cover
     @following = current_user.present? && @band.follows.exists?(user: current_user)
     @posts = visible_posts(@band)
+    @events = @band.events.published.upcoming
   rescue ActiveRecord::RecordNotFound
     render "not_found", status: :not_found
   end

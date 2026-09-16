@@ -1,0 +1,51 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <%= link_to band_path(@band), class: "text-sm text-neutral-400 hover:text-white transition" do %>
+    &larr; <%= @band.name %>
+  <% end %>
+
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <h1 class="text-3xl font-extrabold tracking-tight"><%= @event.title %></h1>
+    <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= @event.status %></span>
+  </div>
+
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <% if policy(@event).publish? && @event.draft? %>
+      <%= button_to "Publish", publish_band_event_path(@band, @event), method: :patch, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+    <% end %>
+
+    <% if policy(@event).unpublish? && @event.published? %>
+      <%= button_to "Unpublish", unpublish_band_event_path(@band, @event), method: :patch, class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
+    <% end %>
+
+    <% if policy(@event).update? %>
+      <%= link_to "Edit", edit_band_event_path(@band, @event), class: "text-sm text-neutral-400 hover:text-white transition" %>
+    <% end %>
+
+    <% if policy(@event).destroy? %>
+      <%= button_to "Delete", band_event_path(@band, @event), method: :delete, class: "text-sm text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this event?" } } %>
+    <% end %>
+  </div>
+
+  <dl class="mt-8 space-y-4 text-neutral-300">
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-neutral-500">When</dt>
+      <dd class="mt-1"><%= time_tag @event.starts_at, @event.starts_at.strftime("%d %b %Y · %H:%M") %></dd>
+    </div>
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-neutral-500">Where</dt>
+      <dd class="mt-1"><%= @event.location %></dd>
+    </div>
+    <% if @event.ticket_link %>
+      <div>
+        <dt class="text-xs uppercase tracking-wide text-neutral-500">Tickets</dt>
+        <dd class="mt-1">
+          <%= link_to "Get tickets", @event.ticket_link, target: "_blank", rel: "noopener noreferrer", class: "text-yellow-400 hover:text-yellow-300 transition" %>
+        </dd>
+      </div>
+    <% end %>
+  </dl>
+
+  <% if @event.description.present? %>
+    <p class="mt-8 text-neutral-300 whitespace-pre-line"><%= @event.description %></p>
+  <% end %>
+</section>

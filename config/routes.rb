@@ -87,6 +87,12 @@ Rails.application.routes.draw do
         patch :unpublish
       end
     end
+    resources :events, only: [ :new, :create, :show, :edit, :update, :destroy ] do
+      member do
+        patch :publish
+        patch :unpublish
+      end
+    end
   end
 
   # Defines the root path route ("/")

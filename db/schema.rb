@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_16_085438) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_16_103000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -64,7 +64,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_085438) do
     t.index ["band_id", "status"], name: "index_albums_on_band_id_and_status"
     t.index ["band_id"], name: "index_albums_on_band_id"
     t.index ["spotify_id"], name: "index_albums_on_spotify_id"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "albums_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'published'::character varying::text])", name: "albums_status_check"
   end
 
   create_table "band_memberships", force: :cascade do |t|
@@ -77,7 +77,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_085438) do
     t.index ["band_id"], name: "index_band_memberships_on_band_id"
     t.index ["user_id", "band_id"], name: "index_band_memberships_on_user_id_and_band_id", unique: true
     t.index ["user_id"], name: "index_band_memberships_on_user_id"
-    t.check_constraint "role::text = ANY (ARRAY['member'::character varying, 'administrator'::character varying]::text[])", name: "band_memberships_role_check"
+    t.check_constraint "role::text = ANY (ARRAY['member'::character varying::text, 'administrator'::character varying::text])", name: "band_memberships_role_check"
   end
 
   create_table "bands", force: :cascade do |t|
@@ -95,7 +95,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_085438) do
     t.index ["category_id"], name: "index_bands_on_category_id"
     t.index ["slug"], name: "index_bands_on_slug", unique: true
     t.index ["status"], name: "index_bands_on_status"
-    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'approved'::character varying, 'rejected'::character varying, 'suspended'::character varying]::text[])", name: "bands_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'approved'::character varying::text, 'rejected'::character varying::text, 'suspended'::character varying::text])", name: "bands_status_check"
   end
 
   create_table "categories", force: :cascade do |t|
@@ -118,6 +118,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_085438) do
     t.index ["created_at"], name: "index_contact_messages_on_created_at"
   end
 
+  create_table "events", force: :cascade do |t|
+    t.bigint "band_id", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "location", null: false
+    t.datetime "starts_at", null: false
+    t.string "status", default: "draft", null: false
+    t.string "ticket_url"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["band_id", "status", "starts_at"], name: "index_events_on_band_id_and_status_and_starts_at"
+    t.index ["band_id"], name: "index_events_on_band_id"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "events_status_check"
+  end
+
   create_table "follows", force: :cascade do |t|
     t.bigint "band_id", null: false
     t.datetime "created_at", null: false
@@ -138,8 +153,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_085438) do
     t.string "visibility", default: "public", null: false
     t.index ["band_id", "status", "visibility"], name: "index_posts_on_band_id_and_status_and_visibility"
     t.index ["band_id"], name: "index_posts_on_band_id"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "posts_status_check"
-    t.check_constraint "visibility::text = ANY (ARRAY['public'::character varying, 'followers'::character varying, 'subscribers'::character varying]::text[])", name: "posts_visibility_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'published'::character varying::text])", name: "posts_status_check"
+    t.check_constraint "visibility::text = ANY (ARRAY['public'::character varying::text, 'followers'::character varying::text, 'subscribers'::character varying::text])", name: "posts_visibility_check"
   end
 
   create_table "tracks", force: :cascade do |t|
@@ -152,7 +167,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_085438) do
     t.datetime "updated_at", null: false
     t.index ["album_id", "status"], name: "index_tracks_on_album_id_and_status"
     t.index ["album_id"], name: "index_tracks_on_album_id"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "tracks_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'published'::character varying::text])", name: "tracks_status_check"
   end
 
   create_table "users", force: :cascade do |t|
@@ -176,6 +191,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_085438) do
   add_foreign_key "band_memberships", "users"
   add_foreign_key "bands", "categories"
   add_foreign_key "categories", "categories", column: "parent_id"
+  add_foreign_key "events", "bands"
   add_foreign_key "follows", "bands"
   add_foreign_key "follows", "users"
   add_foreign_key "posts", "bands"

@@ -1,0 +1,37 @@
+<%= form_with model: [ band, event ], class: "flex flex-col gap-5" do |form| %>
+  <% if event.errors.any? %>
+    <ul class="rounded-xl border border-red-900 bg-red-950/40 text-red-400 text-sm p-4 space-y-1">
+      <% event.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div>
+    <%= form.label :title, class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.text_field :title, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+  </div>
+
+  <div>
+    <%= form.label :starts_at, "Date and time", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.datetime_local_field :starts_at, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+  </div>
+
+  <div>
+    <%= form.label :location, class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.text_field :location, placeholder: "Venue, city", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+  </div>
+
+  <div>
+    <%= form.label :ticket_url, "Ticket URL", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <p class="text-xs text-neutral-500 mb-1">Where fans buy tickets — Sympla, Eventbrite, the venue, anywhere. Optional.</p>
+    <%= form.url_field :ticket_url, placeholder: "https://…", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+  </div>
+
+  <div>
+    <%= form.label :description, class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.text_area :description, rows: 4, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+  </div>
+
+  <%= form.submit submit_label, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition cursor-pointer self-start" %>
+<% end %>
