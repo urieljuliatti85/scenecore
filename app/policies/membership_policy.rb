@@ -27,8 +27,11 @@ class MembershipPolicy < ApplicationPolicy
     administrator_of_band? || user&.platform_admin?
   end
   alias_method :pause?, :moderate?
-  alias_method :cancel?, :moderate?
   alias_method :reactivate?, :moderate?
+
+  def cancel?
+    owner? || moderate?
+  end
 
   class Scope < Scope
     def resolve
