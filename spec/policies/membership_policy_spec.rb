@@ -176,6 +176,45 @@ RSpec.describe MembershipPolicy do
     end
   end
 
+  describe "#join?" do
+    let(:approved_band) { create(:band, :approved) }
+
+    context "when the membership is a new record for an approved band" do
+      subject { described_class.new(user, Membership.new(band: approved_band)) }
+      let(:user) { create(:user) }
+
+      it { is_expected.to be_join }
+    end
+
+    context "when the band is not approved" do
+      subject { described_class.new(user, Membership.new(band: band)) }
+      let(:user) { create(:user) }
+
+      it { is_expected.not_to be_join }
+    end
+
+    context "when the user is anonymous" do
+      subject { described_class.new(user, Membership.new(band: approved_band)) }
+      let(:user) { nil }
+
+      it { is_expected.not_to be_join }
+    end
+
+    context "when updating their own existing membership" do
+      let(:membership) { create(:membership, band: approved_band, user: owner) }
+      let(:user) { owner }
+
+      it { is_expected.to be_join }
+    end
+
+    context "when the record belongs to a different user" do
+      let(:membership) { create(:membership, band: approved_band, user: owner) }
+      let(:user) { create(:user) }
+
+      it { is_expected.not_to be_join }
+    end
+  end
+
   describe "#pause?, #cancel?, #reactivate?" do
     context "when user is an administrator of the band" do
       let(:user) { create(:user) }
