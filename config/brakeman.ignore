@@ -21,6 +21,17 @@
       "line": 65,
       "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
       "note": "False positive: params.require(:band_membership).permit(:role) is only reachable from BandMembershipsController#update, which calls `authorize @membership` before updating. BandMembershipPolicy#update? requires the current user to be an administrator of that specific band, so only a band's own administrator can ever change another member's role."
+    },
+    {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 4,
+      "fingerprint": "6324d42073485248eb0893fbda5f869eadd524e302d8dc152b8b06e112d7b026",
+      "check_name": "LinkToHref",
+      "message": "Potentially unsafe model attribute in `link_to` href",
+      "file": "app/views/events/show.html.erb",
+      "line": 42,
+      "link": "https://brakemanscanner.org/docs/warning_types/link_to_href",
+      "note": "False positive: Event#ticket_link only returns the stored ticket_url when it matches Band::URL_FORMAT (an anchored http(s):// regex, the same pattern band social links and album Spotify URLs already rely on elsewhere in the app), otherwise it returns nil. A javascript: or other unsafe scheme can never reach this href, whether saved through the model or written directly to the column."
     }
   ],
   "updated": "2026-09-14 07:00:36 -0300",

@@ -59,6 +59,31 @@
     </div>
   </div>
 
+  <% if @events.any? %>
+    <div class="mt-10">
+      <h2 class="text-lg font-semibold text-neutral-300 mb-4">Shows</h2>
+      <div class="flex flex-col gap-4">
+        <% @events.each do |event| %>
+          <article class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p class="font-semibold text-white"><%= event.title %></p>
+              <p class="text-sm text-neutral-400 mt-1">
+                <%= time_tag event.starts_at, event.starts_at.strftime("%d %b %Y · %H:%M") %>
+                · <%= event.location %>
+              </p>
+              <% if event.description.present? %>
+                <p class="text-sm text-neutral-500 mt-2 whitespace-pre-line"><%= event.description %></p>
+              <% end %>
+            </div>
+            <% if event.ticket_link %>
+              <%= link_to "Get tickets", event.ticket_link, target: "_blank", rel: "noopener noreferrer", class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-2 hover:bg-yellow-300 transition self-start shrink-0" %>
+            <% end %>
+          </article>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <% if @albums.any? %>
     <div class="mt-10">
       <h2 class="text-lg font-semibold text-neutral-300 mb-4">Albums</h2>
@@ -112,9 +137,9 @@
     </div>
   <% end %>
 
-  <% if @albums.none? && @posts.none? %>
+  <% if @albums.none? && @posts.none? && @events.none? %>
     <div class="mt-10 rounded-3xl border border-dashed border-neutral-800 px-5 py-10 text-center">
-      <p class="text-neutral-400">No music or posts published yet. Check back soon.</p>
+      <p class="text-neutral-400">No music, posts or shows published yet. Check back soon.</p>
     </div>
   <% end %>
 </section>
