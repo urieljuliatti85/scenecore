@@ -8,7 +8,7 @@ class BandPolicy < ApplicationPolicy
   end
 
   def update?
-    administrator?
+    administrator? || user&.platform_admin?
   end
 
   def approve?

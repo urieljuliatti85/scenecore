@@ -59,6 +59,37 @@
     </div>
   </div>
 
+  <% if user_signed_in? %>
+    <div class="mt-10">
+      <h2 class="text-lg font-semibold text-neutral-300 mb-4">Become a member</h2>
+      <% if @membership %>
+        <p class="text-sm text-neutral-500 mb-4">
+          You're currently a <span class="text-white font-semibold"><%= @membership.level.humanize %></span> member of <%= @band.name %>.
+        </p>
+      <% end %>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <% [
+          [ "fan", "Fan", "$3/mo", "Get closer to the band." ],
+          [ "supporter", "Supporter", "$5/mo", "Support the music and follow its creation." ],
+          [ "core_member", "Core Member", "$8/mo", "Become part of the band's core group." ]
+        ].each do |level, label, price, promise| %>
+          <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <span class="font-semibold text-white"><%= label %></span>
+              <span class="text-sm text-neutral-400"><%= price %></span>
+            </div>
+            <p class="text-sm text-neutral-500 flex-1"><%= promise %></p>
+            <% if @membership&.level == level %>
+              <span class="text-center rounded-full border border-neutral-700 text-neutral-400 text-sm font-semibold px-4 py-2">Current plan</span>
+            <% else %>
+              <%= button_to "Join as #{label}", band_membership_signup_path(@band), method: :post, params: { membership: { level: level } }, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-2 hover:bg-yellow-300 transition cursor-pointer w-full" %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <% if @events.any? %>
     <div class="mt-10">
       <h2 class="text-lg font-semibold text-neutral-300 mb-4">Shows</h2>
