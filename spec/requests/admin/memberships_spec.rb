@@ -56,4 +56,54 @@ RSpec.describe "Admin::Memberships", type: :request do
       expect(response).to redirect_to(new_user_session_path)
     end
   end
+
+  describe "PATCH /admin/memberships/:id/pause" do
+    it "pauses an active membership for a platform admin" do
+      admin = create(:user, :platform_admin)
+      membership = create(:membership, status: :active)
+      sign_in admin
+
+      patch pause_admin_membership_path(membership)
+
+      expect(response).to redirect_to(admin_memberships_path)
+      expect(membership.reload).to be_paused
+    end
+
+    it "returns 404 for a regular authenticated user" do
+      user = create(:user)
+      membership = create(:membership, status: :active)
+      sign_in user
+
+      patch pause_admin_membership_path(membership)
+
+      expect(response).to have_http_status(:not_found)
+      expect(membership.reload).to be_active
+    end
+  end
+
+  describe "PATCH /admin/memberships/:id/cancel" do
+    it "cancels a membership for a platform admin" do
+      admin = create(:user, :platform_admin)
+      membership = create(:membership, status: :active)
+      sign_in admin
+
+      patch cancel_admin_membership_path(membership)
+
+      expect(response).to redirect_to(admin_memberships_path)
+      expect(membership.reload).to be_cancelled
+    end
+  end
+
+  describe "PATCH /admin/memberships/:id/reactivate" do
+    it "reactivates a paused membership for a platform admin" do
+      admin = create(:user, :platform_admin)
+      membership = create(:membership, :paused)
+      sign_in admin
+
+      patch reactivate_admin_membership_path(membership)
+
+      expect(response).to redirect_to(admin_memberships_path)
+      expect(membership.reload).to be_active
+    end
+  end
 end

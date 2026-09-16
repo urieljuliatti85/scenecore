@@ -118,6 +118,50 @@ RSpec.describe MembershipPolicy do
     end
   end
 
+  describe "#pause?, #cancel?, #reactivate?" do
+    context "when user is an administrator of the band" do
+      let(:user) { create(:user) }
+      before { create(:band_membership, :administrator, band: band, user: user) }
+
+      it { is_expected.to be_pause }
+      it { is_expected.to be_cancel }
+      it { is_expected.to be_reactivate }
+    end
+
+    context "when user is a platform administrator" do
+      let(:user) { create(:user, :platform_admin) }
+
+      it { is_expected.to be_pause }
+      it { is_expected.to be_cancel }
+      it { is_expected.to be_reactivate }
+    end
+
+    context "when user only owns the membership" do
+      let(:user) { owner }
+
+      it { is_expected.not_to be_pause }
+      it { is_expected.not_to be_cancel }
+      it { is_expected.not_to be_reactivate }
+    end
+
+    context "when user is an administrator of a different band" do
+      let(:user) { create(:user) }
+      before { create(:band_membership, :administrator, band: create(:band), user: user) }
+
+      it { is_expected.not_to be_pause }
+      it { is_expected.not_to be_cancel }
+      it { is_expected.not_to be_reactivate }
+    end
+
+    context "when user is anonymous" do
+      let(:user) { nil }
+
+      it { is_expected.not_to be_pause }
+      it { is_expected.not_to be_cancel }
+      it { is_expected.not_to be_reactivate }
+    end
+  end
+
   describe "Scope" do
     subject { MembershipPolicy::Scope.new(user, Membership).resolve }
 
