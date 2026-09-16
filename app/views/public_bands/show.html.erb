@@ -150,6 +150,8 @@
                 <% end %>
               </ul>
             <% end %>
+
+            <%= render "shared/comments", band: @band, post: post %>
           <% else %>
             <h3 class="text-white font-semibold"><%= post.title %></h3>
             <%= render "shared/locked_content_notice", required_level: post.required_level %>

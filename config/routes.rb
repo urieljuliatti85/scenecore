@@ -155,5 +155,7 @@ Rails.application.routes.draw do
     get "/:slug/albums/:id", to: "public_albums#show", as: :public_album
     put "/:slug/albums/:album_id/rating", to: "ratings#upsert", as: :album_rating
     put "/:slug/polls/:poll_id/vote", to: "poll_votes#upsert", as: :poll_vote
+    post "/:slug/posts/:post_id/comments", to: "comments#create", as: :post_comments
+    delete "/:slug/posts/:post_id/comments/:id", to: "comments#destroy", as: :post_comment
   end
 end
