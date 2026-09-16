@@ -25,5 +25,10 @@ FactoryBot.define do
     trait :core_member_only do
       visibility { :core_member }
     end
+
+    trait :composition_journal do
+      post_type { :composition_journal }
+      visibility { :supporter }
+    end
   end
 end

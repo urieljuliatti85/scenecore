@@ -32,6 +32,17 @@ RSpec.describe Post, type: :model do
     expect(create(:post).visibility).to eq("public")
   end
 
+  it "defaults post_type to announcement" do
+    expect(create(:post).post_type).to eq("announcement")
+  end
+
+  it "restricts post_type to announcement or composition_journal" do
+    post = build(:post)
+    post.post_type = "interview"
+
+    expect(post).not_to be_valid
+  end
+
   it "restricts visibility to public, followers, fan, supporter, or core_member" do
     post = build(:post)
     post.visibility = "everyone"
