@@ -158,13 +158,22 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).to include(public_band_subscriptions_path(band.slug))
     end
 
-    it "keeps Merchandise and Tickets disabled with a Soon badge" do
+    it "keeps Tickets disabled with a Soon badge" do
       band = create(:band, :approved)
 
       get public_band_path(band.slug)
 
-      expect(response.body).to include("Merchandise")
+      expect(response.body).to include("Tickets")
       expect(response.body).to include("Soon")
+    end
+
+    it "links the Posts card to the posts section" do
+      band = create(:band, :approved)
+      create(:post, :published, band: band)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("#posts")
     end
 
     it "does not render the membership plans on the band's main page" do

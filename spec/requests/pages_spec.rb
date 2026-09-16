@@ -71,7 +71,7 @@ RSpec.describe "Pages", type: :request do
         expect(response.body).to include("Music")
         expect(response.body).to include("Exclusive Content")
         expect(response.body).to include("Subscriptions")
-        expect(response.body).to include("Merchandise")
+        expect(response.body).to include("Posts")
         expect(response.body).to include("Tickets")
       end
 
