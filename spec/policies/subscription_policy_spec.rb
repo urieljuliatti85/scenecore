@@ -42,4 +42,28 @@ RSpec.describe SubscriptionPolicy do
       it { is_expected.not_to be_join }
     end
   end
+
+  describe "#cancel?" do
+    let(:approved_band) { create(:band, :approved) }
+    let(:owner) { create(:user) }
+    let(:subscription) { create(:subscription, band: approved_band, user: owner) }
+
+    context "when the user owns the subscription" do
+      subject { described_class.new(owner, subscription) }
+
+      it { is_expected.to be_cancel }
+    end
+
+    context "when the user does not own the subscription" do
+      subject { described_class.new(create(:user), subscription) }
+
+      it { is_expected.not_to be_cancel }
+    end
+
+    context "when the user is anonymous" do
+      subject { described_class.new(nil, subscription) }
+
+      it { is_expected.not_to be_cancel }
+    end
+  end
 end

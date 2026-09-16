@@ -11,10 +11,6 @@ class MembershipPolicy < ApplicationPolicy
     administrator_of_band?
   end
 
-  def join?
-    user.present? && record.band.approved? && (record.new_record? || owner?)
-  end
-
   def update?
     administrator_of_band? || user&.platform_admin?
   end

@@ -3,6 +3,10 @@ class SubscriptionPolicy < ApplicationPolicy
     user.present? && record.band.approved? && (record.new_record? || owner?)
   end
 
+  def cancel?
+    owner?
+  end
+
   private
 
   def owner?
