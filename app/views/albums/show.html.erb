@@ -36,6 +36,23 @@
     </div>
   </div>
 
+  <% if policy(@album).update? %>
+    <div class="mt-8 rounded-2xl border border-neutral-800 bg-neutral-900/40 px-5 py-4">
+      <h2 class="text-sm font-semibold text-neutral-300">Update album artwork</h2>
+
+      <% if @album.spotify_id.present? %>
+        <p class="text-xs text-neutral-500 mt-1">Re-read the cover Spotify currently has for this album.</p>
+        <%= button_to "Refetch from Spotify", refetch_cover_band_album_path(@band, @album), method: :patch, class: "mt-3 rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
+      <% end %>
+
+      <%= form_with url: cover_from_url_band_album_path(@band, @album), method: :patch, class: "mt-4 flex flex-col sm:flex-row gap-2 sm:items-center" do |form| %>
+        <%= form.url_field :cover_url, placeholder: "https://example.com/cover.jpg", required: true, class: "flex-1 rounded-full bg-neutral-900 border border-neutral-800 text-white text-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+        <%= form.submit "Use this image", class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-2 hover:bg-yellow-300 transition cursor-pointer" %>
+      <% end %>
+      <p class="text-xs text-neutral-500 mt-2">PNG, JPEG or WebP, up to 5MB. You can also <%= link_to "upload a file", edit_band_album_path(@band, @album), class: "underline hover:text-neutral-300" %>.</p>
+    </div>
+  <% end %>
+
   <% if @tracks.any? %>
     <ul class="mt-10 flex flex-col gap-2">
       <% @tracks.each do |track| %>

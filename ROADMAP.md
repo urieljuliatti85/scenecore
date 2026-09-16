@@ -2359,6 +2359,34 @@ Features not included in the MVP should be recorded here instead of being implem
       Requires versioned terms with a record of which version was
       accepted, the rate stored as data rather than a constant, and a
       per-transaction snapshot of the rate applied.
+* [ ] Automatic web search for album artwork — proposed 2026-09-16 as
+      "update the artwork and the source can be anywhere: the system
+      searches the web and updates the cover". Two narrower paths were
+      built instead (refetch from Spotify, and attach from a URL the band
+      supplies), leaving this as the open question.
+
+      **The blocker is not technical.** Album artwork is a copyrighted
+      work. Today SceneCore hosts no artwork that was not either uploaded
+      by the band or served by Spotify's API under its terms. A search
+      that crawls the web and copies an image into storage changes that:
+      the platform starts hosting files of unknown provenance and becomes
+      a takedown target. It is the same class of decision as audio upload
+      below, and deserves the same treatment — its own ADR, not a
+      feature slice.
+
+      Two practical problems beyond the legal one. It needs a search
+      provider (Google Images, Bing, MusicBrainz/Cover Art Archive),
+      which is a new dependency and new credentials. And text search
+      misidentifies: a band with a common name gets another band's cover,
+      and without visual confirmation the mistake is discovered on the
+      public page.
+
+      The shipped alternative sidesteps both: the band supplies the URL,
+      so it picks the image and the rights question stays with whoever
+      holds them. If this is revisited, Cover Art Archive is the
+      candidate worth evaluating first — it is purpose-built for this,
+      keyed by release rather than by text, and its licensing is explicit.
+
 * [ ] Audio upload for bands without Spotify — contradicts
       `docs/database.md` ("A track's audio is not hosted by SceneCore")
       and Phase 5.3 ("no file upload"). Requires its own ADR covering

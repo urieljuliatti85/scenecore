@@ -69,6 +69,8 @@ Rails.application.routes.draw do
       member do
         patch :publish
         patch :unpublish
+        patch :refetch_cover
+        patch :cover_from_url
       end
       collection do
         get :search

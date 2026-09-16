@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_15_203848) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_16_084100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -57,11 +57,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_203848) do
     t.bigint "band_id", null: false
     t.datetime "created_at", null: false
     t.string "spotify_cover_url"
+    t.string "spotify_id"
     t.string "status", default: "draft", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["band_id", "status"], name: "index_albums_on_band_id_and_status"
     t.index ["band_id"], name: "index_albums_on_band_id"
+    t.index ["spotify_id"], name: "index_albums_on_spotify_id"
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "albums_status_check"
   end
 

@@ -2,7 +2,7 @@ class AlbumsController < ApplicationController
   SPOTIFY_ID_FORMAT = /\A[a-zA-Z0-9]{22}\z/
 
   before_action :set_band
-  before_action :set_album, only: [ :show, :edit, :update, :publish, :unpublish ]
+  before_action :set_album, only: [ :show, :edit, :update, :publish, :unpublish, :refetch_cover, :cover_from_url ]
 
   def new
     @album = @band.albums.new
@@ -54,6 +54,47 @@ class AlbumsController < ApplicationController
     render :new, status: :bad_gateway
   end
 
+  # Re-reads the cover from Spotify for an album that was imported from
+  # it. Spotify's image URLs are not permanent, so an album imported a
+  # while ago can end up with a dead or blank cover.
+  def refetch_cover
+    authorize @album, :update?
+
+    if @album.spotify_id.blank?
+      return redirect_to band_album_path(@band, @album),
+                         alert: "This album was not imported from Spotify."
+    end
+
+    details = SpotifyClient.new.fetch_album(@album.spotify_id)
+
+    if details.cover_image_url.blank?
+      redirect_to band_album_path(@band, @album), alert: "Spotify has no cover for this album."
+    else
+      @album.update!(spotify_cover_url: details.cover_image_url)
+      redirect_to band_album_path(@band, @album), notice: "Cover updated from Spotify."
+    end
+  rescue SpotifyClient::Error
+    redirect_to band_album_path(@band, @album), alert: "Could not reach Spotify right now. Please try again."
+  end
+
+  # Attaches a cover from a URL the band supplies. The band picks the
+  # image, so the rights question stays with whoever holds them; the app
+  # never goes looking for artwork on its own.
+  def cover_from_url
+    authorize @album, :update?
+
+    image = RemoteImageFetcher.new.call(params[:cover_url])
+    @album.cover.attach(io: image.io, filename: image.filename, content_type: image.content_type)
+
+    if @album.save
+      redirect_to band_album_path(@band, @album), notice: "Cover updated."
+    else
+      redirect_to band_album_path(@band, @album), alert: @album.errors.full_messages.to_sentence
+    end
+  rescue RemoteImageFetcher::Error => e
+    redirect_to band_album_path(@band, @album), alert: e.message
+  end
+
   def publish
     authorize @album
 
@@ -83,6 +124,7 @@ class AlbumsController < ApplicationController
 
     ActiveRecord::Base.transaction do
       @album.title = details.name
+      @album.spotify_id = spotify_id
       @album.spotify_cover_url = details.cover_image_url
       @album.save!
 
