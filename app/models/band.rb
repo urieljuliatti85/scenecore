@@ -1,7 +1,7 @@
 class Band < ApplicationRecord
   include HasImage
 
-  SOCIAL_LINK_ATTRIBUTES = %i[spotify_url youtube_url instagram_url website_url].freeze
+  SOCIAL_LINK_ATTRIBUTES = %i[spotify_url youtube_url instagram_url bandcamp_url website_url].freeze
   URL_FORMAT = %r{\Ahttps?://[^\s/$.?#].[^\s]*\z}i
 
   has_many :band_memberships, dependent: :destroy
@@ -24,7 +24,7 @@ class Band < ApplicationRecord
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
-  validates :spotify_url, :youtube_url, :instagram_url, :website_url,
+  validates :spotify_url, :youtube_url, :instagram_url, :bandcamp_url, :website_url,
             format: { with: URL_FORMAT, message: "must be a valid URL" }, allow_blank: true
 
   before_validation :generate_slug, on: :create

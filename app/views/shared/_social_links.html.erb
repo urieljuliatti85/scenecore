@@ -22,6 +22,14 @@
       <% end %>
     <% end %>
 
+    <% if band.bandcamp_url.present? %>
+      <%= link_to band.bandcamp_url, target: "_blank", rel: "noopener noreferrer", "aria-label": "Bandcamp", class: "h-10 w-10 rounded-full border border-neutral-700 flex items-center justify-center text-neutral-300 hover:text-white hover:border-neutral-500 transition" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
+          <path d="M0 18.75h9.56L15.44 8.25H24v6.5h-1L14.06 21.75H0v-3Z" />
+        </svg>
+      <% end %>
+    <% end %>
+
     <% if band.website_url.present? %>
       <%= link_to band.website_url, target: "_blank", rel: "noopener noreferrer", "aria-label": "Website", class: "h-10 w-10 rounded-full border border-neutral-700 flex items-center justify-center text-neutral-300 hover:text-white hover:border-neutral-500 transition" do %>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5">
