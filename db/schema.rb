@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_16_151058) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_16_153932) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -170,6 +170,43 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_151058) do
     t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'paused'::character varying, 'cancelled'::character varying, 'expired'::character varying]::text[])", name: "memberships_status_check"
   end
 
+  create_table "poll_options", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "label", null: false
+    t.bigint "poll_id", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["poll_id", "position"], name: "index_poll_options_on_poll_id_and_position"
+    t.index ["poll_id"], name: "index_poll_options_on_poll_id"
+  end
+
+  create_table "poll_votes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "poll_option_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["poll_option_id"], name: "index_poll_votes_on_poll_option_id"
+    t.index ["user_id", "poll_option_id"], name: "index_poll_votes_on_user_id_and_poll_option_id", unique: true
+    t.index ["user_id"], name: "index_poll_votes_on_user_id"
+  end
+
+  create_table "polls", force: :cascade do |t|
+    t.boolean "allow_multiple_choices", default: false, null: false
+    t.boolean "allow_vote_change", default: false, null: false
+    t.bigint "band_id", null: false
+    t.datetime "closes_at"
+    t.datetime "created_at", null: false
+    t.datetime "opens_at"
+    t.string "question", null: false
+    t.string "status", default: "draft", null: false
+    t.datetime "updated_at", null: false
+    t.string "visibility", default: "public", null: false
+    t.index ["band_id", "status"], name: "index_polls_on_band_id_and_status"
+    t.index ["band_id"], name: "index_polls_on_band_id"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "polls_status_check"
+    t.check_constraint "visibility::text = ANY (ARRAY['public'::character varying, 'followers'::character varying, 'fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[])", name: "polls_visibility_check"
+  end
+
   create_table "posts", force: :cascade do |t|
     t.bigint "band_id", null: false
     t.datetime "created_at", null: false
@@ -235,6 +272,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_151058) do
   add_foreign_key "follows", "users"
   add_foreign_key "memberships", "bands"
   add_foreign_key "memberships", "users"
+  add_foreign_key "poll_options", "polls"
+  add_foreign_key "poll_votes", "poll_options"
+  add_foreign_key "poll_votes", "users"
+  add_foreign_key "polls", "bands"
   add_foreign_key "posts", "bands"
   add_foreign_key "ratings", "albums"
   add_foreign_key "ratings", "users"

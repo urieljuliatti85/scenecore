@@ -131,7 +131,16 @@
     </div>
   <% end %>
 
-  <% if @albums.none? && @posts.none? && @events.none? %>
+  <% if @polls.any? %>
+    <div class="mt-10 flex flex-col gap-6">
+      <h2 class="text-lg font-semibold text-neutral-300">Polls</h2>
+      <% @polls.each do |poll| %>
+        <%= render "poll", band: @band, poll: poll %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @albums.none? && @posts.none? && @events.none? && @polls.none? %>
     <div class="mt-10 rounded-3xl border border-dashed border-neutral-800 px-5 py-10 text-center">
       <p class="text-neutral-400">No music, posts or shows published yet. Check back soon.</p>
     </div>

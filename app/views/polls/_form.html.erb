@@ -1,0 +1,56 @@
+<%= form_with model: [ band, poll ], class: "flex flex-col gap-5" do |form| %>
+  <% if poll.errors.any? %>
+    <ul class="rounded-xl border border-red-900 bg-red-950/40 text-red-400 text-sm p-4 space-y-1">
+      <% poll.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div>
+    <%= form.label :question, class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.text_field :question, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+  </div>
+
+  <div>
+    <%= form.label :visibility, "Who can vote", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.select :visibility, Poll.visibilities.keys.map { |v| [ v.humanize, v ] }, {}, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+  </div>
+
+  <fieldset class="flex flex-col gap-3 border border-neutral-800 rounded-xl p-4">
+    <legend class="text-sm font-medium text-neutral-300 px-1">Options</legend>
+
+    <%= form.fields_for :poll_options do |option_form| %>
+      <div class="flex items-center gap-2">
+        <%= option_form.text_field :label, placeholder: "Option", class: "flex-1 rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+        <% if option_form.object.persisted? %>
+          <label class="flex items-center gap-1 text-xs text-neutral-500">
+            <%= option_form.check_box :_destroy, class: "cursor-pointer" %> Remove
+          </label>
+        <% end %>
+      </div>
+    <% end %>
+  </fieldset>
+
+  <div class="flex items-center gap-3">
+    <label class="flex items-center gap-2 text-sm text-neutral-300">
+      <%= form.check_box :allow_multiple_choices %> Allow multiple choices
+    </label>
+    <label class="flex items-center gap-2 text-sm text-neutral-300">
+      <%= form.check_box :allow_vote_change %> Allow changing vote
+    </label>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+      <%= form.label :opens_at, "Opens at (optional)", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.datetime_local_field :opens_at, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    </div>
+    <div>
+      <%= form.label :closes_at, "Closes at (optional)", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.datetime_local_field :closes_at, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    </div>
+  </div>
+
+  <%= form.submit submit_label, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition cursor-pointer self-start" %>
+<% end %>

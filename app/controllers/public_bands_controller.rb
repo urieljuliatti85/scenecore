@@ -23,6 +23,7 @@ class PublicBandsController < ApplicationController
     @following = current_user.present? && @band.follows.exists?(user: current_user)
     @posts = visible_posts(@band)
     @events = @band.events.published.upcoming
+    @polls = visible_polls(@band)
   rescue ActiveRecord::RecordNotFound
     render "not_found", status: :not_found
   end
@@ -32,5 +33,10 @@ class PublicBandsController < ApplicationController
   def visible_posts(band)
     band.posts.published.with_attached_image.order(created_at: :desc)
         .select { |post| post.visible_to?(current_user, following: @following) }
+  end
+
+  def visible_polls(band)
+    band.polls.published.order(created_at: :desc)
+        .select { |poll| poll.visible_to?(current_user, following: @following) }
   end
 end
