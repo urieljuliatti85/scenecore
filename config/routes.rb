@@ -64,6 +64,7 @@ Rails.application.routes.draw do
   resource :profile, only: [ :show, :edit, :update ], controller: "profiles"
 
   namespace :admin do
+    root to: "dashboard#index"
     resources :bands, only: [ :index ] do
       resources :privileges, only: [ :index, :create, :update ]
     end
