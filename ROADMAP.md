@@ -1054,9 +1054,18 @@ Validate the system before production.
 2026-09-15: first pass done (Authentication, Authorization, Files). Found
 and fixed two real gaps (session cookies, Spotify ID injection); found and
 documented one gap that needs infrastructure not yet in place (email
-confirmation). Payments/Application sections not started — Payments is
-blocked on Phase 9 (skipped), Application overlaps with Phase 15
-(Production Readiness) and wasn't attempted this round.
+confirmation).
+
+2026-09-16: Application section audited and closed — all four items pass,
+no fix required; two follow-ups recorded there. **Payments remains the only
+open section, and it is blocked on Phase 9 (skipped), so every unblocked
+item in this phase is now done.**
+
+One gap found on 2026-09-15 is still open and is no longer blocked: `User`
+has no Devise `:confirmable`, so a signed-in user can change their email
+with no proof they control the new address. It was deferred because
+production had no SMTP; that stopped being true in #74. See Authentication
+below.
 
 ## Authentication
 
@@ -1079,6 +1088,16 @@ blocked on Phase 9 (skipped), Application overlaps with Phase 15
       is commented out in `production.rb`) — the same gap password-reset
       already depends on. Needs that infrastructure decision first, not a
       silent code change.
+
+      **Update 2026-09-16: that blocker is gone.** #73 and #74 configured
+      SMTP (Resend) and a real message was delivered from production, so the
+      confirmation-email flow `:confirmable` needs now exists. This is
+      therefore the oldest known, unfixed and no-longer-blocked security gap
+      in the app. It stays unticked deliberately: enabling `:confirmable`
+      changes sign-up, sign-in and email-change behaviour and needs a
+      decision on existing users (backfilling `confirmed_at`) and on whether
+      confirmation is required at sign-up or only on change — not something
+      to slip into an audit pass.
 
 ## Authorization
 
@@ -1119,13 +1138,61 @@ Active Storage blob-authorization gap found and fixed.
 
 ## Application
 
-Not attempted this round — overlaps with Phase 15 (Production Readiness),
-which is also entirely unstarted.
+2026-09-16: audited. All four items verified against the current tree, the
+full git history and the live production environment. No fix was needed —
+every check passed — but two observations are recorded below as named
+follow-ups rather than being silently ticked off.
 
-* [ ] Secrets are not committed.
-* [ ] Environment variables are used correctly.
-* [ ] Security checks pass.
-* [ ] Error pages do not expose sensitive information.
+* [x] Secrets are not committed. Checked the **full history** (every ref,
+      `--diff-filter=A`), not just the working tree. The only
+      sensitive-by-name files ever added are `.env.example` and `.env.test`
+      (a local `DATABASE_URL` each, no credentials), `.kamal/secrets` (the
+      stock template — it reads `config/master.key`, it does not contain a
+      value) and `config/credentials.yml.enc` (encrypted, and meant to be
+      committed). `config/master.key` is covered by the `/config/*.key`
+      ignore rule and has never been committed.
+* [x] Environment variables are used correctly. Every secret is read from
+      an environment variable (`SMTP_PASSWORD`, `SMTP_USER_NAME`,
+      `SENTRY_DSN`, `DATABASE_URL`, `RAILS_MASTER_KEY`) or from encrypted
+      credentials (`Rails.application.credentials.spotify`); none has a
+      hardcoded fallback. The `ENV.fetch` defaults that do exist are all
+      non-sensitive (`MAIL_FROM`, `APP_HOST`, `ACTIVE_STORAGE_PATH`,
+      `SMTP_PORT`, `RAILS_LOG_LEVEL`). Optional integrations guard on the
+      variable being present (`SMTP_ADDRESS`, `SENTRY_DSN`) and stay
+      inactive rather than failing when it is absent.
+* [x] Security checks pass. `bin/brakeman` reports 0 security warnings
+      across 19 controllers, 10 models and 48 templates; `bin/bundler-audit`
+      and `bin/importmap audit` both report no vulnerabilities. All three
+      run in CI on every pull request (`.github/workflows/ci.yml`).
+* [x] Error pages do not expose sensitive information. Verified against
+      **live production**, not just config: `consider_all_requests_local`
+      is `false`, and an unknown path returns a real 404 carrying
+      `strict-transport-security`, `x-content-type-options: nosniff`,
+      `x-frame-options: SAMEORIGIN` and a `secure; httponly; samesite=lax`
+      session cookie, with no backtrace, exception class or gem path in the
+      body. `PublicBandsController` renders its own `not_found` view with
+      `status: :not_found`, so a missing band and a missing page are
+      indistinguishable — a draft or unapproved band leaks nothing by being
+      absent. Log parameter filtering covers `:passw`, `:email`, `:secret`,
+      `:token`, `:_key`, `:crypt`, `:salt`, `:certificate`, `:otp`, `:ssn`,
+      `:cvv`, `:cvc` — `:email` is beyond the Rails default.
+
+### Follow-ups identified (not defects, not fixed here)
+
+Neither blocks this phase's exit criteria; both are behaviour changes
+rather than audit findings, so they are recorded instead of being made
+silently.
+
+* There is no `public/403.html`, and `Pundit::NotAuthorizedError` is
+  handled by `ApplicationController#user_not_authorized` with a redirect to
+  root plus a flash. Nothing leaks — and where leaking existence would
+  matter, `Admin::BaseController` already answers 404 on purpose — but no
+  403 response in the app has a page of its own.
+* `config.hosts` is commented out in `config/environments/production.rb`
+  (the stock `rails new` state), so DNS-rebinding protection is off.
+  Harmless while the only hostname is Railway's generated domain; it
+  becomes worth setting when the custom domain lands (see Phase 15,
+  Infrastructure → Domain).
 
 ## Exit criteria
 
