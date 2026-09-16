@@ -1,6 +1,110 @@
 require "rails_helper"
 
 RSpec.describe "Albums", type: :request do
+  describe "PATCH /bands/:band_id/albums/:id/refetch_cover" do
+    def member_and_album(spotify_id: "4uLU6hMCjMI75M1A2tKUQC")
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      album = create(:album, band: band, spotify_id: spotify_id)
+      [ user, band, album ]
+    end
+
+    it "updates the cover from Spotify" do
+      user, band, album = member_and_album
+      details = SpotifyClient::AlbumDetails.new(name: album.title, cover_image_url: "https://i.scdn.co/image/new.jpg", tracks: [])
+      allow_any_instance_of(SpotifyClient).to receive(:fetch_album).with(album.spotify_id).and_return(details)
+      sign_in user
+
+      patch refetch_cover_band_album_path(band, album)
+
+      expect(album.reload.spotify_cover_url).to eq("https://i.scdn.co/image/new.jpg")
+      expect(response).to redirect_to(band_album_path(band, album))
+    end
+
+    it "tells the band when the album did not come from Spotify" do
+      user, band, album = member_and_album(spotify_id: nil)
+      sign_in user
+
+      patch refetch_cover_band_album_path(band, album)
+
+      expect(flash[:alert]).to match(/not imported from Spotify/)
+    end
+
+    it "does not fail when Spotify is unavailable" do
+      user, band, album = member_and_album
+      allow_any_instance_of(SpotifyClient).to receive(:fetch_album).and_raise(SpotifyClient::Error)
+      sign_in user
+
+      patch refetch_cover_band_album_path(band, album)
+
+      expect(flash[:alert]).to match(/Could not reach Spotify/)
+    end
+
+    it "prevents a member of another band from refetching" do
+      outsider = create(:user)
+      create(:band_membership, band: create(:band), user: outsider)
+      album = create(:album, spotify_id: "4uLU6hMCjMI75M1A2tKUQC")
+      sign_in outsider
+
+      patch refetch_cover_band_album_path(album.band, album)
+
+      expect(response).to redirect_to(root_path)
+    end
+
+    it "requires authentication" do
+      album = create(:album)
+
+      patch refetch_cover_band_album_path(album.band, album)
+
+      expect(response).to redirect_to(new_user_session_path)
+    end
+  end
+
+  describe "PATCH /bands/:band_id/albums/:id/cover_from_url" do
+    it "attaches an image fetched from the given URL" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      album = create(:album, band: band)
+      png = Rails.root.join("spec/fixtures/files/band_photo.png").binread
+      allow_any_instance_of(RemoteImageFetcher).to receive(:call).with("https://example.com/cover.png")
+        .and_return(RemoteImageFetcher::Result.new(io: StringIO.new(png), filename: "cover.png", content_type: "image/png"))
+      sign_in user
+
+      patch cover_from_url_band_album_path(band, album), params: { cover_url: "https://example.com/cover.png" }
+
+      expect(album.reload.cover).to be_attached
+      expect(flash[:notice]).to eq("Cover updated.")
+    end
+
+    it "shows the fetcher's message when the URL is rejected" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      album = create(:album, band: band)
+      allow_any_instance_of(RemoteImageFetcher).to receive(:call)
+        .and_raise(RemoteImageFetcher::Error, "That URL is not publicly reachable.")
+      sign_in user
+
+      patch cover_from_url_band_album_path(band, album), params: { cover_url: "http://169.254.169.254/" }
+
+      expect(album.reload.cover).not_to be_attached
+      expect(flash[:alert]).to eq("That URL is not publicly reachable.")
+    end
+
+    it "prevents a member of another band from setting a cover" do
+      outsider = create(:user)
+      create(:band_membership, band: create(:band), user: outsider)
+      album = create(:album)
+      sign_in outsider
+
+      patch cover_from_url_band_album_path(album.band, album), params: { cover_url: "https://example.com/cover.png" }
+
+      expect(response).to redirect_to(root_path)
+    end
+  end
+
   describe "GET /bands/:band_id/albums/:id" do
     it "requires authentication" do
       album = create(:album)
