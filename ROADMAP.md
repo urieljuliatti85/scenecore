@@ -1673,35 +1673,55 @@ means control of its revenue.
 
 ## Rate Limiting
 
-Approved 2026-09-16. No rate-limiting exists anywhere in the codebase
-today, so every endpoint accepts unlimited requests from a single client.
-Two endpoints are exposed by that right now, independently of any unbuilt
-feature. Both use Rails' built-in `rate_limit` (Rails 8.1, already the
-version in use — no new dependency).
+Approved 2026-09-16, **both items implemented 2026-09-16**. Uses Rails'
+built-in `rate_limit` (Rails 8.1, already the version in use — no new
+dependency).
 
-* [ ] Sign-in. `Users::SessionsController`:
+Correcting this section as first written: it said no rate limiting existed
+anywhere in the codebase. `ContactMessagesController` already had one
+(`to: 5, within: 1.hour`); the two were written in parallel. That does not
+change the finding about the authentication endpoints, and its store
+handling is the pattern both controllers below reuse.
 
-          rate_limit to: 10, within: 3.minutes, only: :create
+* [x] Sign-in (2026-09-16). New `Users::SessionsController`, with
+      `rate_limit to: 10, within: 3.minutes, only: :create`. Before this,
+      `/users/sign_in` accepted unlimited attempts, so password
+      brute-force was viable against any account, a platform
+      administrator's included.
 
-      `/users/sign_in` currently accepts unlimited attempts, so password
-      brute-force is viable against any account, including a platform
-      administrator's. This is the highest-priority item of the three
-      recorded across the roadmap — it is a live vulnerability, not a
-      precaution against a future feature.
+      Keyed by client, not by submitted email: limiting a named account
+      is what `:lockable` does, and that is itself a denial-of-service
+      vector (see below). A spec covers the case that matters — one
+      client walking many different addresses — not just repeated
+      failures on a single login.
 
-* [ ] Password reset. `to: 5, within: 1.hour` on the Devise password
-      controller's `create`. Without it the endpoint is a free email
-      generator pointed at any address — which became a real cost the
-      moment SMTP was configured (#74, commit f13314e).
+* [x] Password reset (2026-09-16). New `Users::PasswordsController`, with
+      `rate_limit to: 5, within: 1.hour, only: :create`. Without it the
+      endpoint was a free email generator pointed at any address — a real
+      cost since SMTP was configured (#74, commit f13314e), and a way to
+      bury someone's inbox using SceneCore's own sending reputation.
+
+* [x] Account enumeration (2026-09-16, not originally in this section).
+      `config.paranoid` was commented out, so password recovery answered
+      differently for a known and an unknown address — handing an
+      attacker a verified list of addresses to point the sign-in limit
+      at. The two findings compound, so it was fixed in the same pass.
+      Note it does not affect `registerable`: sign-up still reports an
+      address as already taken, which Devise cannot avoid without
+      breaking registration.
+
+Both limiters keep counters in their own `MemoryStore` rather than
+`Rails.cache`, which is `:null_store` in test — a limit stored there would
+silently do nothing in the suite, making the protection untestable. The
+process-memory caveat below still applies to both.
 
 The third application, comment creation (`to: 10, within: 1.minute` plus
 `to: 100, within: 1.hour`), is recorded under Future Features and is only
 reachable if band-moderated comments are approved. It does not belong to
 this phase.
 
-Implementation order, when this is picked up: sign-in first (a live
-vulnerability, independent of everything else), then password reset (email
-abuse, also live), then comments (only exists if that feature is approved).
+Sign-in and password reset are done. Comments remain, and only exist if
+that feature is approved.
 
 ### Not the same thing: Devise `:lockable`
 
