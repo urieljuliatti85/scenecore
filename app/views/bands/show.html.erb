@@ -18,6 +18,7 @@
     <% if policy(@band).update? %>
       <%= link_to "Edit", edit_band_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
       <%= link_to "Members", band_band_memberships_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
+      <%= link_to "Supporters", band_memberships_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
     <% end %>
 
     <% if policy(@band).approve? && @band.pending? %>
