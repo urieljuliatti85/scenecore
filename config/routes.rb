@@ -96,6 +96,11 @@ Rails.application.routes.draw do
 
   get "/search", to: "search#index", as: :search
 
+  get "/how-it-works", to: "pages#how_it_works", as: :how_it_works
+  get "/contact", to: "contact_messages#new", as: :contact
+  post "/contact", to: "contact_messages#create"
+  get "/support", to: "pages#support", as: :support
+
   # Public band page and album detail, resolved by slug. Must stay last
   # so they don't shadow any of the routes declared above.
   get "/:slug/albums/:id", to: "public_bands#album", as: :public_band_album, constraints: { slug: /[a-z0-9\-]+/ }

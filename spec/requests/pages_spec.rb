@@ -140,4 +140,35 @@ RSpec.describe "Pages", type: :request do
       end
     end
   end
+
+  describe "static pages" do
+    { "/how-it-works" => "How it works", "/contact" => "Contact", "/support" => "Support" }.each do |path, heading|
+      it "serves #{path} to a visitor" do
+        get path
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(heading)
+      end
+    end
+  end
+
+  describe "footer" do
+    it "shows the links to a visitor, including Subscribe" do
+      get root_path
+
+      expect(response.body).to include("How it Works")
+      expect(response.body).to include(contact_path)
+      expect(response.body).to include(support_path)
+      expect(response.body).to include(">Subscribe</a>")
+    end
+
+    it "hides Subscribe from a signed-in user" do
+      sign_in create(:user)
+
+      get root_path
+
+      expect(response.body).to include("How it Works")
+      expect(response.body).not_to include(">Subscribe</a>")
+    end
+  end
 end
