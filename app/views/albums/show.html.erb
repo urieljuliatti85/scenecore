@@ -22,7 +22,10 @@
           scheme and host are fixed here rather than coming out of the
           database. See Album#spotify_url for the id check. %>
       <% if (spotify_album_id = @album.spotify_link_id) %>
-        <%= link_to "Listen on Spotify", "https://open.spotify.com/album/#{spotify_album_id}", target: "_blank", rel: "noopener", class: "mt-4 inline-block rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition" %>
+        <%= link_to "https://open.spotify.com/album/#{spotify_album_id}", target: "_blank", rel: "noopener", class: "mt-4 inline-flex items-center gap-2 rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition" do %>
+          <%= render "shared/spotify_icon", classes: "h-4 w-4 shrink-0" %>
+          Listen on Spotify
+        <% end %>
       <% end %>
 
       <div class="mt-4 flex flex-wrap items-center gap-3">

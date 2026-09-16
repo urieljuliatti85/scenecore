@@ -408,6 +408,82 @@ RSpec.describe "Albums", type: :request do
     end
   end
 
+  describe "PATCH /bands/:band_id/albums/:id with a Spotify album id" do
+    let(:details) do
+      SpotifyClient::AlbumDetails.new(name: "Discovery", cover_image_url: "https://i.scdn.co/image/new.jpg")
+    end
+
+    def member_for(band)
+      user = create(:user)
+      create(:band_membership, band: band, user: user)
+      user
+    end
+
+    # The reason this exists: albums added before spotify_id was a column
+    # have no link, and re-importing meant deleting the album.
+    it "links an album that has no Spotify id yet" do
+      band = create(:band)
+      album = create(:album, band: band, spotify_id: nil, title: "Kept Title")
+      sign_in member_for(band)
+      allow_any_instance_of(SpotifyClient).to receive(:fetch_album).with("4aawyAB9vmqN3uQ7FjRGTy").and_return(details)
+
+      patch band_album_path(band, album), params: { spotify_album_id: "4aawyAB9vmqN3uQ7FjRGTy" }
+
+      album.reload
+      expect(album.spotify_id).to eq("4aawyAB9vmqN3uQ7FjRGTy")
+      expect(album.spotify_cover_url).to eq("https://i.scdn.co/image/new.jpg")
+      expect(response).to redirect_to(band_album_path(band, album))
+    end
+
+    # The band may have corrected the title; linking must not undo that.
+    it "does not overwrite the album title" do
+      band = create(:band)
+      album = create(:album, band: band, spotify_id: nil, title: "Kept Title")
+      sign_in member_for(band)
+      allow_any_instance_of(SpotifyClient).to receive(:fetch_album).and_return(details)
+
+      patch band_album_path(band, album), params: { spotify_album_id: "4aawyAB9vmqN3uQ7FjRGTy" }
+
+      expect(album.reload.title).to eq("Kept Title")
+    end
+
+    it "rejects an id that is not a Spotify album id" do
+      band = create(:band)
+      album = create(:album, band: band, spotify_id: nil)
+      sign_in member_for(band)
+
+      patch band_album_path(band, album), params: { spotify_album_id: "javascript:alert(1)" }
+
+      expect(album.reload.spotify_id).to be_nil
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
+    it "tells the band when Spotify cannot be reached" do
+      band = create(:band)
+      album = create(:album, band: band, spotify_id: nil)
+      sign_in member_for(band)
+      allow_any_instance_of(SpotifyClient).to receive(:fetch_album).and_raise(SpotifyClient::Error)
+
+      patch band_album_path(band, album), params: { spotify_album_id: "4aawyAB9vmqN3uQ7FjRGTy" }
+
+      expect(album.reload.spotify_id).to be_nil
+      expect(response).to have_http_status(:bad_gateway)
+    end
+
+    it "prevents a member of another band from linking the album" do
+      band = create(:band)
+      album = create(:album, band: band, spotify_id: nil)
+      outsider = create(:user)
+      create(:band_membership, band: create(:band), user: outsider)
+      sign_in outsider
+
+      patch band_album_path(band, album), params: { spotify_album_id: "4aawyAB9vmqN3uQ7FjRGTy" }
+
+      expect(album.reload.spotify_id).to be_nil
+      expect(response).to redirect_to(root_path)
+    end
+  end
+
   describe "PATCH /bands/:band_id/albums/:id" do
     it "allows a band member to attach a cover" do
       user = create(:user)

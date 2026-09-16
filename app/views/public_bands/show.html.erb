@@ -78,7 +78,10 @@
             <div class="p-4">
               <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= album.title %></p>
               <% if album.spotify_link_id %>
-                <p class="text-sm text-neutral-500 group-hover:text-neutral-300 transition">Listen on Spotify</p>
+                <p class="text-sm text-neutral-500 group-hover:text-neutral-300 transition flex items-center gap-1.5">
+                  <%= render "shared/spotify_icon", classes: "h-4 w-4 shrink-0" %>
+                  Listen on Spotify
+                </p>
               <% end %>
             </div>
           <% end %>
