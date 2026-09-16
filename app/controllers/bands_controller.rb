@@ -30,6 +30,12 @@ class BandsController < ApplicationController
     @posts = @band.posts.order(created_at: :desc)
     @events = @band.events.chronological
     @polls = @band.polls.order(created_at: :desc)
+
+    if policy(@band).show?
+      active_memberships = @band.memberships.active
+      @membership_counts = Membership::LEVELS.index_with { |level| active_memberships.where(level: level).count }
+      @new_members_this_month = @band.memberships.where(created_at: Time.current.beginning_of_month..).count
+    end
   end
 
   def edit
