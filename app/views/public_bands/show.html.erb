@@ -69,16 +69,27 @@
       <% end %>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <% [
-          [ "fan", "Fan", "$3/mo", "Get closer to the band." ],
-          [ "supporter", "Supporter", "$5/mo", "Support the music and follow its creation." ],
-          [ "core_member", "Core Member", "$8/mo", "Become part of the band's core group." ]
-        ].each do |level, label, price, promise| %>
+          [ "fan", "Fan", "$3/mo", "Get closer to the band.",
+            [ "Exclusive band feed", "News before the general public", "Behind-the-scenes photos & videos", "Poll participation", "Fan badge" ] ],
+          [ "supporter", "Supporter", "$5/mo", "Support the music and follow its creation.",
+            [ "Everything in Fan", "Early access to releases", "Complete demos & rehearsal recordings", "Composition journal", "Merch & ticket discounts" ] ],
+          [ "core_member", "Core Member", "$8/mo", "Become part of the band's core group.",
+            [ "Everything in Supporter", "Private livestreams & Q&A", "Rare archives & unreleased versions", "Priority tickets & products", "Direct messages to the band" ] ]
+        ].each do |level, label, price, promise, benefits| %>
           <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5 flex flex-col gap-3">
             <div class="flex items-center justify-between">
               <span class="font-semibold text-white"><%= label %></span>
               <span class="text-sm text-neutral-400"><%= price %></span>
             </div>
-            <p class="text-sm text-neutral-500 flex-1"><%= promise %></p>
+            <p class="text-sm text-neutral-500"><%= promise %></p>
+            <ul class="flex-1 flex flex-col gap-1.5 text-sm text-neutral-400">
+              <% benefits.each do |benefit| %>
+                <li class="flex items-start gap-2">
+                  <span class="text-yellow-400 mt-0.5">✓</span>
+                  <span><%= benefit %></span>
+                </li>
+              <% end %>
+            </ul>
             <% if @membership&.level == level %>
               <span class="text-center rounded-full border border-neutral-700 text-neutral-400 text-sm font-semibold px-4 py-2">Current plan</span>
             <% else %>
