@@ -97,7 +97,7 @@ RSpec.describe Band, type: :model do
   end
 
   describe "social links" do
-    %i[spotify_url youtube_url instagram_url website_url].each do |attribute|
+    %i[spotify_url youtube_url instagram_url bandcamp_url website_url].each do |attribute|
       it "accepts a blank #{attribute}" do
         band = build(:band, attribute => nil)
 
@@ -124,11 +124,13 @@ RSpec.describe Band, type: :model do
       band = build(:band, spotify_url: "https://open.spotify.com/artist/1",
                            youtube_url: nil,
                            instagram_url: "https://instagram.com/band",
+                           bandcamp_url: "https://band.bandcamp.com",
                            website_url: nil)
 
       expect(band.social_links).to eq(
         spotify_url: "https://open.spotify.com/artist/1",
-        instagram_url: "https://instagram.com/band"
+        instagram_url: "https://instagram.com/band",
+        bandcamp_url: "https://band.bandcamp.com"
       )
     end
 

@@ -50,6 +50,11 @@
     </div>
 
     <div>
+      <%= form.label :bandcamp_url, "Bandcamp", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.url_field :bandcamp_url, placeholder: "https://yourband.bandcamp.com/...", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    </div>
+
+    <div>
       <%= form.label :website_url, "Website", class: "block text-sm font-medium text-neutral-300 mb-1" %>
       <%= form.url_field :website_url, placeholder: "https://...", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
     </div>

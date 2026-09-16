@@ -1,0 +1,62 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <%= link_to public_band_path(@band.slug), class: "text-sm text-neutral-400 hover:text-white transition" do %>
+    &larr; <%= @band.name %>
+  <% end %>
+
+  <div class="mt-4 flex flex-col sm:flex-row gap-6">
+    <div class="w-full sm:w-48 aspect-square rounded-2xl border border-neutral-800 bg-neutral-800 overflow-hidden flex items-center justify-center shrink-0">
+      <% if @album.cover_url.present? %>
+        <%= image_tag @album.cover_url, class: "w-full h-full object-cover" %>
+      <% else %>
+        <span class="text-neutral-600 text-sm">No cover</span>
+      <% end %>
+    </div>
+
+    <div class="flex-1">
+      <h1 class="text-3xl font-extrabold tracking-tight"><%= @album.title %></h1>
+
+      <% if @album.ratings_count.positive? %>
+        <p class="mt-2 text-sm text-neutral-400">
+          <span class="text-yellow-400 font-semibold"><%= @album.average_rating %></span> / 5
+          <span class="text-neutral-600">·</span>
+          <%= pluralize(@album.ratings_count, "rating") %>
+        </p>
+      <% else %>
+        <p class="mt-2 text-sm text-neutral-500">No ratings yet.</p>
+      <% end %>
+
+      <%# The href is assembled from a literal plus the validated id, so the
+          scheme and host are fixed here rather than coming out of the
+          database. See Album#spotify_url for the id check. %>
+      <% if (spotify_album_id = @album.spotify_link_id) %>
+        <%= link_to "https://open.spotify.com/album/#{spotify_album_id}", target: "_blank", rel: "noopener", class: "mt-4 inline-flex items-center gap-2 rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition" do %>
+          <%= render "shared/spotify_icon", classes: "h-4 w-4 shrink-0" %>
+          Listen on Spotify
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-10 rounded-2xl border border-neutral-800 bg-neutral-900/40 px-5 py-4">
+    <% if user_signed_in? %>
+      <h2 class="text-sm font-semibold text-neutral-300 mb-3">
+        <%= @rating ? "Your rating" : "Rate this album" %>
+      </h2>
+      <%= form_with url: album_rating_path(@band.slug, @album), scope: :rating, method: :put, class: "flex items-center gap-2", data: { controller: "auto-submit" } do |form| %>
+        <div class="flex items-center gap-1">
+          <% (1..5).each do |score| %>
+            <label class="cursor-pointer text-2xl <%= @rating&.score.to_i >= score ? "text-yellow-400" : "text-neutral-700" %> hover:text-yellow-400 transition">
+              <%= form.radio_button :score, score, checked: @rating&.score == score, class: "sr-only", data: { action: "change->auto-submit#submit" } %>
+              <%= @rating&.score.to_i >= score ? "★" : "☆" %>
+            </label>
+          <% end %>
+        </div>
+        <noscript><%= form.submit @rating ? "Update" : "Submit", class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %></noscript>
+      <% end %>
+    <% else %>
+      <p class="text-sm text-neutral-400">
+        <%= link_to "Sign in", new_user_session_path, class: "text-yellow-400 hover:text-yellow-300 transition" %> to rate this album.
+      </p>
+    <% end %>
+  </div>
+</section>

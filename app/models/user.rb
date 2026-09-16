@@ -9,6 +9,7 @@ class User < ApplicationRecord
   has_many :follows, dependent: :destroy
   has_many :followed_bands, through: :follows, source: :band
   has_many :memberships, dependent: :destroy
+  has_many :ratings, dependent: :destroy
 
   validates :name, presence: true
 end

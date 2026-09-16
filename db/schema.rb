@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_16_125604) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_16_142538) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -91,6 +91,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_125604) do
   end
 
   create_table "bands", force: :cascade do |t|
+    t.string "bandcamp_url"
     t.bigint "category_id"
     t.datetime "created_at", null: false
     t.text "description"
@@ -182,6 +183,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_125604) do
     t.check_constraint "visibility::text = ANY (ARRAY['public'::character varying, 'followers'::character varying, 'subscribers'::character varying]::text[])", name: "posts_visibility_check"
   end
 
+  create_table "ratings", force: :cascade do |t|
+    t.bigint "album_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "score", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["album_id", "score"], name: "index_ratings_on_album_id_and_score"
+    t.index ["album_id"], name: "index_ratings_on_album_id"
+    t.index ["user_id", "album_id"], name: "index_ratings_on_user_id_and_album_id", unique: true
+    t.index ["user_id"], name: "index_ratings_on_user_id"
+    t.check_constraint "score >= 1 AND score <= 5", name: "ratings_score_check"
+  end
+
   create_table "tracks", force: :cascade do |t|
     t.bigint "album_id", null: false
     t.datetime "created_at", null: false
@@ -222,5 +236,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_125604) do
   add_foreign_key "memberships", "bands"
   add_foreign_key "memberships", "users"
   add_foreign_key "posts", "bands"
+  add_foreign_key "ratings", "albums"
+  add_foreign_key "ratings", "users"
   add_foreign_key "tracks", "albums"
 end

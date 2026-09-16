@@ -190,8 +190,8 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).not_to include("Secret Album")
     end
 
-    # Albums imported before spotify_id existed have no link. The card must
-    # not offer Spotify and then lead nowhere.
+    # Albums imported before spotify_id existed have no Spotify link. The
+    # card must not offer Spotify and then lead nowhere.
     it "does not offer a Spotify link for an album that has no Spotify id" do
       band = create(:band, :approved)
       create(:album, :published, band: band, title: "Old Import", spotify_id: nil)
@@ -202,13 +202,13 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).not_to include("Listen on Spotify")
     end
 
-    it "sends the album card straight to Spotify" do
+    it "sends the album card to the album's own page, not straight to Spotify" do
       band = create(:band, :approved)
       album = create(:album, :published, band: band, title: "Public Album", spotify_id: "4aawyAB9vmqN3uQ7FjRGTy")
 
       get public_band_path(band.slug)
 
-      expect(response.body).to include("https://open.spotify.com/album/4aawyAB9vmqN3uQ7FjRGTy")
+      expect(response.body).to include(public_album_path(band.slug, album))
       expect(response.body).to include("Listen on Spotify")
     end
 
