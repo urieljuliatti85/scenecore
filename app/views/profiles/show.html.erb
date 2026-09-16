@@ -12,5 +12,8 @@
     </div>
   </dl>
 
-  <%= link_to "Edit profile", edit_profile_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition inline-block" %>
+  <div class="flex flex-wrap items-center gap-4">
+    <%= link_to "Edit profile", edit_profile_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition inline-block" %>
+    <%= link_to "Your subscriptions", subscriptions_path, class: "text-sm text-neutral-400 hover:text-white transition" %>
+  </div>
 </section>

@@ -1,5 +1,9 @@
 class SubscriptionsController < ApplicationController
-  before_action :set_band
+  before_action :set_band, except: [ :index ]
+
+  def index
+    @subscriptions = current_user.subscriptions.includes(:band).order(created_at: :desc)
+  end
 
   def create
     @subscription = @band.subscriptions.find_or_initialize_by(user: current_user)

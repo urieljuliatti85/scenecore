@@ -65,6 +65,7 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   resource :profile, only: [ :show, :edit, :update ], controller: "profiles"
+  resources :subscriptions, only: [ :index ]
 
   namespace :admin do
     root to: "dashboard#index"
