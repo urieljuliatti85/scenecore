@@ -67,4 +67,38 @@ RSpec.describe "Membership signups", type: :request do
       expect(response).to redirect_to(new_user_session_path)
     end
   end
+
+  describe "DELETE /bands/:band_id/membership_signup" do
+    it "lets a signed-in user cancel their own membership" do
+      band = create(:band, :approved)
+      user = create(:user)
+      membership = create(:membership, :supporter, band: band, user: user, status: :active)
+      sign_in user
+
+      delete band_membership_signup_path(band)
+
+      expect(membership.reload.status).to eq("cancelled")
+      expect(response).to redirect_to(public_band_path(band.slug))
+    end
+
+    it "requires authentication" do
+      band = create(:band, :approved)
+      membership = create(:membership, band: band)
+
+      delete band_membership_signup_path(band)
+
+      expect(response).to redirect_to(new_user_session_path)
+      expect(membership.reload.status).to eq("active")
+    end
+
+    it "returns 404 when the user has no membership with the band" do
+      band = create(:band, :approved)
+      user = create(:user)
+      sign_in user
+
+      delete band_membership_signup_path(band)
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
 end
