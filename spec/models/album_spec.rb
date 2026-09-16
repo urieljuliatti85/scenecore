@@ -147,4 +147,104 @@ RSpec.describe Album, type: :model do
       expect(album.cover_url).to include("active_storage")
     end
   end
+
+  describe "early access" do
+    it "requires an until date when a level is set" do
+      album = build(:album, early_access_level: :supporter, early_access_until: nil)
+
+      expect(album).not_to be_valid
+    end
+
+    it "requires a level when an until date is set" do
+      album = build(:album, early_access_level: nil, early_access_until: 1.day.from_now)
+
+      expect(album).not_to be_valid
+    end
+
+    it "is valid with neither set" do
+      album = build(:album, early_access_level: nil, early_access_until: nil)
+
+      expect(album).to be_valid
+    end
+
+    it "is valid with both set to a known level" do
+      album = build(:album, early_access_level: :supporter, early_access_until: 1.day.from_now)
+
+      expect(album).to be_valid
+    end
+  end
+
+  describe "#in_early_access?" do
+    it "is false when no early access is configured" do
+      album = build(:album, early_access_level: nil, early_access_until: nil)
+
+      expect(album).not_to be_in_early_access
+    end
+
+    it "is true while the until date is in the future" do
+      album = build(:album, early_access_level: :supporter, early_access_until: 1.day.from_now)
+
+      expect(album).to be_in_early_access
+    end
+
+    it "is false once the until date has passed" do
+      album = build(:album, early_access_level: :supporter, early_access_until: 1.day.ago)
+
+      expect(album).not_to be_in_early_access
+    end
+  end
+
+  describe "#visible_to?" do
+    let(:band) { create(:band) }
+
+    it "is visible to anyone when not in early access" do
+      album = create(:album, band: band, early_access_level: nil, early_access_until: nil)
+
+      expect(album.visible_to?(nil)).to be true
+    end
+
+    it "is not visible to an anonymous visitor during early access" do
+      album = create(:album, band: band, early_access_level: :supporter, early_access_until: 1.day.from_now)
+
+      expect(album.visible_to?(nil)).to be false
+    end
+
+    it "is not visible to a user without the required membership level" do
+      album = create(:album, band: band, early_access_level: :supporter, early_access_until: 1.day.from_now)
+      fan = create(:user)
+      create(:membership, band: band, user: fan, level: :fan)
+
+      expect(album.visible_to?(fan)).to be false
+    end
+
+    it "is visible to a user who meets the required membership level" do
+      album = create(:album, band: band, early_access_level: :supporter, early_access_until: 1.day.from_now)
+      supporter = create(:user)
+      create(:membership, band: band, user: supporter, level: :supporter)
+
+      expect(album.visible_to?(supporter)).to be true
+    end
+
+    it "is visible to a user above the required membership level" do
+      album = create(:album, band: band, early_access_level: :supporter, early_access_until: 1.day.from_now)
+      core_member = create(:user)
+      create(:membership, band: band, user: core_member, level: :core_member)
+
+      expect(album.visible_to?(core_member)).to be true
+    end
+
+    it "is not visible to a user with the level but a paused membership" do
+      album = create(:album, band: band, early_access_level: :supporter, early_access_until: 1.day.from_now)
+      supporter = create(:user)
+      create(:membership, :paused, band: band, user: supporter, level: :supporter)
+
+      expect(album.visible_to?(supporter)).to be false
+    end
+
+    it "is visible to everyone once the early access window has passed" do
+      album = create(:album, band: band, early_access_level: :supporter, early_access_until: 1.day.ago)
+
+      expect(album.visible_to?(nil)).to be true
+    end
+  end
 end
