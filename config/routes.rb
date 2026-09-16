@@ -106,6 +106,7 @@ Rails.application.routes.draw do
     end
     resource :follow, only: [ :create, :destroy ]
     resource :membership_signup, only: [ :create, :destroy ]
+    resource :subscription, only: [ :create ]
     resources :posts, only: [ :new, :create, :show, :edit, :update, :destroy ] do
       member do
         patch :publish
