@@ -1,0 +1,95 @@
+require "rails_helper"
+
+RSpec.describe "Stripe webhooks", type: :request do
+  def post_webhook(event)
+    allow(Stripe::Webhook).to receive(:construct_event).and_return(event)
+    post stripe_webhooks_path, params: "{}", headers: { "Stripe-Signature" => "t=1,v1=fake" }
+  end
+
+  describe "POST /stripe/webhooks" do
+    it "returns 400 when the signature cannot be verified" do
+      allow(Stripe::Webhook).to receive(:construct_event)
+        .and_raise(Stripe::SignatureVerificationError.new("bad signature", "sig_header"))
+
+      post stripe_webhooks_path, params: "{}", headers: { "Stripe-Signature" => "invalid" }
+
+      expect(response).to have_http_status(:bad_request)
+    end
+
+    it "returns 400 for a malformed payload" do
+      allow(Stripe::Webhook).to receive(:construct_event).and_raise(JSON::ParserError)
+
+      post stripe_webhooks_path, params: "not json", headers: { "Stripe-Signature" => "t=1,v1=fake" }
+
+      expect(response).to have_http_status(:bad_request)
+    end
+
+    it "records the event and activates the subscription for checkout.session.completed" do
+      subscription = create(:subscription, level: :fan, stripe_checkout_session_id: "cs_1")
+      session = instance_double(Stripe::Checkout::Session, id: "cs_1", payment_status: "paid", subscription: "sub_1")
+      event = instance_double(Stripe::Event, id: "evt_1", type: "checkout.session.completed",
+        data: instance_double(Stripe::Event::Data, object: session))
+
+      post_webhook(event)
+
+      expect(response).to have_http_status(:ok)
+      expect(StripeWebhookEvent.exists?(stripe_event_id: "evt_1")).to be true
+      expect(subscription.reload.status).to eq("active")
+    end
+
+    it "returns 200 without reprocessing when the event was already recorded" do
+      create(:stripe_webhook_event, stripe_event_id: "evt_1")
+      session = instance_double(Stripe::Checkout::Session, id: "cs_1", payment_status: "paid", subscription: "sub_1")
+      event = instance_double(Stripe::Event, id: "evt_1", type: "checkout.session.completed",
+        data: instance_double(Stripe::Event::Data, object: session))
+
+      post_webhook(event)
+
+      expect(response).to have_http_status(:ok)
+      expect(StripeWebhookEvent.where(stripe_event_id: "evt_1").count).to eq(1)
+    end
+
+    it "updates the subscription for customer.subscription.updated" do
+      subscription = create(:subscription, :active, stripe_subscription_id: "sub_1")
+      stripe_subscription = instance_double(Stripe::Subscription, id: "sub_1", status: "past_due")
+      event = instance_double(Stripe::Event, id: "evt_2", type: "customer.subscription.updated",
+        data: instance_double(Stripe::Event::Data, object: stripe_subscription))
+
+      post_webhook(event)
+
+      expect(response).to have_http_status(:ok)
+      expect(subscription.reload.status).to eq("past_due")
+    end
+
+    it "cancels the subscription for customer.subscription.deleted" do
+      subscription = create(:subscription, :active, stripe_subscription_id: "sub_1")
+      stripe_subscription = instance_double(Stripe::Subscription, id: "sub_1")
+      event = instance_double(Stripe::Event, id: "evt_3", type: "customer.subscription.deleted",
+        data: instance_double(Stripe::Event::Data, object: stripe_subscription))
+
+      post_webhook(event)
+
+      expect(response).to have_http_status(:ok)
+      expect(subscription.reload.status).to eq("cancelled")
+    end
+
+    it "returns 200 and records the event for an event type it doesn't handle" do
+      event = instance_double(Stripe::Event, id: "evt_4", type: "invoice.paid",
+        data: instance_double(Stripe::Event::Data, object: instance_double(Stripe::StripeObject)))
+
+      post_webhook(event)
+
+      expect(response).to have_http_status(:ok)
+      expect(StripeWebhookEvent.exists?(stripe_event_id: "evt_4")).to be true
+    end
+
+    it "does not require authentication" do
+      event = instance_double(Stripe::Event, id: "evt_5", type: "invoice.paid",
+        data: instance_double(Stripe::Event::Data, object: instance_double(Stripe::StripeObject)))
+
+      post_webhook(event)
+
+      expect(response).not_to have_http_status(:redirect)
+    end
+  end
+end

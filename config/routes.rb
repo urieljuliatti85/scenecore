@@ -51,6 +51,10 @@ Rails.application.routes.draw do
   # (see app/views/posts/_form.html.erb) instead of the default rails_direct_uploads.
   post "/posts/direct_uploads", to: "direct_uploads#create", as: :post_direct_uploads
 
+  # Stripe delivers webhooks with no user session and its own signature
+  # scheme (verified in StripeWebhooksController, not by Devise/CSRF).
+  post "/stripe/webhooks", to: "stripe_webhooks#create", as: :stripe_webhooks
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

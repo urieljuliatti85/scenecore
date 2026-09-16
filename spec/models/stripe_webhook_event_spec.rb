@@ -32,12 +32,12 @@ RSpec.describe StripeWebhookEvent, type: :model do
       expect(event.processed_at).to be_present
     end
 
-    it "raises when the event was already recorded, so callers can treat it as a duplicate" do
+    it "raises DuplicateEvent when the event was already recorded" do
       described_class.record!(stripe_event_id: "evt_abc", event_type: "checkout.session.completed")
 
       expect {
         described_class.record!(stripe_event_id: "evt_abc", event_type: "checkout.session.completed")
-      }.to raise_error(ActiveRecord::RecordInvalid)
+      }.to raise_error(StripeWebhookEvent::DuplicateEvent)
     end
   end
 end
