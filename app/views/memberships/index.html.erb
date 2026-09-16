@@ -1,0 +1,23 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl font-extrabold tracking-tight"><%= @band.name %> — Supporters</h1>
+  </div>
+
+  <% if @memberships.empty? %>
+    <p class="text-neutral-500">No supporters yet.</p>
+  <% else %>
+    <ul class="space-y-3">
+      <% @memberships.each do |membership| %>
+        <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-center justify-between gap-4">
+          <div>
+            <p class="font-semibold text-white"><%= membership.user.name %></p>
+            <p class="text-xs uppercase tracking-wide text-neutral-500">
+              <%= membership.level.humanize %> · <%= membership.status.humanize %>
+            </p>
+          </div>
+          <p class="text-xs text-neutral-500">Since <%= membership.created_at.to_date %></p>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>
