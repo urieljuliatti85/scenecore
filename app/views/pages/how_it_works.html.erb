@@ -1,0 +1,32 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-4">How it works</h1>
+  <p class="text-neutral-400 mb-10">
+    Use Spotify to get discovered. Use SceneCore to build your fan base.
+  </p>
+
+  <div class="flex flex-col gap-8">
+    <div>
+      <h2 class="text-lg font-semibold text-white mb-2">For bands</h2>
+      <p class="text-neutral-300">
+        Create your band's page, bring your albums over from Spotify, publish
+        posts for your followers, and keep everything about your relationship
+        with your fans in one place.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="text-lg font-semibold text-white mb-2">For fans</h2>
+      <p class="text-neutral-300">
+        Discover bands, listen to their music, follow the ones you care about,
+        and keep up with what they publish.
+      </p>
+    </div>
+  </div>
+
+  <% unless user_signed_in? %>
+    <div class="mt-12 flex flex-wrap items-center gap-3">
+      <%= link_to "Join Now", new_user_registration_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
+      <%= link_to "Browse bands", discover_bands_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
+    </div>
+  <% end %>
+</section>

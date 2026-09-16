@@ -1,0 +1,26 @@
+<footer class="border-t border-neutral-800 mt-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10 flex flex-col sm:flex-row sm:items-start gap-8 sm:gap-16">
+    <%= link_to root_path, class: "shrink-0", "aria-label": "SceneCore home" do %>
+      <%= image_tag "logo.png", alt: "SceneCore", class: "h-12 w-auto" %>
+    <% end %>
+
+    <nav aria-labelledby="footer-links-heading">
+      <h2 id="footer-links-heading" class="text-xs uppercase tracking-wide text-neutral-500 mb-3">Links</h2>
+      <ul class="flex flex-col gap-2">
+        <li><%= link_to "Home", root_path, class: "text-sm text-neutral-300 hover:text-white transition" %></li>
+        <% unless user_signed_in? %>
+          <li><%= link_to "Subscribe", new_user_registration_path, class: "text-sm text-neutral-300 hover:text-white transition" %></li>
+        <% end %>
+        <li><%= link_to "Contact", contact_path, class: "text-sm text-neutral-300 hover:text-white transition" %></li>
+        <li><%= link_to "Support", support_path, class: "text-sm text-neutral-300 hover:text-white transition" %></li>
+        <li><%= link_to "How it Works", how_it_works_path, class: "text-sm text-neutral-300 hover:text-white transition" %></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="border-t border-neutral-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
+      <p class="text-xs text-neutral-500">&copy; <%= Date.current.year %> SceneCore. Your band. Your fans. Your home.</p>
+    </div>
+  </div>
+</footer>
