@@ -1249,6 +1249,46 @@ management page.
       Fine at current scale, wrong shape at large scale — revisit with a
       counter cache or a `COUNT` aggregate when there's data to measure.
 
+### Band panel layout: albums and posts as cards
+
+Decided 2026-09-16. `bands/show.html.erb` currently renders every album
+with all of its tracks inline, and every post with its full body. Both
+become cards, each linking to a screen of its own.
+
+This is not a new feature and does not expand the MVP: the public side
+already works exactly this way (`PublicBandsController#show` lists albums,
+`#album` shows the tracks at `/:slug/albums/:id`), so this brings the
+management area to parity with a pattern the app already uses.
+
+* [x] Albums render as a card — cover, title, status, track count —
+      linking to an album screen listing that album's tracks.
+* [x] Posts render as a card rather than the full body inline, linking to
+      a post screen.
+* [x] `AlbumsController#show` plus route and view. The management
+      controller currently has `new`, `edit`, `update`, `search`,
+      `create`, `publish` and `unpublish` but **no `show`** — tracks exist
+      only inside the band view today.
+* [x] `AlbumPolicy#show?`. It does not exist, and `ApplicationPolicy`
+      denies by default, so without it the album screen 403s for the
+      band's own members. The default fails safe rather than leaking, but
+      it has to be written deliberately.
+* [x] Equivalent screen and policy for posts.
+
+Decided 2026-09-16: publish/unpublish/edit stay on the card, and are
+repeated on the album/post screen. The card keeps one-click access to the
+actions a band uses most.
+
+Implemented 2026-09-16.
+
+This was expected to shrink the authorization N+1 described below. **It
+did not** — measured on a band with 4 albums of 10 tracks and 3 posts,
+the page went from 26 queries to 27. The earlier estimate (roughly 220
+policy queries dropping to 20) was wrong: it was read from the code
+rather than measured, and it missed that the per-record policies resolve
+`record.band` from an already-loaded association, so the tracks were
+never issuing a query each. The layout change stands on its own merits;
+it is not a performance fix, and the N+1 items below are unaffected.
+
 ### Background jobs
 
 2026-09-15: audited, including against the live Railway production

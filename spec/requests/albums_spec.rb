@@ -1,6 +1,54 @@
 require "rails_helper"
 
 RSpec.describe "Albums", type: :request do
+  describe "GET /bands/:band_id/albums/:id" do
+    it "requires authentication" do
+      album = create(:album)
+
+      get band_album_path(album.band, album)
+
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it "shows the album's tracks to a band member" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      album = create(:album, band: band, title: "Demon's Massacre")
+      create(:track, album: album, title: "Assassin", track_number: 1)
+      sign_in user
+
+      get band_album_path(band, album)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Demon&#39;s Massacre")
+      expect(response.body).to include("Assassin")
+    end
+
+    it "prevents a member of another band from viewing the album" do
+      outsider = create(:user)
+      create(:band_membership, band: create(:band), user: outsider)
+      album = create(:album)
+      sign_in outsider
+
+      get band_album_path(album.band, album)
+
+      expect(response).to redirect_to(root_path)
+    end
+
+    it "does not expose an album belonging to a different band" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      other_album = create(:album)
+      sign_in user
+
+      get band_album_path(band, other_album)
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
   describe "GET /bands/:band_id/albums/new" do
     it "requires authentication" do
       band = create(:band)
