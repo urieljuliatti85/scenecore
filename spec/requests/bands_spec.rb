@@ -103,6 +103,45 @@ RSpec.describe "Bands", type: :request do
 
       expect(track_queries).to eq(0)
     end
+
+    it "shows membership counts per level to a band member" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      create(:membership, band: band, level: :fan)
+      create(:membership, band: band, level: :fan)
+      create(:membership, band: band, level: :supporter)
+      create(:membership, band: band, level: :core_member)
+      sign_in user
+
+      get band_path(band)
+
+      expect(response.body).to include("Fans")
+      expect(response.body).to include("Supporters")
+      expect(response.body).to include("Core Members")
+    end
+
+    it "does not count a paused or cancelled membership toward the level totals" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      create(:membership, band: band, level: :fan, status: :active)
+      create(:membership, band: band, level: :fan, status: :cancelled)
+      sign_in user
+
+      get band_path(band)
+
+      expect(response.body).to match(/Fans.*?<span[^>]*>1<\/span>/m)
+    end
+
+    it "does not show membership counts to an anonymous or unrelated visitor" do
+      band = create(:band)
+      create(:membership, band: band, level: :fan)
+
+      get band_path(band)
+
+      expect(response).to redirect_to(new_user_session_path)
+    end
   end
 
   describe "band isolation" do
