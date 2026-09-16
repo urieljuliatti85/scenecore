@@ -19,18 +19,9 @@ class PublicBandsController < ApplicationController
 
   def show
     @band = Band.approved.with_attached_photo.includes(:category).find_by!(slug: params[:slug])
-    @albums = @band.albums.published.with_attached_cover.includes(:tracks)
+    @albums = @band.albums.published.with_attached_cover
     @following = current_user.present? && @band.follows.exists?(user: current_user)
     @posts = visible_posts(@band)
-    @published_tracks_count = @band.tracks.published.count
-  rescue ActiveRecord::RecordNotFound
-    render "not_found", status: :not_found
-  end
-
-  def album
-    @band = Band.approved.find_by!(slug: params[:slug])
-    @album = @band.albums.published.find(params[:id])
-    @tracks = @album.tracks.published.order(:track_number)
   rescue ActiveRecord::RecordNotFound
     render "not_found", status: :not_found
   end

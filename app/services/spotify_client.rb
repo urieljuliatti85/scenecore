@@ -32,8 +32,7 @@ class SpotifyClient
   ].freeze
 
   AlbumResult = Struct.new(:spotify_id, :name, :artist, :image_url, :release_year, keyword_init: true)
-  AlbumDetails = Struct.new(:name, :cover_image_url, :tracks, keyword_init: true)
-  TrackDetails = Struct.new(:title, :track_number, :spotify_url, keyword_init: true)
+  AlbumDetails = Struct.new(:name, :cover_image_url, keyword_init: true)
 
   def search_albums(query)
     return [] if query.blank?
@@ -50,18 +49,13 @@ class SpotifyClient
     end
   end
 
+  # Only the album itself: SceneCore links out to Spotify rather than
+  # mirroring its track listing, so the tracks in this response are not
+  # read.
   def fetch_album(spotify_id)
     response = get("/albums/#{spotify_id}")
 
-    tracks = response.fetch("tracks", {}).fetch("items", []).map do |item|
-      TrackDetails.new(
-        title: item["name"],
-        track_number: item["track_number"],
-        spotify_url: item.dig("external_urls", "spotify")
-      )
-    end
-
-    AlbumDetails.new(name: response["name"], cover_image_url: response.dig("images", 0, "url"), tracks: tracks)
+    AlbumDetails.new(name: response["name"], cover_image_url: response.dig("images", 0, "url"))
   end
 
   private

@@ -469,12 +469,41 @@ A visitor can access an approved band's public page without authentication.
 
 Allow bands to manage and publish music.
 
+## Superseded 2026-09-16 — albums link out to Spotify
+
+Approved product change. SceneCore no longer mirrors Spotify's track
+listing: importing an album captures its title, cover and Spotify id, and
+the album is presented as a cover card that links out with "Listen on
+Spotify". There is no per-track record, no embedded per-track player and
+no public album page.
+
+The reasoning is the one already in 5.3 — SceneCore does not host audio —
+carried to its conclusion. Copying a track listing is mirroring metadata
+that goes stale on its own and adds an entity the product does not need;
+a link does not.
+
+What this supersedes below: 5.2 (Tracks) entirely, 5.3's per-track link
+storage, 5.4's publish cascade, and 5.5 (Player). Publishing is now an
+album-level flag with nothing to cascade to. The items stay ticked because
+they were built and shipped; this section, not their checkboxes, describes
+the system as it stands.
+
+`Track` and its table are deliberately **kept and unused** rather than
+dropped: they still hold rows imported under the old behaviour, and
+dropping them would be an irreversible migration for a days-old decision.
+Removing them is a separate, later task.
+
+Also revised: `docs/database.md` (Albums, Tracks, relationship diagram)
+and `docs/product.md` (Journey 3, Music rules, public-page rules).
+
 ## Tasks
 
 ### 5.1 Albums
 
-An album groups a band's tracks into a release. A track always belongs to
-an album — there is no ungrouped track.
+An album is a band's release: cover, title, and a link out to Spotify.
+(Originally: "An album groups a band's tracks into a release. A track
+always belongs to an album — there is no ungrouped track." — superseded,
+see above.)
 
 * [x] Album model.
 * [x] Album belongs to band.
@@ -485,7 +514,7 @@ an album — there is no ungrouped track.
       the shared `HasImage` concern; set from the album's edit page).
 * [x] Album publication state.
 
-### 5.2 Tracks
+### 5.2 Tracks — superseded 2026-09-16 (see above)
 
 * [x] Track model.
 * [x] Track belongs to album (and, through it, to a band).
@@ -507,6 +536,9 @@ file validation.
 
 ### 5.4 Publishing
 
+Superseded in part 2026-09-16: publishing is still album-level, but there
+are no tracks to cascade to. Original decision follows.
+
 Decision: publishing happens at the album level, not per track. Publishing
 an album publishes every track that already has a Spotify link; tracks
 without a link stay draft until one is added. Unpublishing an album
@@ -521,7 +553,7 @@ action on a track.
       only renders published albums/tracks).
 * [x] A track cannot be published without a Spotify link.
 
-### 5.5 Player (Spotify embed)
+### 5.5 Player (Spotify embed) — superseded 2026-09-16 (see above)
 
 * [x] Display Spotify's official embed player for a published track's link
       (`Track#spotify_embed_url`, rendered on the public band page).

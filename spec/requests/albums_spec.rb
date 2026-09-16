@@ -12,7 +12,7 @@ RSpec.describe "Albums", type: :request do
 
     it "updates the cover from Spotify" do
       user, band, album = member_and_album
-      details = SpotifyClient::AlbumDetails.new(name: album.title, cover_image_url: "https://i.scdn.co/image/new.jpg", tracks: [])
+      details = SpotifyClient::AlbumDetails.new(name: album.title, cover_image_url: "https://i.scdn.co/image/new.jpg")
       allow_any_instance_of(SpotifyClient).to receive(:fetch_album).with(album.spotify_id).and_return(details)
       sign_in user
 
@@ -114,19 +114,19 @@ RSpec.describe "Albums", type: :request do
       expect(response).to redirect_to(new_user_session_path)
     end
 
-    it "shows the album's tracks to a band member" do
+    it "shows the album and its Spotify link to a band member" do
       user = create(:user)
       band = create(:band)
       create(:band_membership, band: band, user: user)
-      album = create(:album, band: band, title: "Demon's Massacre")
-      create(:track, album: album, title: "Assassin", track_number: 1)
+      album = create(:album, band: band, title: "Demon's Massacre", spotify_id: "4uLU6hMCjMI75M1A2tKUQC")
       sign_in user
 
       get band_album_path(band, album)
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Demon&#39;s Massacre")
-      expect(response.body).to include("Assassin")
+      expect(response.body).to include("Listen on Spotify")
+      expect(response.body).to include("https://open.spotify.com/album/4uLU6hMCjMI75M1A2tKUQC")
     end
 
     it "prevents a member of another band from viewing the album" do
@@ -232,15 +232,11 @@ RSpec.describe "Albums", type: :request do
     let(:fetched_album) do
       SpotifyClient::AlbumDetails.new(
         name: "Discovery",
-        cover_image_url: "https://i.scdn.co/image/discovery-cover.jpg",
-        tracks: [
-          SpotifyClient::TrackDetails.new(title: "One More Time", track_number: 1, spotify_url: "https://open.spotify.com/track/0DiWol3AO6WpXZgp0goxAV"),
-          SpotifyClient::TrackDetails.new(title: "Aerodynamic", track_number: 2, spotify_url: "https://open.spotify.com/track/2xLMifQCjDGFmkHkpNLD9h")
-        ]
+        cover_image_url: "https://i.scdn.co/image/discovery-cover.jpg"
       )
     end
 
-    it "imports the album and its tracks for a band member" do
+    it "imports the album for a band member" do
       user = create(:user)
       band = create(:band)
       create(:band_membership, band: band, user: user)
@@ -249,14 +245,27 @@ RSpec.describe "Albums", type: :request do
 
       expect {
         post band_albums_path(band), params: { spotify_album_id: "4uLU6hMCjMI75M1A2tKUQC" }
-      }.to change(Album, :count).by(1).and change(Track, :count).by(2)
+      }.to change(Album, :count).by(1)
 
       album = Album.last
       expect(album.title).to eq("Discovery")
       expect(album.band).to eq(band)
+      expect(album.spotify_id).to eq("4uLU6hMCjMI75M1A2tKUQC")
       expect(album.spotify_cover_url).to eq("https://i.scdn.co/image/discovery-cover.jpg")
-      expect(album.tracks.order(:track_number).pluck(:title)).to eq([ "One More Time", "Aerodynamic" ])
       expect(response).to redirect_to(band_path(band))
+    end
+
+    # The old import mirrored Spotify's track listing into the database.
+    it "does not create tracks" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      sign_in user
+      allow_any_instance_of(SpotifyClient).to receive(:fetch_album).and_return(fetched_album)
+
+      expect {
+        post band_albums_path(band), params: { spotify_album_id: "4uLU6hMCjMI75M1A2tKUQC" }
+      }.not_to change(Track, :count)
     end
 
     it "does not create anything when no album is selected" do
@@ -324,20 +333,16 @@ RSpec.describe "Albums", type: :request do
   end
 
   describe "PATCH /bands/:band_id/albums/:id/publish" do
-    it "publishes the album and every track that has a Spotify link" do
+    it "publishes the album" do
       user = create(:user)
       band = create(:band)
       create(:band_membership, band: band, user: user)
       album = create(:album, band: band)
-      linked_track = create(:track, album: album, spotify_url: "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC")
-      unlinked_track = create(:track, album: album, spotify_url: nil)
       sign_in user
 
       patch publish_band_album_path(band, album)
 
       expect(album.reload.status).to eq("published")
-      expect(linked_track.reload.status).to eq("published")
-      expect(unlinked_track.reload.status).to eq("draft")
       expect(response).to redirect_to(band_path(band))
     end
 
@@ -366,18 +371,16 @@ RSpec.describe "Albums", type: :request do
   end
 
   describe "PATCH /bands/:band_id/albums/:id/unpublish" do
-    it "reverts the album and all of its tracks to draft" do
+    it "reverts the album to draft" do
       user = create(:user)
       band = create(:band)
       create(:band_membership, band: band, user: user)
       album = create(:album, :published, band: band)
-      track = create(:track, :published, album: album)
       sign_in user
 
       patch unpublish_band_album_path(band, album)
 
       expect(album.reload.status).to eq("draft")
-      expect(track.reload.status).to eq("draft")
       expect(response).to redirect_to(band_path(band))
     end
 

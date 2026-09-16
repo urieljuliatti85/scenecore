@@ -26,10 +26,6 @@ class BandsController < ApplicationController
   end
 
   def show
-    # One grouped COUNT for every album's track total, instead of a
-    # COUNT per card. The cards no longer render tracks themselves, so
-    # loading the association would be wasted work.
-    @track_counts = Track.where(album: @band.albums).group(:album_id).count
     @albums = @band.albums.with_attached_cover
     @posts = @band.posts.order(created_at: :desc)
   end

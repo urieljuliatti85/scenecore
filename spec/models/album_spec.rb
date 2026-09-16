@@ -35,12 +35,16 @@ RSpec.describe Album, type: :model do
     expect(album.band).to eq(band)
   end
 
-  it "destroys its tracks when destroyed" do
-    album = create(:album)
-    track = create(:track, album: album)
+  describe "#spotify_url" do
+    it "derives the album link from the imported Spotify id" do
+      album = build(:album, spotify_id: "4aawyAB9vmqN3uQ7FjRGTy")
 
-    expect { album.destroy }.to change(Track, :count).by(-1)
-    expect { track.reload }.to raise_error(ActiveRecord::RecordNotFound)
+      expect(album.spotify_url).to eq("https://open.spotify.com/album/4aawyAB9vmqN3uQ7FjRGTy")
+    end
+
+    it "is nil for an album that was not imported from Spotify" do
+      expect(build(:album, spotify_id: nil).spotify_url).to be_nil
+    end
   end
 
   it "destroys its admin action logs when destroyed" do

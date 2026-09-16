@@ -11,8 +11,6 @@ class AlbumsController < ApplicationController
 
   def show
     authorize @album
-
-    @tracks = @album.tracks.order(:track_number)
   end
 
   def edit
@@ -97,22 +95,14 @@ class AlbumsController < ApplicationController
 
   def publish
     authorize @album
-
-    ActiveRecord::Base.transaction do
-      @album.published!
-      @album.tracks.where.not(spotify_url: [ nil, "" ]).update_all(status: Track.statuses[:published])
-    end
+    @album.published!
 
     redirect_to band_path(@band), notice: "Album published."
   end
 
   def unpublish
     authorize @album
-
-    ActiveRecord::Base.transaction do
-      @album.draft!
-      @album.tracks.update_all(status: Track.statuses[:draft])
-    end
+    @album.draft!
 
     redirect_to band_path(@band), notice: "Album unpublished."
   end
@@ -122,16 +112,10 @@ class AlbumsController < ApplicationController
   def import_album(spotify_id)
     details = SpotifyClient.new.fetch_album(spotify_id)
 
-    ActiveRecord::Base.transaction do
-      @album.title = details.name
-      @album.spotify_id = spotify_id
-      @album.spotify_cover_url = details.cover_image_url
-      @album.save!
-
-      details.tracks.each do |track|
-        @album.tracks.create!(title: track.title, track_number: track.track_number, spotify_url: track.spotify_url)
-      end
-    end
+    @album.title = details.name
+    @album.spotify_id = spotify_id
+    @album.spotify_cover_url = details.cover_image_url
+    @album.save!
 
     redirect_to band_path(@band), notice: "Album added."
   rescue ActiveRecord::RecordInvalid
