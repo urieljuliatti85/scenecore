@@ -1,11 +1,238 @@
 <section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
-  <h1 class="text-3xl font-extrabold tracking-tight mb-4">Support</h1>
-  <p class="text-neutral-300">
-    Help with your account, your band's page, or anything that is not working.
+  <h1 class="text-3xl font-extrabold tracking-tight mb-3">Support</h1>
+  <p class="text-neutral-400 mb-12">
+    Answers to the things people most often get stuck on. If yours isn't
+    here, <%= link_to "get in touch", contact_path, class: "underline hover:text-neutral-300" %>.
   </p>
-  <p class="text-neutral-500 text-sm mt-6">
-    Support channels are being set up. If you are new here,
-    <%= link_to "How it works", how_it_works_path, class: "underline hover:text-neutral-300" %>
-    covers the basics.
-  </p>
+
+  <h2 class="text-xs uppercase tracking-wide text-neutral-500 mb-4">For bands</h2>
+  <div class="mb-12">
+    <details class="group border-b border-neutral-800 py-5">
+      <summary class="cursor-pointer list-none font-semibold text-white marker:hidden flex items-start justify-between gap-4">
+        <span>I created my band but it doesn't show up publicly</span>
+        <span class="text-neutral-500 shrink-0 transition group-open:rotate-45" aria-hidden="true">+</span>
+      </summary>
+      <div class="text-neutral-300 mt-3 space-y-2">
+        <p>
+          Every new band starts as <span class="text-white">pending</span> and is
+          reviewed by the SceneCore team before it appears in
+          <%= link_to "Bands", discover_bands_path, class: "underline hover:text-white" %>
+          or at its public address.
+        </p>
+        <p>
+          You can keep working while you wait — add albums, write posts, add
+          members. It all goes live the moment your band is approved.
+        </p>
+      </div>
+    </details>
+
+    <details class="group border-b border-neutral-800 py-5">
+      <summary class="cursor-pointer list-none font-semibold text-white marker:hidden flex items-start justify-between gap-4">
+        <span>I published something but nobody can see it</span>
+        <span class="text-neutral-500 shrink-0 transition group-open:rotate-45" aria-hidden="true">+</span>
+      </summary>
+      <div class="text-neutral-300 mt-3 space-y-2">
+        <p>
+          Albums, tracks and posts are each <span class="text-white">draft</span>
+          until you publish them, and they are separate: publishing an album does
+          not publish its tracks. A draft track stays private even inside a
+          published album.
+        </p>
+        <p>
+          If a whole page is invisible, check the band itself is approved — an
+          unapproved band hides everything under it, however you set each item.
+        </p>
+      </div>
+    </details>
+
+    <details class="group border-b border-neutral-800 py-5">
+      <summary class="cursor-pointer list-none font-semibold text-white marker:hidden flex items-start justify-between gap-4">
+        <span>How do I add my albums?</span>
+        <span class="text-neutral-500 shrink-0 transition group-open:rotate-45" aria-hidden="true">+</span>
+      </summary>
+      <div class="text-neutral-300 mt-3 space-y-2">
+        <p>
+          From your band's page, search Spotify by album name and pick yours from
+          the results. The title, cover and full track list come across
+          automatically, each track keeping its link back to Spotify.
+        </p>
+        <p>
+          Imported albums arrive as drafts, so you choose when they go live.
+        </p>
+      </div>
+    </details>
+
+    <details class="group border-b border-neutral-800 py-5">
+      <summary class="cursor-pointer list-none font-semibold text-white marker:hidden flex items-start justify-between gap-4">
+        <span>Can I upload my audio files?</span>
+        <span class="text-neutral-500 shrink-0 transition group-open:rotate-45" aria-hidden="true">+</span>
+      </summary>
+      <div class="text-neutral-300 mt-3 space-y-2">
+        <p>
+          No — and that's deliberate. SceneCore doesn't host audio. Your music
+          plays through Spotify, so you keep your streams, your numbers and your
+          existing distribution exactly as they are.
+        </p>
+        <p>
+          SceneCore is where the relationship with your fans lives: your page,
+          your posts, your followers.
+        </p>
+      </div>
+    </details>
+
+    <details class="group border-b border-neutral-800 py-5">
+      <summary class="cursor-pointer list-none font-semibold text-white marker:hidden flex items-start justify-between gap-4">
+        <span>The album cover is missing or broken</span>
+        <span class="text-neutral-500 shrink-0 transition group-open:rotate-45" aria-hidden="true">+</span>
+      </summary>
+      <div class="text-neutral-300 mt-3 space-y-2">
+        <p>
+          Spotify's image links expire, so an album imported a while ago can lose
+          its cover. Open the album and use
+          <span class="text-white">Refetch from Spotify</span> to read it again.
+        </p>
+        <p>
+          You can also point at an image URL of your own, and that one takes
+          precedence from then on.
+        </p>
+      </div>
+    </details>
+
+    <details class="group border-b border-neutral-800 py-5">
+      <summary class="cursor-pointer list-none font-semibold text-white marker:hidden flex items-start justify-between gap-4">
+        <span>Who can see each post?</span>
+        <span class="text-neutral-500 shrink-0 transition group-open:rotate-45" aria-hidden="true">+</span>
+      </summary>
+      <div class="text-neutral-300 mt-3 space-y-2">
+        <p>
+          A published post is either <span class="text-white">public</span>, visible
+          to anyone, or <span class="text-white">followers</span>, visible only to
+          people who follow your band. Someone who unfollows loses access to the
+          follower posts straight away.
+        </p>
+      </div>
+    </details>
+
+    <details class="group border-b border-neutral-800 py-5">
+      <summary class="cursor-pointer list-none font-semibold text-white marker:hidden flex items-start justify-between gap-4">
+        <span>How do I add someone to my band?</span>
+        <span class="text-neutral-500 shrink-0 transition group-open:rotate-45" aria-hidden="true">+</span>
+      </summary>
+      <div class="text-neutral-300 mt-3 space-y-2">
+        <p>
+          Band administrators can add members from the band's Members page. The
+          person needs a SceneCore account first — you pick them from the list of
+          existing users, so ask them to sign up before you go looking for them.
+        </p>
+        <p>
+          Members can manage the band's content. Administrators can do that and
+          also edit the band and manage members.
+        </p>
+      </div>
+    </details>
+
+    <details class="group border-b border-neutral-800 py-5">
+      <summary class="cursor-pointer list-none font-semibold text-white marker:hidden flex items-start justify-between gap-4">
+        <span>I can't remove or demote an administrator</span>
+        <span class="text-neutral-500 shrink-0 transition group-open:rotate-45" aria-hidden="true">+</span>
+      </summary>
+      <div class="text-neutral-300 mt-3 space-y-2">
+        <p>
+          A band can never be left without an administrator, so the last one can't
+          be removed or turned into a member. Promote someone else to
+          administrator first, then make the change.
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <h2 class="text-xs uppercase tracking-wide text-neutral-500 mb-4">For fans</h2>
+  <div class="mb-12">
+    <details class="group border-b border-neutral-800 py-5">
+      <summary class="cursor-pointer list-none font-semibold text-white marker:hidden flex items-start justify-between gap-4">
+        <span>How do I follow a band?</span>
+        <span class="text-neutral-500 shrink-0 transition group-open:rotate-45" aria-hidden="true">+</span>
+      </summary>
+      <div class="text-neutral-300 mt-3 space-y-2">
+        <p>
+          Open the band's page and use Follow — you'll need an account. Following
+          unlocks that band's follower-only posts, and you can unfollow from the
+          same place at any time.
+        </p>
+      </div>
+    </details>
+
+    <details class="group border-b border-neutral-800 py-5">
+      <summary class="cursor-pointer list-none font-semibold text-white marker:hidden flex items-start justify-between gap-4">
+        <span>A band I'm looking for isn't here</span>
+        <span class="text-neutral-500 shrink-0 transition group-open:rotate-45" aria-hidden="true">+</span>
+      </summary>
+      <div class="text-neutral-300 mt-3 space-y-2">
+        <p>
+          Only approved bands appear in search and in
+          <%= link_to "Bands", discover_bands_path, class: "underline hover:text-white" %>.
+          If a band hasn't joined SceneCore yet, the band itself has to create its
+          page — we don't create pages on a band's behalf.
+        </p>
+      </div>
+    </details>
+
+    <details class="group border-b border-neutral-800 py-5">
+      <summary class="cursor-pointer list-none font-semibold text-white marker:hidden flex items-start justify-between gap-4">
+        <span>Where does the music actually play?</span>
+        <span class="text-neutral-500 shrink-0 transition group-open:rotate-45" aria-hidden="true">+</span>
+      </summary>
+      <div class="text-neutral-300 mt-3 space-y-2">
+        <p>
+          On Spotify, embedded in the band's page. Playback follows your own
+          Spotify account and its usual rules, so plays count for the band the
+          same way they always have.
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <h2 class="text-xs uppercase tracking-wide text-neutral-500 mb-4">Your account</h2>
+  <div class="mb-12">
+    <details class="group border-b border-neutral-800 py-5">
+      <summary class="cursor-pointer list-none font-semibold text-white marker:hidden flex items-start justify-between gap-4">
+        <span>I forgot my password</span>
+        <span class="text-neutral-500 shrink-0 transition group-open:rotate-45" aria-hidden="true">+</span>
+      </summary>
+      <div class="text-neutral-300 mt-3 space-y-2">
+        <p>
+          Use
+          <%= link_to "Forgot your password?", new_user_password_path, class: "underline hover:text-white" %>
+          on the sign-in page and we'll email you a reset link. Check your spam
+          folder if it doesn't arrive.
+        </p>
+      </div>
+    </details>
+
+    <details class="group border-b border-neutral-800 py-5">
+      <summary class="cursor-pointer list-none font-semibold text-white marker:hidden flex items-start justify-between gap-4">
+        <span>How do I change my name or email?</span>
+        <span class="text-neutral-500 shrink-0 transition group-open:rotate-45" aria-hidden="true">+</span>
+      </summary>
+      <div class="text-neutral-300 mt-3 space-y-2">
+        <p>
+          From your profile. One account can follow bands and belong to bands at
+          the same time — there's no need for a separate account to be a fan of
+          someone else's band.
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <div class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
+    <h2 class="font-semibold text-white mb-2">Still stuck?</h2>
+    <p class="text-neutral-300 mb-5">
+      Tell us what happened and what you expected — it gets us to an answer much
+      faster.
+    </p>
+    <div class="flex flex-wrap items-center gap-3">
+      <%= link_to "Contact us", contact_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
+      <%= link_to "How it works", how_it_works_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
+    </div>
+  </div>
 </section>
