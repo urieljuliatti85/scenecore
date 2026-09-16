@@ -68,7 +68,7 @@ Rails.application.routes.draw do
     resources :bands, only: [ :index ] do
       resources :privileges, only: [ :index, :create, :update ]
     end
-    resources :users, only: [ :index ]
+    resources :users, only: [ :index, :edit, :update, :destroy ]
     resources :memberships, only: [ :index ] do
       member do
         patch :pause

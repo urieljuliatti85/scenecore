@@ -13,9 +13,12 @@
             <p class="font-semibold text-white"><%= user.name %></p>
             <p class="text-sm text-neutral-500"><%= user.email %></p>
           </div>
-          <% if user.platform_admin? %>
-            <span class="text-xs uppercase tracking-wide text-yellow-400 border border-yellow-900 rounded-full px-3 py-1">Platform admin</span>
-          <% end %>
+          <div class="flex items-center gap-3">
+            <% if user.platform_admin? %>
+              <span class="text-xs uppercase tracking-wide text-yellow-400 border border-yellow-900 rounded-full px-3 py-1">Platform admin</span>
+            <% end %>
+            <%= link_to "Edit", edit_admin_user_path(user), class: "text-sm text-neutral-400 hover:text-white transition" %>
+          </div>
         </li>
       <% end %>
     </ul>
