@@ -11,6 +11,12 @@ class SubscriptionsController < ApplicationController
 
     level = subscription_params[:level]
     price_id = StripePriceResolver.resolve(@band, level)
+
+    # Already paying for this band: switch the existing subscription's
+    # price rather than starting a second one, which would bill the fan
+    # twice for the same band.
+    return switch_level(level, price_id) if @subscription.active? && @subscription.stripe_subscription_id.present?
+
     customer_id = StripeCustomerResolver.resolve(current_user)
 
     session = StripeClient.instance.v1.checkout.sessions.create(
@@ -54,6 +60,18 @@ class SubscriptionsController < ApplicationController
   end
 
   private
+
+  def switch_level(level, price_id)
+    StripeSubscriptionSwitcher.call(@subscription.stripe_subscription_id, price_id)
+    @subscription.update!(level: level)
+
+    membership = @band.memberships.find_by(user: current_user)
+    membership&.update!(level: level)
+
+    redirect_to public_band_path(@band.slug), notice: "Your membership level for #{@band.name} has been updated."
+  rescue StripeSubscriptionSwitcher::Error => e
+    redirect_to public_band_path(@band.slug), alert: e.message
+  end
 
   def set_band
     @band = Band.approved.find(params[:band_id])

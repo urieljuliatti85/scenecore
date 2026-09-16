@@ -124,6 +124,65 @@ RSpec.describe "Subscriptions", type: :request do
       expect(response).to redirect_to(public_band_path(band.slug))
       expect(Subscription.find_by(band: band, user: user)).to be_nil
     end
+
+    it "switches the existing Stripe subscription's price instead of starting a second subscription when the fan already has an active one" do
+      band = create(:band, :approved)
+      create(:band_membership_price, band: band, level: :supporter, stripe_price_id: "price_supporter")
+      user = create(:user)
+      subscription = create(:subscription, :active, band: band, user: user, level: :fan, stripe_subscription_id: "sub_1")
+      create(:membership, band: band, user: user, level: :fan, status: :active)
+      sign_in user
+
+      item = instance_double(Stripe::SubscriptionItem, id: "si_1", price: instance_double(Stripe::Price, id: "price_fan"))
+      items = double(data: [ item ])
+      existing_subscription = instance_double(Stripe::Subscription, items: items)
+      allow(subscriptions_service).to receive(:retrieve).with("sub_1").and_return(existing_subscription)
+      allow(subscriptions_service).to receive(:update)
+
+      post band_subscription_path(band), params: { subscription: { level: "supporter" } }
+
+      expect(subscriptions_service).to have_received(:update).with(
+        "sub_1", items: [ { id: "si_1", price: "price_supporter" } ]
+      )
+      expect(subscription.reload.level).to eq("supporter")
+      expect(Membership.find_by(band: band, user: user).level).to eq("supporter")
+      expect(response).to redirect_to(public_band_path(band.slug))
+    end
+
+    it "does not switch the subscription when the fan re-selects the level they already have" do
+      band = create(:band, :approved)
+      create(:band_membership_price, band: band, level: :fan, stripe_price_id: "price_fan")
+      user = create(:user)
+      subscription = create(:subscription, :active, band: band, user: user, level: :fan, stripe_subscription_id: "sub_1")
+      sign_in user
+
+      item = instance_double(Stripe::SubscriptionItem, id: "si_1", price: instance_double(Stripe::Price, id: "price_fan"))
+      items = double(data: [ item ])
+      existing_subscription = instance_double(Stripe::Subscription, items: items)
+      allow(subscriptions_service).to receive(:retrieve).with("sub_1").and_return(existing_subscription)
+      allow(subscriptions_service).to receive(:update)
+
+      post band_subscription_path(band), params: { subscription: { level: "fan" } }
+
+      expect(subscriptions_service).not_to have_received(:update)
+      expect(subscription.reload.level).to eq("fan")
+      expect(response).to redirect_to(public_band_path(band.slug))
+    end
+
+    it "redirects back with an alert when switching the subscription level fails on Stripe" do
+      band = create(:band, :approved)
+      create(:band_membership_price, band: band, level: :supporter, stripe_price_id: "price_supporter")
+      user = create(:user)
+      subscription = create(:subscription, :active, band: band, user: user, level: :fan, stripe_subscription_id: "sub_1")
+      sign_in user
+
+      allow(subscriptions_service).to receive(:retrieve).with("sub_1").and_raise(Stripe::InvalidRequestError.new("no such subscription", "id"))
+
+      post band_subscription_path(band), params: { subscription: { level: "supporter" } }
+
+      expect(response).to redirect_to(public_band_path(band.slug))
+      expect(subscription.reload.level).to eq("fan")
+    end
   end
 
   describe "DELETE /bands/:band_id/subscription" do
