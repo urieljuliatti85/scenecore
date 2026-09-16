@@ -142,6 +142,41 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).to include("Tickets")
     end
 
+    it "links the Music card to the albums section" do
+      band = create(:band, :approved)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("#albums")
+    end
+
+    it "links the Subscriptions card to the band's subscriptions page" do
+      band = create(:band, :approved)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include(public_band_subscriptions_path(band.slug))
+    end
+
+    it "keeps Merchandise and Tickets disabled with a Soon badge" do
+      band = create(:band, :approved)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Merchandise")
+      expect(response.body).to include("Soon")
+    end
+
+    it "does not render the membership plans on the band's main page" do
+      band = create(:band, :approved)
+      user = create(:user)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Join as Fan")
+    end
+
     it "renders the band's photo as a hero image when attached" do
       band = create(:band, :approved, name: "The Testers")
       band.photo.attach(
@@ -540,6 +575,58 @@ RSpec.describe "Public band pages", type: :request do
 
       expect(response.body).to include("Fan Poll Question")
       poll.poll_options.each { |option| expect(response.body).to include(option.label) }
+    end
+  end
+
+  describe "GET /:slug/subscriptions" do
+    it "shows the three membership levels to a signed-in user" do
+      band = create(:band, :approved, name: "The Testers")
+      user = create(:user)
+      sign_in user
+
+      get public_band_subscriptions_path(band.slug)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Join as Fan")
+      expect(response.body).to include("Join as Supporter")
+      expect(response.body).to include("Join as Core Member")
+    end
+
+    it "shows the user's current membership level and a cancel option for that plan" do
+      band = create(:band, :approved)
+      user = create(:user)
+      create(:membership, band: band, user: user, level: :supporter)
+      sign_in user
+
+      get public_band_subscriptions_path(band.slug)
+
+      expect(response.body).to include("Current plan")
+      expect(response.body).to include("Cancel plan")
+      expect(response.body).to include("Join as Fan")
+    end
+
+    it "prompts an anonymous visitor to sign in instead of showing plan buttons" do
+      band = create(:band, :approved)
+
+      get public_band_subscriptions_path(band.slug)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Sign in")
+      expect(response.body).not_to include("Join as Fan")
+    end
+
+    it "returns 404 for a band that is not approved" do
+      band = create(:band, name: "Pending Band")
+
+      get public_band_subscriptions_path(band.slug)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns 404 for a nonexistent slug" do
+      get public_band_subscriptions_path("no-such-band")
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 

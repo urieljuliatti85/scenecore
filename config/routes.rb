@@ -151,6 +151,7 @@ Rails.application.routes.draw do
   # so they don't shadow any of the routes declared above.
   constraints(slug: /[a-z0-9\-]+/) do
     get "/:slug", to: "public_bands#show", as: :public_band
+    get "/:slug/subscriptions", to: "public_bands#subscriptions", as: :public_band_subscriptions
     get "/:slug/albums/:id", to: "public_albums#show", as: :public_album
     put "/:slug/albums/:album_id/rating", to: "ratings#upsert", as: :album_rating
     put "/:slug/polls/:poll_id/vote", to: "poll_votes#upsert", as: :poll_vote
