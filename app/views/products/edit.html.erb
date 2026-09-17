@@ -1,0 +1,38 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <p class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Band Admin · Store</p>
+  <h1 class="text-3xl font-extrabold tracking-tight mb-2">Edit product</h1>
+  <p class="text-neutral-400 mb-8"><%= @product.name %></p>
+
+  <%= render "form", band: @band, product: @product, submit_label: "Save product" %>
+
+  <div class="mt-10 pt-8 border-t border-neutral-800">
+    <div class="flex items-center justify-between gap-4 mb-4">
+      <div>
+        <h2 class="text-xl font-bold text-white">Variants</h2>
+        <p class="text-sm text-neutral-500 mt-1">Price, stock and SKU are managed per variant.</p>
+      </div>
+      <%= link_to "Add variant", new_band_product_variant_path(@band, @product), class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-2 hover:border-neutral-500 transition" %>
+    </div>
+
+    <div class="space-y-3">
+      <% @product.variants.order(:id).each do |variant| %>
+        <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p class="font-semibold text-white"><%= variant.name %></p>
+            <p class="text-sm text-neutral-500 mt-1"><%= variant.sku %> · <%= number_to_currency(variant.price_cents / 100.0) %> · Stock <%= variant.stock_quantity %></p>
+          </div>
+          <div class="flex items-center gap-3">
+            <%= link_to "Edit", edit_band_product_variant_path(@band, @product, variant), class: "text-sm text-neutral-300 hover:text-white transition" %>
+            <% if @product.variants.size > 1 %>
+              <%= button_to "Delete", band_product_variant_path(@band, @product, variant), method: :delete, class: "text-sm text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this variant?" } } %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <%= link_to "← Back to products", band_products_path(@band), class: "text-sm text-neutral-400 hover:text-white transition" %>
+  </div>
+</section>
