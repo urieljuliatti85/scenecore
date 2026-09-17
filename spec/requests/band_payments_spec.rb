@@ -84,6 +84,76 @@ RSpec.describe "Band payments", type: :request do
     end
   end
 
+  # Status normally arrives by webhook. A webhook that never lands would
+  # otherwise strand the band on "onboarding" with checkout blocked and no
+  # way to correct it from the UI.
+  describe "refreshing the status from Stripe" do
+    let(:accounts_service) { instance_double(Stripe::V2::Core::AccountService) }
+    let(:core) { instance_double(Stripe::V2::CoreService, accounts: accounts_service) }
+    let(:v2) { instance_double(Stripe::V2Services, core: core) }
+    let(:stripe_client) { instance_double(Stripe::StripeClient, v2: v2) }
+
+    before do
+      allow(StripeClient).to receive(:instance).and_return(stripe_client)
+      sign_in_as_administrator
+    end
+
+    def active_account
+      double(
+        id: "acct_1",
+        configuration: double(
+          recipient: double(
+            capabilities: double(
+              stripe_balance: double(stripe_transfers: double(status: "active"))
+            )
+          )
+        )
+      )
+    end
+
+    it "promotes the band and renders the new state in the same response" do
+      band.update!(stripe_connect_status: :onboarding, stripe_connect_account_id: "acct_1")
+      allow(accounts_service).to receive(:retrieve).and_return(active_account)
+
+      get band_payments_path(band)
+
+      expect(band.reload).to be_stripe_connect_active
+      expect(response.body).to include("set up to receive payments")
+    end
+
+    # Only the state where the answer is expected to change is worth a call
+    # on every visit.
+    it "does not ask Stripe when the account is already active" do
+      band.update!(stripe_connect_status: :active, stripe_connect_account_id: "acct_1")
+      allow(accounts_service).to receive(:retrieve)
+
+      get band_payments_path(band)
+
+      expect(accounts_service).not_to have_received(:retrieve)
+    end
+
+    it "does not ask Stripe when no account exists yet" do
+      allow(accounts_service).to receive(:retrieve)
+
+      get band_payments_path(band)
+
+      expect(accounts_service).not_to have_received(:retrieve)
+    end
+
+    # This page is where the band reads what is blocked, so it has to render
+    # even when Stripe cannot be reached.
+    it "still renders when Stripe is unreachable" do
+      band.update!(stripe_connect_status: :onboarding, stripe_connect_account_id: "acct_1")
+      allow(accounts_service).to receive(:retrieve).and_raise(Stripe::APIConnectionError.new("down"))
+
+      get band_payments_path(band)
+
+      expect(response).to have_http_status(:ok)
+      expect(band.reload).to be_stripe_connect_onboarding
+      expect(response.body).to include("still needs some details")
+    end
+  end
+
   describe "what is blocked" do
     before { sign_in_as_administrator }
 
