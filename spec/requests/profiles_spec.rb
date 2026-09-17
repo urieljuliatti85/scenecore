@@ -17,6 +17,63 @@ RSpec.describe "Profiles", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Alice")
     end
+
+    it "opens on the details tab" do
+      sign_in create(:user, name: "Alice")
+
+      get profile_path
+
+      active = Nokogiri::HTML(response.body).css("a[aria-current='page']")
+
+      expect(active.text).to include("Details")
+    end
+
+    it "shows the user's subscriptions on the subscriptions tab" do
+      user = create(:user)
+      band = create(:band, :approved, name: "The Testers")
+      create(:subscription, user: user, band: band, level: :fan, status: :active)
+      sign_in user
+
+      get profile_path(tab: "subscriptions")
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("The Testers")
+      expect(Nokogiri::HTML(response.body).css("a[aria-current='page']").text).to include("Your Subscriptions")
+    end
+
+    it "lets a fan cancel from the subscriptions tab" do
+      user = create(:user)
+      band = create(:band, :approved)
+      create(:subscription, user: user, band: band, level: :fan, status: :active)
+      sign_in user
+
+      get profile_path(tab: "subscriptions")
+
+      expect(response.body).to include(band_subscription_path(band))
+    end
+
+    it "does not leak another user's subscriptions" do
+      user = create(:user)
+      other = create(:user)
+      band = create(:band, :approved, name: "Not Yours")
+      create(:subscription, user: other, band: band, level: :fan, status: :active)
+      sign_in user
+
+      get profile_path(tab: "subscriptions")
+
+      expect(response.body).not_to include("Not Yours")
+    end
+
+    # The tab comes straight from the query string, so an unknown value has
+    # to fall back rather than reach a render call with it.
+    it "falls back to details for an unknown tab" do
+      sign_in create(:user, name: "Alice")
+
+      get profile_path(tab: "nope")
+
+      expect(response).to have_http_status(:ok)
+      expect(Nokogiri::HTML(response.body).css("a[aria-current='page']").text).to include("Details")
+    end
   end
 
   describe "PATCH /profile" do
