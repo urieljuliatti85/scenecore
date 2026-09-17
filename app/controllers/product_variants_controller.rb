@@ -36,11 +36,10 @@ class ProductVariantsController < ApplicationController
   def destroy
     authorize @variant
 
-    if @product.variants.count <= 1
-      redirect_to edit_band_product_path(@band, @product), alert: "A product must keep at least one variant."
-    else
-      @variant.destroy!
+    if @variant.destroy
       redirect_to edit_band_product_path(@band, @product), notice: "Variant deleted."
+    else
+      redirect_to edit_band_product_path(@band, @product), alert: "A product must keep at least one variant."
     end
   end
 

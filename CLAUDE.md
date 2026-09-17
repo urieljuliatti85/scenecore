@@ -113,7 +113,17 @@ bundle exec rspec                                              # full suite
 bundle exec rspec spec/models/band_spec.rb                     # single file
 bundle exec rspec spec/models/band_spec.rb:42                  # single example by line
 bundle exec rspec --exclude-pattern "spec/system/**/*_spec.rb" # skip browser-driven specs
+bundle exec rspec spec/system                                  # system specs only (see note below)
 ```
+
+System specs need `bin/rails tailwindcss:build` run first if
+`app/assets/builds/tailwind.css` isn't already present (it's gitignored and
+normally produced by `bin/dev`'s watcher). Without it, pages render with no
+stylesheet, and assertions that rely on a Tailwind class (e.g. `hidden`) to
+detect visibility can pass or fail for the wrong reason. `spec/system/band_member_invite_spec.rb`
+has a long-standing, unexplained flake that only reproduces when the full
+system suite runs in one process — CI splits it into its own run as
+mitigation (see `.github/workflows/ci.yml`), not a fix.
 
 Lint (RuboCop, Rails Omakase style) and security scans (mirrors CI in `.github/workflows/ci.yml`):
 
@@ -154,11 +164,30 @@ Key patterns already established in code:
 - **`HasImage`** (`app/models/concerns/has_image.rb`) is the shared pattern
   for `has_one_attached` image fields with content-type/size validation;
   reuse it for new image attachments instead of re-validating ad hoc.
-- **Spotify integration** (`app/services/spotify_client.rb`) is the only
-  external API call in the app. It uses Client Credentials OAuth (no
-  user-level Spotify auth) and caches the access token in `Rails.cache`.
-  Track/album audio is never hosted by SceneCore — playback links out to
-  Spotify.
+- **External integrations** live in `app/services/`, each behind its own
+  client/resolver rather than called inline from a controller, each with its
+  own `Error` class so a failure surfaces predictably instead of a raw HTTP
+  or gem exception.
+  - **Spotify** (`spotify_client.rb`): Client Credentials OAuth (no
+    user-level Spotify auth), access token cached in `Rails.cache`.
+    Track/album audio is never hosted by SceneCore — playback links out to
+    Spotify.
+  - **Discogs** (`discogs_client.rb`, `ConfigurationError`) and
+    **Google Analytics** (`google_analytics_client.rb`, `self.configured?`)
+    are optional integrations: a missing credential degrades a single
+    feature (Store metadata import, the admin traffic dashboard) instead of
+    failing the whole request.
+  - **Stripe** (`stripe_client.rb` plus the `stripe_*` services): every
+    caller builds a client from credentials via `StripeClient.instance`
+    rather than the deprecated global `Stripe.api_key = ...` pattern.
+    Connect accounts are created through the **v2** API
+    (`stripe_connect_onboarding_resolver.rb`) — Stripe rejects v1 account
+    creation (`type: "express"`) for new integrations. Requesting the
+    `recipient.stripe_transfers` capability requires `merchant.card_payments`
+    to also be requested on the same account, even though SceneCore never
+    uses direct card payments on the connected account; omitting it leaves
+    transfers disabled. Webhooks (`stripe_webhooks_controller.rb`) verify
+    signatures and enforce idempotency — see Security below.
 - **Slugs**: bands are addressed publicly by a generated, unique slug (see
   `Band#generate_slug`), not `id`. Public routes (`/:slug`,
   `/:slug/albums/:id`) are declared last in `config/routes.rb` so they don't
@@ -173,7 +202,7 @@ Reference docs worth reading before touching a given area:
 - `docs/product.md` — MVP scope
 - `docs/permissions.md` — role matrix: Visitor/Fan/Band Member/Band Administrator/Platform Administrator
 - `docs/database.md` — data model/rules per table
-- `docs/payments.md` — money/webhook rules for the not-yet-built commerce area
+- `docs/payments.md` — money/webhook rules for Store checkout and subscriptions (Stripe Connect, ADR-007/ADR-008)
 - `docs/decisions.md` — ADRs
 - `docs/deployment.md` — Railway-based deploy flow
 - `docs/band-admin.md`, `docs/memberships.md`, `docs/community.md` — feature specs for those domains
@@ -211,6 +240,19 @@ Never implement a feature immediately when the task is ambiguous.
 - Add database constraints where appropriate.
 - Never rely exclusively on model validations for data integrity.
 - Do not change existing data structures without explaining the impact.
+- Adding a `null: false` column to a table that already has rows needs
+  three steps in one migration — add it nullable, backfill, then enforce
+  the constraint — rather than `add_column ... null: false, default: ...`,
+  which rewrites every row while holding a lock. Use `up`/`down` instead
+  of `change` when the backfill makes the migration irreversible by
+  inspection. This applies to the next such column, not retroactively:
+  a migration already applied is never re-run, so rewriting it only makes
+  the file disagree with what the database actually did.
+- Regenerate `db/schema.rb` whenever a migration is added and commit it
+  with the migration. `db:test:prepare` loads `schema.rb` directly rather
+  than replaying migrations, so a stale dump silently produces a database
+  missing that migration's changes — and the version stamp can sit *after*
+  the migration while the table definition never received it.
 
 ## Authorization
 
