@@ -17,6 +17,7 @@ class User < ApplicationRecord
   has_many :core_session_rsvps, dependent: :destroy
   has_many :direct_message_threads, dependent: :destroy
   has_many :direct_messages, dependent: :destroy
+  has_many :reports, foreign_key: :reporter_id, inverse_of: :reporter, dependent: :destroy
 
   validates :name, presence: true
 

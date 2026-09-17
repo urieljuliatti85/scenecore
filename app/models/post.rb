@@ -5,6 +5,7 @@ class Post < ApplicationRecord
 
   belongs_to :band
   has_many :comments, dependent: :destroy
+  has_many :reports, as: :reportable, dependent: :destroy
 
   has_image :image
   has_attachments :attachments
