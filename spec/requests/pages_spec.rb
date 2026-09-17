@@ -309,5 +309,24 @@ RSpec.describe "Pages", type: :request do
       expect(response.body).to include("15% to SceneCore")
       expect(response.body).to include("10% to SceneCore")
     end
+
+    # Exactly one plan carries the highlight. Two would leave a visitor with
+    # no recommendation, which is the whole point of marking one.
+    it "highlights a single membership plan" do
+      get how_it_works_path
+
+      doc = Nokogiri::HTML(response.body)
+
+      expect(doc.css("[class*='bg-yellow-400/10']").size).to eq(1)
+    end
+
+    it "presents every section in a card" do
+      get how_it_works_path
+
+      doc = Nokogiri::HTML(response.body)
+
+      # Two audience cards, three plans, five money-side cards.
+      expect(doc.css("div.rounded-3xl").size).to eq(10)
+    end
   end
 end

@@ -1,0 +1,13 @@
+<%# The reference fills the check on the highlighted plan and leaves it as a
+    thin stroke elsewhere, so the recommended tier reads as the fuller list
+    at a glance. Decorative: the benefit text beside it carries the meaning. %>
+<% highlighted = local_assigns.fetch(:highlighted, false) %>
+<% if highlighted %>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 shrink-0 mt-0.5 text-yellow-400" aria-hidden="true">
+    <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
+  </svg>
+<% else %>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 shrink-0 mt-0.5 text-neutral-500" aria-hidden="true">
+    <path d="M4 12.5 9 17.5 20 6.5" />
+  </svg>
+<% end %>
