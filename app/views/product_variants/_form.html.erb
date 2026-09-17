@@ -1,0 +1,32 @@
+<%= form_with model: [ band, product, variant ], class: "flex flex-col gap-5" do |form| %>
+  <% if variant.errors.any? %>
+    <ul class="rounded-xl border border-red-900 bg-red-950/40 text-red-400 text-sm p-4 space-y-1">
+      <% variant.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div>
+    <%= form.label :name, "Variant name", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.text_field :name, required: true, placeholder: "M / Black", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5" %>
+  </div>
+
+  <div>
+    <%= form.label :sku, "SKU", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.text_field :sku, required: true, placeholder: "TEE-BLK-M", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5" %>
+  </div>
+
+  <div class="grid sm:grid-cols-2 gap-4">
+    <div>
+      <%= form.label :price_cents, "Price (cents)", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.number_field :price_cents, required: true, min: 0, step: 1, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5" %>
+    </div>
+    <div>
+      <%= form.label :stock_quantity, "Stock", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.number_field :stock_quantity, required: true, min: 0, step: 1, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5" %>
+    </div>
+  </div>
+
+  <%= form.submit submit_label, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition cursor-pointer self-start" %>
+<% end %>
