@@ -1,4 +1,8 @@
-<%= form_with model: [ band, product, variant ], class: "flex flex-col gap-5" do |form| %>
+<%= form_with model: variant,
+      scope: :product_variant,
+      url: variant.new_record? ? band_product_variants_path(band, product) : band_product_variant_path(band, product, variant),
+      method: variant.new_record? ? :post : :patch,
+      class: "flex flex-col gap-5" do |form| %>
   <% if variant.errors.any? %>
     <ul class="rounded-xl border border-red-900 bg-red-950/40 text-red-400 text-sm p-4 space-y-1">
       <% variant.errors.full_messages.each do |message| %>
