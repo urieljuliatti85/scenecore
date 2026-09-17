@@ -13,6 +13,9 @@ class ProductsController < ApplicationController
     @products = @band.products.includes(:variants).order(created_at: :desc)
   rescue DiscogsClient::ConfigurationError
     render json: { error: "Discogs integration is not configured." }, status: :service_unavailable
+  rescue DiscogsClient::ApiError => e
+    Rails.logger.warn("Discogs search failed with HTTP #{e.status}")
+    render json: { error: discogs_api_error_message(e.status) }, status: discogs_http_status(e.status)
   rescue DiscogsClient::Error
     render json: { error: "Discogs search is unavailable right now." }, status: :bad_gateway
   end
@@ -45,6 +48,10 @@ class ProductsController < ApplicationController
   rescue DiscogsClient::ConfigurationError
     @product.errors.add(:base, "Discogs integration is not configured.")
     render :new, status: :service_unavailable
+  rescue DiscogsClient::ApiError => e
+    Rails.logger.warn("Discogs release import failed with HTTP #{e.status}")
+    @product.errors.add(:base, discogs_api_error_message(e.status))
+    render :new, status: discogs_http_status(e.status)
   rescue DiscogsClient::Error
     @product.errors.add(:base, "Could not import this release from Discogs. Please try again.")
     render :new, status: :bad_gateway
@@ -105,6 +112,21 @@ class ProductsController < ApplicationController
       discogs_metadata: details.metadata,
       discogs_synced_at: Time.current
     )
+  end
+
+  def discogs_api_error_message(status)
+    case status.to_i
+    when 401, 403
+      "Discogs credentials were rejected. Check the Discogs credentials configured for SceneCore."
+    when 429
+      "Discogs rate limit reached. Please try again shortly."
+    else
+      "Discogs search is unavailable right now."
+    end
+  end
+
+  def discogs_http_status(status)
+    status.to_i == 429 ? :too_many_requests : :bad_gateway
   end
 
   def set_band
