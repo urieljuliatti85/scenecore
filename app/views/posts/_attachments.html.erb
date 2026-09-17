@@ -1,0 +1,29 @@
+<%# A band's attachments are WAV, MP3 or PDF (HasAttachments). Audio gets a
+    player: a post whose whole point is a rehearsal recording should let a
+    fan hear it without downloading a file first. The download link stays
+    alongside, since owning the file is part of what a supporter is paying
+    for. %>
+<ul class="flex flex-col gap-3">
+  <% attachments.each do |attachment| %>
+    <li>
+      <% if attachment.content_type.in?(HasAttachments::AUDIO_CONTENT_TYPES) %>
+        <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-3">
+          <p class="text-sm text-neutral-300 mb-2 truncate"><%= attachment.filename %></p>
+          <audio controls preload="none" class="w-full"
+                 src="<%= rails_blob_path(attachment) %>">
+            <%= link_to "Download #{attachment.filename}", rails_blob_path(attachment, disposition: "attachment"), class: "text-sm text-yellow-400 hover:text-yellow-300 transition" %>
+          </audio>
+          <%= link_to "Download", rails_blob_path(attachment, disposition: "attachment"), class: "inline-block mt-2 text-xs text-neutral-500 hover:text-neutral-300 transition" %>
+        </div>
+      <% else %>
+        <%= link_to rails_blob_path(attachment, disposition: "attachment"),
+              class: "flex items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2.5 hover:border-neutral-700 transition group" do %>
+          <span class="font-mono text-[10px] uppercase tracking-wider text-neutral-500 border border-neutral-800 rounded px-1.5 py-0.5 shrink-0">
+            <%= File.extname(attachment.filename.to_s).delete(".").presence || "file" %>
+          </span>
+          <span class="text-sm text-yellow-400 group-hover:text-yellow-300 transition truncate"><%= attachment.filename %></span>
+        <% end %>
+      <% end %>
+    </li>
+  <% end %>
+</ul>

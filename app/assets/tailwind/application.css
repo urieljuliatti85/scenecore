@@ -78,9 +78,28 @@ trix-editor a {
   text-decoration: underline;
 }
 
+/* Rich text written in Trix renders as plain HTML tags, and Tailwind's
+   Preflight strips every default those tags rely on — margins, list
+   markers, bold. Without restoring them here a post's paragraphs run
+   together into one block, its lists lose their bullets and its bold text
+   reads as normal weight. Scoped to .trix-content so it only affects
+   band-authored content, never the app's own markup.
+
+   Sizes are em-relative so a post reads correctly wherever it is placed,
+   which is why the container must set a base size rather than forcing
+   text-sm on the wrapper. */
 .trix-content {
   color: #d4d4d4;
-  line-height: 1.6;
+  line-height: 1.7;
+  font-size: 0.9375rem;
+}
+
+.trix-content > *:first-child {
+  margin-top: 0;
+}
+
+.trix-content > *:last-child {
+  margin-bottom: 0;
 }
 
 .trix-content a {
@@ -88,23 +107,103 @@ trix-editor a {
   text-decoration: underline;
 }
 
+.trix-content p,
+.trix-content div {
+  margin-bottom: 1em;
+}
+
 .trix-content h1 {
   font-size: 1.5em;
   font-weight: 700;
+  color: #fff;
+  margin-top: 1.5em;
   margin-bottom: 0.5em;
+}
+
+.trix-content h2 {
+  font-size: 1.25em;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.trix-content strong,
+.trix-content b {
+  font-weight: 700;
+  color: #fff;
+}
+
+.trix-content em,
+.trix-content i {
+  font-style: italic;
+}
+
+.trix-content del {
+  text-decoration: line-through;
+  color: #a3a3a3;
 }
 
 .trix-content blockquote {
   border-left: 0.25em solid #404040;
   padding-left: 1em;
   color: #a3a3a3;
+  margin: 1.25em 0;
+  font-style: italic;
 }
 
 .trix-content ul,
 .trix-content ol {
   padding-left: 1.5em;
+  margin: 1em 0;
+}
+
+.trix-content ul {
+  list-style: disc;
+}
+
+.trix-content ol {
+  list-style: decimal;
+}
+
+.trix-content li {
+  margin-bottom: 0.375em;
+}
+
+/* Trix nests a <ul> inside an <li> for indented lists, so the nested one
+   must not repeat the outer margin. */
+.trix-content li > ul,
+.trix-content li > ol {
+  margin: 0.375em 0 0;
+}
+
+.trix-content pre {
+  background: #0a0a0a;
+  border: 1px solid #262626;
+  border-radius: 0.5rem;
+  padding: 0.875em 1em;
+  margin: 1.25em 0;
+  overflow-x: auto;
+  font-size: 0.875em;
+  white-space: pre-wrap;
 }
 
 .trix-content img {
   border-radius: 0.75rem;
+  margin: 1.25em 0;
+}
+
+/* An uploaded file Trix could not preview. */
+.trix-content .attachment--file {
+  border: 1px solid #262626;
+  border-radius: 0.5rem;
+  padding: 0.625em 0.875em;
+  margin: 1em 0;
+}
+
+.trix-content .attachment__caption {
+  font-size: 0.875em;
+  color: #a3a3a3;
+  text-align: center;
+  margin-top: 0.5em;
 }

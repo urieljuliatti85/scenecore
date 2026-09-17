@@ -4,6 +4,10 @@ module HasAttachments
   ATTACHMENT_CONTENT_TYPES = %w[audio/wav audio/mpeg audio/mp3 application/pdf].freeze
   ATTACHMENT_MAX_SIZE = 25.megabytes
 
+  # Audio is the point of most attachments here — a rehearsal recording or a
+  # demo — so views give it a player rather than a download link.
+  AUDIO_CONTENT_TYPES = %w[audio/wav audio/mpeg audio/mp3].freeze
+
   class_methods do
     def has_attachments(name)
       has_many_attached name
