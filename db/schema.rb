@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_061951) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_063503) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -309,6 +309,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_061951) do
   create_table "posts", force: :cascade do |t|
     t.bigint "band_id", null: false
     t.datetime "created_at", null: false
+    t.string "early_access_level"
+    t.datetime "early_access_until"
     t.string "post_type", default: "announcement", null: false
     t.string "status", default: "draft", null: false
     t.string "title", null: false
@@ -316,6 +318,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_061951) do
     t.string "visibility", default: "public", null: false
     t.index ["band_id", "status", "visibility"], name: "index_posts_on_band_id_and_status_and_visibility"
     t.index ["band_id"], name: "index_posts_on_band_id"
+    t.check_constraint "early_access_level IS NULL OR (early_access_level::text = ANY (ARRAY['fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[]))", name: "posts_early_access_level_check"
     t.check_constraint "post_type::text = ANY (ARRAY['announcement'::character varying, 'composition_journal'::character varying]::text[])", name: "posts_post_type_check"
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "posts_status_check"
     t.check_constraint "visibility::text = ANY (ARRAY['public'::character varying, 'followers'::character varying, 'fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[])", name: "posts_visibility_check"

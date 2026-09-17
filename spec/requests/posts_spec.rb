@@ -204,6 +204,21 @@ RSpec.describe "Posts", type: :request do
       expect(post_record.reload.title).to eq("Old title")
       expect(response).to redirect_to(root_path)
     end
+
+    it "lets a band member configure early access" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      post_record = create(:post, band: band)
+      sign_in user
+
+      patch band_post_path(band, post_record), params: { post: { early_access_level: "supporter", early_access_until: 1.day.from_now } }
+
+      expect(response).to redirect_to(band_path(band))
+      post_record.reload
+      expect(post_record.early_access_level).to eq("supporter")
+      expect(post_record.early_access_until).to be_present
+    end
   end
 
   describe "DELETE /bands/:band_id/posts/:id" do
