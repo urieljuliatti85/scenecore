@@ -1,11 +1,12 @@
 require "rails_helper"
 
 RSpec.describe StripeConnectOnboardingResolver do
-  let(:accounts_service) { instance_double(Stripe::AccountService) }
-  let(:account_links_service) { instance_double(Stripe::AccountLinkService) }
-  let(:v1) { instance_double(Stripe::V1Services, accounts: accounts_service, account_links: account_links_service) }
-  let(:stripe_client) { instance_double(Stripe::StripeClient, v1: v1) }
-  let(:link) { instance_double(Stripe::AccountLink, url: "https://connect.stripe.com/setup/x") }
+  let(:accounts_service) { instance_double(Stripe::V2::Core::AccountService) }
+  let(:account_links_service) { instance_double(Stripe::V2::Core::AccountLinkService) }
+  let(:core) { instance_double(Stripe::V2::CoreService, accounts: accounts_service, account_links: account_links_service) }
+  let(:v2) { instance_double(Stripe::V2Services, core: core) }
+  let(:stripe_client) { instance_double(Stripe::StripeClient, v2: v2) }
+  let(:link) { instance_double(Stripe::V2::Core::AccountLink, url: "https://connect.stripe.com/setup/x") }
 
   before do
     allow(StripeClient).to receive(:instance).and_return(stripe_client)
@@ -19,11 +20,50 @@ RSpec.describe StripeConnectOnboardingResolver do
   describe ".resolve" do
     it "creates a connected account and persists its id when the band has none" do
       band = create(:band, stripe_connect_account_id: nil)
-      allow(accounts_service).to receive(:create).and_return(instance_double(Stripe::Account, id: "acct_new"))
+      allow(accounts_service).to receive(:create).and_return(double(id: "acct_new"))
 
       expect(resolve(band)).to eq("https://connect.stripe.com/setup/x")
       expect(band.reload.stripe_connect_account_id).to eq("acct_new")
       expect(band).to be_stripe_connect_onboarding
+    end
+
+    # Stripe rejects v1 account creation for new integrations, and the v2
+    # shape replaces `type: "express"` with three independent dimensions.
+    it "creates the account through the v2 API" do
+      band = create(:band, stripe_connect_account_id: nil)
+      allow(accounts_service).to receive(:create).and_return(double(id: "acct_new"))
+
+      resolve(band)
+
+      expect(accounts_service).to have_received(:create).with(
+        hash_including(
+          dashboard: "express",
+          defaults: {
+            responsibilities: {
+              fees_collector: "application",
+              losses_collector: "application"
+            }
+          }
+        )
+      )
+    end
+
+    # SceneCore is merchant of record and the band receives transfers, so
+    # the account needs the transfer capability and not card_payments —
+    # requesting the latter would lengthen onboarding for something the
+    # band never uses.
+    it "requests the transfer capability rather than card payments" do
+      band = create(:band, stripe_connect_account_id: nil)
+      allow(accounts_service).to receive(:create).and_return(double(id: "acct_new"))
+
+      resolve(band)
+
+      expect(accounts_service).to have_received(:create) do |args|
+        recipient = args[:configuration][:recipient]
+
+        expect(recipient[:capabilities][:stripe_balance][:stripe_transfers]).to eq(requested: true)
+        expect(args[:configuration]).not_to have_key(:merchant)
+      end
     end
 
     it "reuses the existing connected account instead of creating a second one" do
@@ -41,13 +81,14 @@ RSpec.describe StripeConnectOnboardingResolver do
 
       resolve(band)
 
-      expect(account_links_service).to have_received(:create).with(
-        hash_including(
-          type: "account_onboarding",
-          return_url: "https://app.test/return",
-          refresh_url: "https://app.test/refresh"
-        )
-      )
+      expect(account_links_service).to have_received(:create) do |args|
+        onboarding = args[:use_case][:account_onboarding]
+
+        expect(args[:use_case][:type]).to eq("account_onboarding")
+        expect(onboarding[:configurations]).to eq([ "recipient" ])
+        expect(onboarding[:return_url]).to eq("https://app.test/return")
+        expect(onboarding[:refresh_url]).to eq("https://app.test/refresh")
+      end
     end
 
     # A band that already finished onboarding may revisit the link (e.g.
