@@ -9,6 +9,12 @@
 class StripeConnectOnboardingResolver
   Error = Class.new(StandardError)
 
+  # Accounts v2 requires identity.country before a recipient configuration
+  # can be applied. SceneCore currently operates Connect from Brazil; keep
+  # this configurable so another deployment can choose its account country
+  # without changing application code.
+  CONNECT_COUNTRY = ENV.fetch("STRIPE_CONNECT_COUNTRY", "BR").upcase.freeze
+
   # SceneCore runs checkout on the band's behalf and takes a cut, which is
   # the marketplace shape: the platform is merchant of record, so it owns
   # pricing and absorbs negative balances, and the band gets the
@@ -82,6 +88,7 @@ class StripeConnectOnboardingResolver
     account = StripeClient.instance.v2.core.accounts.create(
       **ACCOUNT_CONFIGURATION,
       contact_email: @contact_email,
+      identity: { country: CONNECT_COUNTRY },
       configuration: RECIPIENT_CONFIGURATION,
       metadata: { band_id: @band.id.to_s }
     )
