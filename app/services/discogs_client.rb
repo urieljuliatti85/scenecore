@@ -108,7 +108,7 @@ class DiscogsClient
 
     request = Net::HTTP::Get.new(uri)
     request["User-Agent"] = USER_AGENT
-    request["Authorization"] = "Discogs token=#{token}"
+    request["Authorization"] = authorization_header
 
     response = perform(uri, request)
     raise Error, "Discogs API request failed: #{response.code}" unless response.is_a?(Net::HTTPSuccess)
@@ -116,11 +116,19 @@ class DiscogsClient
     parse(response)
   end
 
-  def token
-    value = Rails.application.credentials.dig(:discogs, :token).presence || ENV["DISCOGS_TOKEN"].presence
-    return value if value
+  def authorization_header
+    token = credential(:token, "DISCOGS_TOKEN")
+    return "Discogs token=#{token}" if token
 
-    raise ConfigurationError, "Discogs API token is not configured"
+    key = credential(:consumer_key, "DISCOGS_CONSUMER_KEY")
+    secret = credential(:consumer_secret, "DISCOGS_CONSUMER_SECRET")
+    return "Discogs key=#{key}, secret=#{secret}" if key && secret
+
+    raise ConfigurationError, "Discogs API credentials are not configured"
+  end
+
+  def credential(name, env_name)
+    Rails.application.credentials.dig(:discogs, name).presence || ENV[env_name].presence
   end
 
   def perform(uri, request)
