@@ -92,9 +92,25 @@ RSpec.describe DiscogsClient do
   end
 
   describe "configuration" do
-    it "raises a configuration error when no token is available" do
-      allow(Rails.application.credentials).to receive(:dig).with(:discogs, :token).and_return(nil)
+    it "uses consumer key and secret when a personal token is not configured" do
+      allow(Rails.application.credentials).to receive(:dig).and_return(nil)
+      allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with("DISCOGS_TOKEN").and_return(nil)
+      allow(ENV).to receive(:[]).with("DISCOGS_CONSUMER_KEY").and_return("consumer-key")
+      allow(ENV).to receive(:[]).with("DISCOGS_CONSUMER_SECRET").and_return("consumer-secret")
+      stub_http_response(body: { results: [] })
+
+      client.search_releases("Record")
+
+      expect(Net::HTTP).to have_received(:start)
+    end
+
+    it "raises a configuration error when no credentials are available" do
+      allow(Rails.application.credentials).to receive(:dig).and_return(nil)
+      allow(ENV).to receive(:[]).and_call_original
+      allow(ENV).to receive(:[]).with("DISCOGS_TOKEN").and_return(nil)
+      allow(ENV).to receive(:[]).with("DISCOGS_CONSUMER_KEY").and_return(nil)
+      allow(ENV).to receive(:[]).with("DISCOGS_CONSUMER_SECRET").and_return(nil)
 
       expect { client.search_releases("Record") }.to raise_error(DiscogsClient::ConfigurationError)
     end
