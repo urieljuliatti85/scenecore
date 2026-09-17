@@ -296,7 +296,7 @@ RSpec.describe "Public band pages", type: :request do
 
       get public_band_path(band.slug)
 
-      expect(response.body).to include("No music, posts or shows published yet")
+      expect(response.body).to include("No music, merch, posts or shows published yet")
     end
 
     it "does not show the empty state when the band has a published album" do
@@ -305,7 +305,7 @@ RSpec.describe "Public band pages", type: :request do
 
       get public_band_path(band.slug)
 
-      expect(response.body).not_to include("No music, posts or shows published yet")
+      expect(response.body).not_to include("No music, merch, posts or shows published yet")
     end
 
     it "does not show the empty state when the band has a published post" do
@@ -314,7 +314,16 @@ RSpec.describe "Public band pages", type: :request do
 
       get public_band_path(band.slug)
 
-      expect(response.body).not_to include("No music, posts or shows published yet")
+      expect(response.body).not_to include("No music, merch, posts or shows published yet")
+    end
+
+    it "does not show the empty state when the band has a published product" do
+      band = create(:band, :approved)
+      create(:product, :published, band: band)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("No music, merch, posts or shows published yet")
     end
 
     it "shows the follower count" do
@@ -689,7 +698,7 @@ RSpec.describe "Public band pages", type: :request do
 
       get public_band_path(band.slug)
 
-      expect(response.body).not_to include("No music, posts or shows published yet")
+      expect(response.body).not_to include("No music, merch, posts or shows published yet")
     end
 
     it "shows a published poll's question to an anonymous visitor" do
