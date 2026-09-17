@@ -13,9 +13,22 @@ class ProductsController < ApplicationController
     authorize @product
   end
 
+  def discogs_search
+    authorize @band, :create?, policy_class: ProductPolicy
+
+    results = DiscogsClient.new.search_releases(params[:q])
+    render json: results.map(&:to_h)
+  rescue DiscogsClient::ConfigurationError
+    render json: { error: "Discogs integration is not configured." }, status: :service_unavailable
+  rescue DiscogsClient::Error
+    render json: { error: "Discogs search is unavailable right now." }, status: :bad_gateway
+  end
+
   def create
     @product = @band.products.new(product_params)
     authorize @product
+
+    import_from_discogs if params[:discogs_release_id].present?
 
     if @product.variants.empty?
       @product.errors.add(:variants, "must include at least one variant")
@@ -24,11 +37,18 @@ class ProductsController < ApplicationController
     end
 
     if @product.save
-      redirect_to band_products_path(@band), notice: "Product created."
+      notice = @product.discogs? ? "Product imported from Discogs." : "Product created."
+      redirect_to band_products_path(@band), notice: notice
     else
       @product.variants.build(name: "Default", stock_quantity: 0) if @product.variants.empty?
       render :new, status: :unprocessable_entity
     end
+  rescue DiscogsClient::ConfigurationError
+    @product.errors.add(:base, "Discogs integration is not configured.")
+    render :new, status: :service_unavailable
+  rescue DiscogsClient::Error
+    @product.errors.add(:base, "Could not import this release from Discogs. Please try again.")
+    render :new, status: :bad_gateway
   end
 
   def edit
@@ -69,6 +89,24 @@ class ProductsController < ApplicationController
   end
 
   private
+
+  def import_from_discogs
+    details = DiscogsClient.new.fetch_release(params[:discogs_release_id])
+
+    @product.assign_attributes(
+      source: :discogs,
+      discogs_release_id: details.discogs_release_id,
+      name: details.title,
+      artist_name: details.artist,
+      release_year: details.year,
+      release_format: details.format,
+      label_name: details.label,
+      catalog_number: details.catalog_number,
+      barcode: details.barcode,
+      discogs_metadata: details.metadata,
+      discogs_synced_at: Time.current
+    )
+  end
 
   def set_band
     @band = Band.find(params[:band_id])
