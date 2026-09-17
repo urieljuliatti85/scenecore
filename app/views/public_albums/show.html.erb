@@ -43,6 +43,22 @@
     </div>
   </div>
 
+  <%# Spotify's own embed, so the audio stays on Spotify and SceneCore never
+      hosts it (docs/product.md §5). The src is built from a literal plus the
+      validated id, the same way the "Listen on Spotify" href above is. %>
+  <% if (spotify_album_id = @album.spotify_link_id) %>
+    <div class="mt-6">
+      <iframe
+        style="border-radius: 12px"
+        src="https://open.spotify.com/embed/album/<%= spotify_album_id %>"
+        width="100%" height="352" frameborder="0"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy"
+        title="Spotify player for <%= @album.title %>"
+      ></iframe>
+    </div>
+  <% end %>
+
   <%# The src is assembled from the validated, re-checked embed URL, so the
       scheme and host are fixed to bandcamp.com. See Album#bandcamp_embed_link. %>
   <% if (bandcamp_embed_url = @album.bandcamp_embed_link) %>
