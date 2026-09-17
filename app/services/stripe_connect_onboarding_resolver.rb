@@ -25,10 +25,10 @@ class StripeConnectOnboardingResolver
     }
   }.freeze
 
-  # Stripe Accounts v2 requires merchant card_payments when requesting
-  # recipient stripe_transfers. SceneCore still routes checkout through the
-  # platform, but both configurations must exist on the connected account
-  # for transfers to be enabled.
+  # Accounts v2 requires merchant.card_payments whenever recipient
+  # stripe_transfers is requested. Both configurations therefore belong on
+  # the connected account even though SceneCore initiates checkout on the
+  # platform side and transfers the band's share through Connect.
   CONNECT_CONFIGURATION = {
     merchant: {
       capabilities: {
