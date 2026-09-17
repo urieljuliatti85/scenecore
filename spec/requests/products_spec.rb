@@ -26,6 +26,19 @@ RSpec.describe "Band Admin products", type: :request do
       expect(response).to redirect_to(band_products_path(band))
     end
 
+    it "requires the first variant when creating a product" do
+      band = create(:band)
+      admin = create(:user)
+      create(:band_membership, :administrator, band: band, user: admin)
+      sign_in admin
+
+      expect {
+        post band_products_path(band), params: { product: { name: "Incomplete product" } }
+      }.not_to change(Product, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
     it "does not let a plain band member manage products" do
       band = create(:band)
       member = create(:user)
