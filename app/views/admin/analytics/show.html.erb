@@ -1,12 +1,12 @@
 <% content_for :title, "Analytics — Admin — SceneCore" %>
 
 <div class="max-w-6xl">
-  <div class="flex flex-wrap items-center justify-between gap-4 mb-2">
+  <div class="flex flex-wrap items-center justify-between gap-4 mb-1">
     <h1 class="text-3xl font-extrabold tracking-tight">Analytics</h1>
 
     <div class="flex items-center gap-2">
       <% GoogleAnalyticsClient::ALLOWED_DAY_RANGES.each do |range| %>
-        <%= link_to "#{range}d", admin_analytics_path(days: range), class: "rounded-full text-xs font-semibold px-3 py-1.5 transition #{@days == range ? "bg-yellow-400 text-black" : "border border-neutral-700 text-white hover:border-neutral-500"}" %>
+        <%= link_to "Last #{range} days", admin_analytics_path(days: range), class: "rounded-lg text-xs font-semibold px-3 py-2 transition #{@days == range ? "bg-neutral-800 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-900"}" %>
       <% end %>
     </div>
   </div>
@@ -25,74 +25,40 @@
   <% end %>
 
   <% if @summary %>
-    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-6 py-5">
-        <p class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Users</p>
-        <p class="text-3xl font-extrabold"><%= number_with_delimiter(@summary.active_users) %></p>
-      </div>
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-6 py-5">
-        <p class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Sessions</p>
-        <p class="text-3xl font-extrabold"><%= number_with_delimiter(@summary.sessions) %></p>
-      </div>
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-6 py-5">
-        <p class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Pageviews</p>
-        <p class="text-3xl font-extrabold"><%= number_with_delimiter(@summary.page_views) %></p>
-      </div>
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-6 py-5">
-        <p class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Bounce rate</p>
-        <p class="text-3xl font-extrabold"><%= analytics_percentage(@summary.bounce_rate) %></p>
-      </div>
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-6 py-5">
-        <p class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Session duration</p>
-        <p class="text-3xl font-extrabold"><%= analytics_duration(@summary.session_duration) %></p>
-      </div>
+    <%= render "metric_row", metrics: [
+          [ "Unique Visitors", number_with_delimiter(@summary.active_users) ],
+          [ "Sessions", number_with_delimiter(@summary.sessions) ],
+          [ "Total Pageviews", number_with_delimiter(@summary.page_views) ],
+          [ "Bounce Rate", analytics_percentage(@summary.bounce_rate) ],
+          [ "Average Session", analytics_duration(@summary.session_duration) ]
+        ] %>
+
+    <div class="py-8 border-b border-neutral-800 mb-8">
+      <% if @summary.daily_series.any? %>
+        <%= area_chart @summary.daily_series.to_h { |p| [ p.date.strftime("%d %b"), p.active_users ] },
+              height: "280px", colors: [ "#facc15" ], legend: false, curve: false,
+              library: { interaction: { mode: "index" } } %>
+      <% else %>
+        <p class="text-neutral-500 text-sm">No data for this period.</p>
+      <% end %>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      <div class="lg:col-span-2 rounded-xl border border-neutral-800 bg-neutral-900/60 p-5">
-        <h2 class="text-sm font-semibold text-neutral-300 mb-4">Users vs Bounce Rate</h2>
-        <% if @summary.daily_series.any? %>
-          <%= line_chart [
-                { name: "Users", data: @summary.daily_series.to_h { |p| [ p.date.strftime("%d %b"), p.active_users ] } },
-                { name: "Bounce rate (%)", data: @summary.daily_series.to_h { |p| [ p.date.strftime("%d %b"), (p.bounce_rate.to_f * 100).round(1) ] } }
-              ],
-              height: "260px", colors: [ "#4ade80", "#facc15" ], library: { interaction: { mode: "index" } } %>
-        <% else %>
-          <p class="text-neutral-500 text-sm">No data for this period.</p>
-        <% end %>
-      </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <%= render "breakdown", title: "Sources", count_header: "Sessions",
+            rows: @summary.channels, count_method: :sessions, accent: "bg-yellow-500/15" %>
 
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 p-5">
-        <h2 class="text-sm font-semibold text-neutral-300 mb-4">Users by device</h2>
-        <% if @summary.devices.any? %>
-          <%= pie_chart @summary.devices.to_h { |d| [ d.label.capitalize, d.sessions ] },
-                donut: true, height: "260px", colors: [ "#facc15", "#4ade80", "#60a5fa", "#f87171" ] %>
-        <% else %>
-          <p class="text-neutral-500 text-sm">No data for this period.</p>
-        <% end %>
-      </div>
+      <%= render "breakdown", title: "Pages", count_header: "Pageviews",
+            rows: @summary.top_pages, count_method: :views, label_method: :path,
+            accent: "bg-emerald-500/15" %>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 p-5">
-        <h2 class="text-sm font-semibold text-neutral-300 mb-4">Top traffic sources</h2>
-        <% if @summary.channels.any? %>
-          <%= bar_chart @summary.channels.first(5).to_h { |c| [ c.label, c.sessions ] },
-                height: "220px", colors: [ "#facc15" ], legend: false %>
-        <% else %>
-          <p class="text-neutral-500 text-sm">No data for this period.</p>
-        <% end %>
-      </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+      <%= render "breakdown", title: "Countries", count_header: "Sessions",
+            rows: @summary.countries || [], count_method: :sessions, accent: "bg-sky-500/15" %>
 
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 p-5">
-        <h2 class="text-sm font-semibold text-neutral-300 mb-4">Top 5 viewed pages</h2>
-        <% if @summary.top_pages.any? %>
-          <%= bar_chart @summary.top_pages.first(5).to_h { |p| [ p.path, p.views ] },
-                height: "220px", colors: [ "#4ade80" ], legend: false %>
-        <% else %>
-          <p class="text-neutral-500 text-sm">No data for this period.</p>
-        <% end %>
-      </div>
+      <%= render "breakdown", title: "Devices", count_header: "Sessions",
+            rows: @summary.devices, count_method: :sessions, accent: "bg-violet-500/15",
+            capitalize_labels: true %>
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">

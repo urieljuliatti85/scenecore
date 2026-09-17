@@ -17,7 +17,7 @@ class GoogleAnalyticsClient
 
   Metrics = Struct.new(
     :active_users, :sessions, :page_views, :bounce_rate, :session_duration,
-    :top_pages, :landing_pages, :daily_series, :channels, :devices,
+    :top_pages, :landing_pages, :daily_series, :channels, :devices, :countries,
     keyword_init: true
   )
   # bounce_rate is a fraction (0.0–1.0) as GA4 returns it; the view formats
@@ -60,7 +60,8 @@ class GoogleAnalyticsClient
       landing_pages: landing_pages(date_range),
       daily_series: daily_series(date_range),
       channels: channel_breakdown(date_range),
-      devices: device_breakdown(date_range)
+      devices: device_breakdown(date_range),
+      countries: country_breakdown(date_range)
     )
   rescue Google::Cloud::Error, ::GRPC::BadStatus, Signet::AuthorizationError => e
     raise Error, "Could not reach Google Analytics: #{e.message}"
@@ -185,6 +186,14 @@ class GoogleAnalyticsClient
 
   def device_breakdown(date_range)
     breakdown_report("deviceCategory", date_range)
+  end
+
+  # Where visitors are, which the dashboard shows alongside sources and
+  # devices. GA4 reports "(not set)" for sessions it could not place, and
+  # that row is kept rather than dropped — hiding it would make the
+  # percentages in the list add up to less than the total without saying why.
+  def country_breakdown(date_range)
+    breakdown_report("country", date_range)
   end
 
   def breakdown_report(dimension_name, date_range)

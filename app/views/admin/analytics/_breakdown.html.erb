@@ -1,0 +1,42 @@
+<%# The Sources / Pages / Countries / Devices lists from the reference: each
+    row is a bar whose width is the row's share of the largest row, with the
+    label over the bar and the count aligned right. Scaling against the
+    largest row rather than the total keeps the top row full-width, which is
+    what makes the shape of the distribution readable at a glance. %>
+<%# label_method varies by source: the breakdown structs carry :label,
+    while the page structs carry :path. %>
+<% label_method = local_assigns.fetch(:label_method, :label) %>
+<% capitalize_labels = local_assigns.fetch(:capitalize_labels, false) %>
+<% rows = Array(rows).first(local_assigns.fetch(:limit, 6)) %>
+<% largest = rows.map { |r| r.public_send(count_method) }.max.to_i %>
+
+<div class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5">
+  <div class="flex items-baseline justify-between gap-4 mb-4">
+    <h2 class="text-sm font-semibold text-white"><%= title %></h2>
+    <span class="text-xs uppercase tracking-wide text-neutral-600"><%= count_header %></span>
+  </div>
+
+  <% if rows.empty? %>
+    <p class="text-neutral-500 text-sm">No data for this period.</p>
+  <% else %>
+    <ul class="flex flex-col gap-1.5">
+      <% rows.each do |row| %>
+        <% count = row.public_send(count_method).to_i %>
+        <li class="relative flex items-center justify-between gap-4 rounded-lg px-3 py-2 overflow-hidden">
+          <%# The bar sits behind the text rather than beside it, so a long
+              label never squeezes the bar into an unreadable sliver. %>
+          <span
+            class="absolute inset-y-0 left-0 rounded-lg <%= accent %> pointer-events-none"
+            style="width: <%= largest.positive? ? (count * 100.0 / largest).round(2) : 0 %>%"
+            aria-hidden="true"
+          ></span>
+
+          <% label = row.public_send(label_method).to_s %>
+          <% label = label.capitalize if capitalize_labels %>
+          <span class="relative text-sm text-neutral-200 truncate" title="<%= label %>"><%= label %></span>
+          <span class="relative text-sm font-semibold text-white shrink-0"><%= number_with_delimiter(count) %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>
