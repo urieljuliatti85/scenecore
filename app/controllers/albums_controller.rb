@@ -48,12 +48,11 @@ class AlbumsController < ApplicationController
     authorize @album
 
     spotify_id = params[:spotify_album_id]
-    unless spotify_id.to_s.match?(SPOTIFY_ID_FORMAT)
-      @album.errors.add(:base, "Select an album from the search results.")
-      return render :new, status: :unprocessable_entity
-    end
+    return import_from_spotify(spotify_id) if spotify_id.present?
+    return import_from_bandcamp if params.dig(:album, :bandcamp_embed_url).present?
 
-    import_album(spotify_id)
+    @album.errors.add(:base, "Select an album from the search results, or add one from Bandcamp.")
+    render :new, status: :unprocessable_entity
   rescue SpotifyClient::Error
     @album.errors.add(:base, "Could not import this album from Spotify. Please try again.")
     render :new, status: :bad_gateway
@@ -142,7 +141,12 @@ class AlbumsController < ApplicationController
     render :edit, status: :unprocessable_entity
   end
 
-  def import_album(spotify_id)
+  def import_from_spotify(spotify_id)
+    unless spotify_id.to_s.match?(SPOTIFY_ID_FORMAT)
+      @album.errors.add(:base, "Select an album from the search results.")
+      return render :new, status: :unprocessable_entity
+    end
+
     details = SpotifyClient.new.fetch_album(spotify_id)
 
     @album.title = details.name
@@ -153,6 +157,20 @@ class AlbumsController < ApplicationController
     redirect_to band_path(@band), notice: "Album added."
   rescue ActiveRecord::RecordInvalid
     render :new, status: :unprocessable_entity
+  end
+
+  # Bandcamp has no public search/import API like Spotify's, so the band
+  # supplies the title and the embed URL directly rather than picking from
+  # search results — see Album#bandcamp_embed_link for why that URL is
+  # re-validated rather than trusted.
+  def import_from_bandcamp
+    @album.assign_attributes(title: params[:album][:title], bandcamp_embed_url: params[:album][:bandcamp_embed_url])
+
+    if @album.save
+      redirect_to band_path(@band), notice: "Album added."
+    else
+      render :new, status: :unprocessable_entity
+    end
   end
 
   def set_band
