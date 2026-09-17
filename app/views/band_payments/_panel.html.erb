@@ -45,14 +45,14 @@
         Memberships
         <span class="block text-neutral-500 text-xs mt-0.5">Split on every monthly charge</span>
       </dt>
-      <dd class="text-white font-bold shrink-0"><%= 100 - Subscription::PLATFORM_FEE_PERCENT %>%</dd>
+      <dd class="text-white font-bold shrink-0"><%= 100 - PlatformSetting.current.membership_fee_percentage %>%</dd>
     </div>
     <div class="flex items-start justify-between gap-4 pt-3 border-t border-neutral-800">
       <dt class="text-neutral-300">
         Store sales
         <span class="block text-neutral-500 text-xs mt-0.5">You supply and ship the goods, so the platform takes less</span>
       </dt>
-      <dd class="text-white font-bold shrink-0"><%= 100 - (Order::PLATFORM_FEE_RATE * 100).round %>%</dd>
+      <dd class="text-white font-bold shrink-0"><%= 100 - PlatformSetting.current.store_fee_percentage %>%</dd>
     </div>
   </dl>
   <p class="text-xs text-neutral-600 mt-4">

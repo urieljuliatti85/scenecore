@@ -1,9 +1,4 @@
 class Order < ApplicationRecord
-  # SceneCore's Store commission (ADR-007). Charged as Stripe's
-  # application_fee_amount at checkout, and snapshotted onto the order so a
-  # later rate change never rewrites what a past order was split at.
-  PLATFORM_FEE_RATE = 0.10
-
   belongs_to :user
   belongs_to :band
   has_many :order_items, dependent: :destroy

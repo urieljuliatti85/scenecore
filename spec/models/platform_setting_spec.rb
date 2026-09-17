@@ -17,17 +17,29 @@ RSpec.describe PlatformSetting, type: :model do
       expect(PlatformSetting.current.band_signups_enabled).to be true
     end
 
-    it "defaults platform_fee_percentage to 0" do
-      expect(PlatformSetting.current.platform_fee_percentage).to eq(0)
+    it "defaults membership_fee_percentage to 15, per ADR-008" do
+      expect(PlatformSetting.current.membership_fee_percentage).to eq(15)
+    end
+
+    it "defaults store_fee_percentage to 10, per ADR-007" do
+      expect(PlatformSetting.current.store_fee_percentage).to eq(10)
     end
   end
 
-  it "rejects a platform fee below 0" do
-    expect(build(:platform_setting, platform_fee_percentage: -1)).not_to be_valid
+  it "rejects a membership fee below 0" do
+    expect(build(:platform_setting, membership_fee_percentage: -1)).not_to be_valid
   end
 
-  it "rejects a platform fee above 100" do
-    expect(build(:platform_setting, platform_fee_percentage: 101)).not_to be_valid
+  it "rejects a membership fee above 100" do
+    expect(build(:platform_setting, membership_fee_percentage: 101)).not_to be_valid
+  end
+
+  it "rejects a store fee below 0" do
+    expect(build(:platform_setting, store_fee_percentage: -1)).not_to be_valid
+  end
+
+  it "rejects a store fee above 100" do
+    expect(build(:platform_setting, store_fee_percentage: 101)).not_to be_valid
   end
 
   it "rejects a malformed support email" do

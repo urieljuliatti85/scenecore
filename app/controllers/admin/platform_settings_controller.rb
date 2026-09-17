@@ -17,7 +17,7 @@ class Admin::PlatformSettingsController < Admin::BaseController
 
   def platform_setting_params
     params.require(:platform_setting).permit(
-      :platform_fee_percentage, :terms_of_service_url, :privacy_policy_url,
+      :membership_fee_percentage, :store_fee_percentage, :terms_of_service_url, :privacy_policy_url,
       :support_email, :notification_sender_email, :band_signups_enabled
     )
   end
