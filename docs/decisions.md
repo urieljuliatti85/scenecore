@@ -126,20 +126,22 @@ this decision.
 
 ## ADR-007 — Stripe Connect for Store Revenue Split
 
-Status: Accepted (2026-09-17)
+Status: Accepted (2026-09-17); rate amended 2026-09-17 from 10% to 25%
+before any Store checkout existed, so no order was ever charged at the
+original rate.
 
 ### Decision
 
 Store checkout (product purchases, ADR-003) uses Stripe Connect, not the
 plain Stripe Checkout Sessions already used for Subscriptions. Each band
 onboards a Stripe Connect account; a Store checkout session's payment is
-split automatically at charge time via `application_fee_amount`: 10% to
-SceneCore, the remaining 90% to the band's connected account.
+split automatically at charge time via `application_fee_amount`: 25% to
+SceneCore, the remaining 75% to the band's connected account.
 
 ### Reason
 
 A store sells one band's physical/digital goods directly to a fan; the
-platform's 10% commission on that sale must be explicit per
+platform's 25% commission on that sale must be explicit per
 `docs/payments.md` and must not require a manual reconciliation process.
 Stripe Connect's destination charges compute and route both sides of the
 split within the same payment, so SceneCore never holds funds it must
