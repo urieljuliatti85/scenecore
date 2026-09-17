@@ -237,7 +237,7 @@ A completed or in-progress purchase of one band's products by one fan.
 - subtotal_cents
 - shipping_cents
 - total_cents
-- platform_fee_cents (10% of subtotal, per ADR-007 — recorded on the
+- platform_fee_cents (25% of subtotal, per ADR-007 — recorded on the
   order even though Stripe Connect computes the actual split, so the
   band's payout is auditable independent of Stripe's own records)
 - stripe_checkout_session_id

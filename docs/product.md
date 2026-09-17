@@ -838,7 +838,7 @@ Describes the intended flow only.*
 2. Fan adds the product to their cart — at most one active cart at a
    time, scoped to that one band (ADR-003, clarified 2026-09-17).
 3. Fan enters a shipping address and checks out via Stripe Connect
-   (destination charge, 10% platform commission — ADR-007).
+   (destination charge, 25% platform commission — ADR-007).
 4. Payment is confirmed and an order is created with a price/product
    snapshot.
 5. Inventory (per variant/SKU) is decremented consistently with the
@@ -925,7 +925,7 @@ phase):
 - Products, variants (SKU-level price and stock, per-product min. one
   default variant), inventory, single-active-cart-per-user (one band at
   a time — ADR-003, clarified 2026-09-17), checkout via Stripe Connect
-  with a 10% platform commission (ADR-007), shipping address and cost
+  with a 25% platform commission (ADR-007), shipping address and cost
   captured on the order (`docs/database.md` Products/ProductVariants/
   Carts/Orders)
 - Not yet built. No longer blocked on payment provider selection — Stripe
@@ -1091,7 +1091,7 @@ tracks.
 - An order snapshots product name, variant name, and price at time of
   purchase, independent of later product/variant edits.
 - Checkout happens through the band's Stripe Connect account; SceneCore's
-  10% commission (ADR-007) is applied via `application_fee_amount` in the
+  25% commission (ADR-007) is applied via `application_fee_amount` in the
   same transaction, not a separate transfer.
 - A band without an active Stripe Connect account cannot open Store
   checkout.

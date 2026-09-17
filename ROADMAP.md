@@ -276,7 +276,7 @@ ShippingAddresses), `docs/payments.md`, and ADR-007
 - At most one active cart per user, scoped to one band at a time
   (ADR-003, clarified 2026-09-17).
 - Checkout via Stripe Connect: each band needs an onboarded connected
-  Stripe account before its Store can accept checkout; SceneCore's 10%
+  Stripe account before its Store can accept checkout; SceneCore's 25%
   commission is applied as `application_fee_amount` in the same
   transaction (ADR-007) — this is separate infrastructure from the plain
   Stripe Checkout Sessions Subscriptions (§7) already uses.

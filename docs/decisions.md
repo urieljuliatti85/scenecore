@@ -126,20 +126,22 @@ this decision.
 
 ## ADR-007 — Stripe Connect for Store Revenue Split
 
-Status: Accepted (2026-09-17)
+Status: Accepted (2026-09-17); rate amended 2026-09-17 from 10% to 25%
+before any Store checkout existed, so no order was ever charged at the
+original rate.
 
 ### Decision
 
 Store checkout (product purchases, ADR-003) uses Stripe Connect, not the
 plain Stripe Checkout Sessions already used for Subscriptions. Each band
 onboards a Stripe Connect account; a Store checkout session's payment is
-split automatically at charge time via `application_fee_amount`: 10% to
-SceneCore, the remaining 90% to the band's connected account.
+split automatically at charge time via `application_fee_amount`: 25% to
+SceneCore, the remaining 75% to the band's connected account.
 
 ### Reason
 
 A store sells one band's physical/digital goods directly to a fan; the
-platform's 10% commission on that sale must be explicit per
+platform's 25% commission on that sale must be explicit per
 `docs/payments.md` and must not require a manual reconciliation process.
 Stripe Connect's destination charges compute and route both sides of the
 split within the same payment, so SceneCore never holds funds it must
@@ -180,11 +182,12 @@ Membership revenue is split 75% to the band, 25% to SceneCore. This is the
 decision ADR-007 anticipated when it recorded that splitting subscription
 revenue would require its own ADR.
 
-The rate differs deliberately from the Store's 10%: a membership is an
-ongoing relationship the platform hosts and serves every month — the
-exclusive feed, content, community and messaging all run on SceneCore —
-whereas a store sale is a one-off transaction where the band supplies and
-ships the goods itself.
+This was briefly set against a 10% Store rate, on the reasoning that a
+membership is an ongoing relationship the platform hosts every month
+while a store sale is a one-off transaction. That distinction was
+dropped the same day: ADR-007's rate was amended to 25% so both match,
+and a band now earns the same share whichever way a fan supports it —
+one number to explain rather than two.
 
 ### Consequence
 
