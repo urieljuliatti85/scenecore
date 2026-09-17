@@ -25,10 +25,16 @@ class StripeConnectOnboardingResolver
     }
   }.freeze
 
-  # A marketplace's connected accounts receive transfers; they are not
-  # merchants of record themselves. Requesting card_payments here would
-  # lengthen onboarding for a capability the band never uses.
-  RECIPIENT_CONFIGURATION = {
+  # Stripe Accounts v2 requires merchant card_payments when requesting
+  # recipient stripe_transfers. SceneCore still routes checkout through the
+  # platform, but both configurations must exist on the connected account
+  # for transfers to be enabled.
+  CONNECT_CONFIGURATION = {
+    merchant: {
+      capabilities: {
+        card_payments: { requested: true }
+      }
+    },
     recipient: {
       capabilities: {
         stripe_balance: {
@@ -61,7 +67,7 @@ class StripeConnectOnboardingResolver
       use_case: {
         type: "account_onboarding",
         account_onboarding: {
-          configurations: [ "recipient" ],
+          configurations: [ "merchant", "recipient" ],
           return_url: @return_url,
           refresh_url: @refresh_url
         }
@@ -83,7 +89,7 @@ class StripeConnectOnboardingResolver
       **ACCOUNT_CONFIGURATION,
       contact_email: @contact_email,
       identity: { country: @band.country_code },
-      configuration: RECIPIENT_CONFIGURATION,
+      configuration: CONNECT_CONFIGURATION,
       metadata: { band_id: @band.id.to_s }
     )
 
