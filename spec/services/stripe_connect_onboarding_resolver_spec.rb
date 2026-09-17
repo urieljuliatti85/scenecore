@@ -43,6 +43,7 @@ RSpec.describe StripeConnectOnboardingResolver do
       expect(accounts_service).to have_received(:create).with(
         hash_including(
           contact_email: "admin@example.com",
+          identity: { country: "BR" },
           dashboard: "express",
           defaults: {
             responsibilities: {
