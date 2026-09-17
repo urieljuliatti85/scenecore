@@ -2,6 +2,7 @@ FactoryBot.define do
   factory :band do
     sequence(:name) { |n| "Band #{n}" }
     description { "A great band." }
+    country_code { "BR" }
     status { :pending }
 
     # A band Stripe has cleared to receive money. Required for both Store
