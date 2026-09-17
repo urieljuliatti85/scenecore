@@ -27,7 +27,7 @@
       <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
     </div>
 
-    <%= f.submit "Sign up", class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition cursor-pointer self-start" %>
+    <%= f.submit "Sign up", class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-6 py-3 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer self-start" %>
   <% end %>
 
   <%= render "devise/shared/links" %>

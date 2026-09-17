@@ -10,7 +10,7 @@
 
   <div class="mt-4 flex flex-wrap items-center gap-3">
     <% if policy(@core_session).publish? && @core_session.draft? %>
-      <%= button_to "Publish", publish_band_core_session_path(@band, @core_session), method: :patch, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+      <%= button_to "Publish", publish_band_core_session_path(@band, @core_session), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-sm font-semibold px-4 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
     <% end %>
 
     <% if policy(@core_session).unpublish? && @core_session.published? %>

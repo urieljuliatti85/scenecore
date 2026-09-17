@@ -317,7 +317,7 @@ RSpec.describe "Pages", type: :request do
 
       doc = Nokogiri::HTML(response.body)
 
-      expect(doc.css("[class*='bg-yellow-400/10']").size).to eq(1)
+      expect(doc.css("#membership-plans [class*='bg-yellow-400/10']").size).to eq(1)
     end
 
     it "presents every section in a card" do

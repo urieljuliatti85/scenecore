@@ -35,7 +35,7 @@
 
       <div class="mt-4 flex flex-wrap items-center gap-3">
         <% if policy(@album).publish? && @album.draft? %>
-          <%= button_to "Publish", publish_band_album_path(@band, @album), method: :patch, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+          <%= button_to "Publish", publish_band_album_path(@band, @album), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-sm font-semibold px-4 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
         <% end %>
 
         <% if policy(@album).unpublish? && @album.published? %>
@@ -60,7 +60,7 @@
 
       <%= form_with url: cover_from_url_band_album_path(@band, @album), method: :patch, class: "mt-4 flex flex-col sm:flex-row gap-2 sm:items-center" do |form| %>
         <%= form.url_field :cover_url, placeholder: "https://example.com/cover.jpg", required: true, class: "flex-1 rounded-full bg-neutral-900 border border-neutral-800 text-white text-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
-        <%= form.submit "Use this image", class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-2 hover:bg-yellow-300 transition cursor-pointer" %>
+        <%= form.submit "Use this image", class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-sm font-semibold px-4 py-2 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
       <% end %>
       <p class="text-xs text-neutral-500 mt-2">PNG, JPEG or WebP, up to 5MB. You can also <%= link_to "upload a file", edit_band_album_path(@band, @album), class: "underline hover:text-neutral-300" %>.</p>
     </div>

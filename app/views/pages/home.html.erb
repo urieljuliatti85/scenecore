@@ -25,7 +25,7 @@
       <% end %>
 
       <div class="flex items-center justify-center gap-4 mb-8">
-        <%= link_to "View band", public_band_path(@featured_band.slug), class: "rounded-full bg-yellow-400 text-black font-semibold px-8 py-3 hover:bg-yellow-300 transition" %>
+        <%= link_to "View band", public_band_path(@featured_band.slug), class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-8 py-3 hover:bg-yellow-400/20 hover:text-yellow-200 transition" %>
         <% unless user_signed_in? %>
           <%= link_to "Sign up", new_user_registration_path, class: "rounded-full border border-neutral-500 text-white font-semibold px-8 py-3 hover:border-neutral-300 transition" %>
         <% end %>
@@ -100,9 +100,9 @@
 
       <div class="flex items-center justify-center gap-4">
         <% if user_signed_in? %>
-          <%= link_to "Your bands", bands_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
+          <%= link_to "Your bands", bands_path, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-6 py-3 hover:bg-yellow-400/20 hover:text-yellow-200 transition" %>
         <% else %>
-          <%= link_to "Sign up", new_user_registration_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
+          <%= link_to "Sign up", new_user_registration_path, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-6 py-3 hover:bg-yellow-400/20 hover:text-yellow-200 transition" %>
           <%= link_to "Sign in", new_user_session_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
         <% end %>
       </div>
