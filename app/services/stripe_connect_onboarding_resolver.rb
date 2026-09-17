@@ -83,7 +83,10 @@ class StripeConnectOnboardingResolver
   private
 
   def existing_or_new_account_id
-    return @band.stripe_connect_account_id if @band.stripe_connect_account_id.present?
+    if @band.stripe_connect_account_id.present?
+      ensure_connect_configuration!(@band.stripe_connect_account_id)
+      return @band.stripe_connect_account_id
+    end
 
     account = StripeClient.instance.v2.core.accounts.create(
       **ACCOUNT_CONFIGURATION,
@@ -96,6 +99,15 @@ class StripeConnectOnboardingResolver
     @band.update!(stripe_connect_account_id: account.id)
     account.id
   rescue ActiveRecord::RecordNotUnique
-    @band.reload.stripe_connect_account_id
+    @band.reload
+    ensure_connect_configuration!(@band.stripe_connect_account_id)
+    @band.stripe_connect_account_id
+  end
+
+  def ensure_connect_configuration!(account_id)
+    StripeClient.instance.v2.core.accounts.update(
+      account_id,
+      configuration: CONNECT_CONFIGURATION
+    )
   end
 end

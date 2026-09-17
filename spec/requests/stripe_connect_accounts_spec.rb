@@ -10,6 +10,7 @@ RSpec.describe "StripeConnectAccounts", type: :request do
   before do
     allow(StripeClient).to receive(:instance).and_return(stripe_client)
     allow(accounts_service).to receive(:create).and_return(double(id: "acct_new"))
+    allow(accounts_service).to receive(:update)
     allow(account_links_service).to receive(:create)
       .and_return(double(url: "https://connect.stripe.com/setup/x"))
   end
@@ -83,6 +84,10 @@ RSpec.describe "StripeConnectAccounts", type: :request do
       get new_band_stripe_connect_account_path(band)
 
       expect(response).to redirect_to("https://connect.stripe.com/setup/x")
+      expect(accounts_service).to have_received(:update).with(
+        "acct_existing",
+        configuration: StripeConnectOnboardingResolver::CONNECT_CONFIGURATION
+      )
       expect(account_links_service).to have_received(:create).with(hash_including(account: "acct_existing"))
     end
 

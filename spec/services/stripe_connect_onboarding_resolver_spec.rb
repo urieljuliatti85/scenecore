@@ -11,6 +11,7 @@ RSpec.describe StripeConnectOnboardingResolver do
   before do
     allow(StripeClient).to receive(:instance).and_return(stripe_client)
     allow(account_links_service).to receive(:create).and_return(link)
+    allow(accounts_service).to receive(:update)
   end
 
   def resolve(band, contact_email: "admin@example.com")
@@ -55,35 +56,49 @@ RSpec.describe StripeConnectOnboardingResolver do
       )
     end
 
-    # SceneCore is merchant of record and the band receives transfers, so
-    # the account needs the transfer capability and not card_payments —
-    # requesting the latter would lengthen onboarding for something the
-    # band never uses.
-    it "requests the transfer capability rather than card payments" do
+    it "requests both merchant card payments and recipient transfers" do
       band = create(:band, stripe_connect_account_id: nil)
       allow(accounts_service).to receive(:create).and_return(double(id: "acct_new"))
 
       resolve(band)
 
       expect(accounts_service).to have_received(:create) do |args|
+        merchant = args[:configuration][:merchant]
         recipient = args[:configuration][:recipient]
 
+        expect(merchant[:capabilities][:card_payments]).to eq(requested: true)
         expect(recipient[:capabilities][:stripe_balance][:stripe_transfers]).to eq(requested: true)
-        expect(args[:configuration]).not_to have_key(:merchant)
       end
     end
 
-    it "reuses the existing connected account instead of creating a second one" do
+    it "reuses and upgrades an existing connected account instead of creating a second one" do
       band = create(:band, stripe_connect_account_id: "acct_existing", stripe_connect_status: :onboarding)
       allow(accounts_service).to receive(:create)
 
       resolve(band)
 
       expect(accounts_service).not_to have_received(:create)
+      expect(accounts_service).to have_received(:update).with(
+        "acct_existing",
+        configuration: {
+          merchant: {
+            capabilities: {
+              card_payments: { requested: true }
+            }
+          },
+          recipient: {
+            capabilities: {
+              stripe_balance: {
+                stripe_transfers: { requested: true }
+              }
+            }
+          }
+        }
+      )
       expect(account_links_service).to have_received(:create).with(hash_including(account: "acct_existing"))
     end
 
-    it "requests an onboarding link with the given return and refresh urls" do
+    it "requests onboarding for both merchant and recipient configurations" do
       band = create(:band, stripe_connect_account_id: "acct_existing")
 
       resolve(band)
@@ -92,7 +107,7 @@ RSpec.describe StripeConnectOnboardingResolver do
         onboarding = args[:use_case][:account_onboarding]
 
         expect(args[:use_case][:type]).to eq("account_onboarding")
-        expect(onboarding[:configurations]).to eq([ "recipient" ])
+        expect(onboarding[:configurations]).to eq([ "merchant", "recipient" ])
         expect(onboarding[:return_url]).to eq("https://app.test/return")
         expect(onboarding[:refresh_url]).to eq("https://app.test/refresh")
       end
