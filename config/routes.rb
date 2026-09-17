@@ -110,6 +110,7 @@ Rails.application.routes.draw do
       collection do
         get :search
       end
+      resources :credits, only: [ :create, :destroy ], controller: "album_credits"
     end
     resource :follow, only: [ :create, :destroy ]
     resource :subscription, only: [ :create, :destroy ]

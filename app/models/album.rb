@@ -7,6 +7,8 @@ class Album < ApplicationRecord
   belongs_to :band
   has_many :admin_action_logs, as: :subject, dependent: :destroy
   has_many :ratings, dependent: :destroy
+  has_many :album_credits, dependent: :destroy
+  has_many :credited_users, through: :album_credits, source: :user
   has_image :cover
 
   enum :status, { draft: "draft", published: "published" },
