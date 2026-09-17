@@ -30,6 +30,7 @@ class BandsController < ApplicationController
     @posts = @band.posts.order(created_at: :desc)
     @events = @band.events.chronological
     @polls = @band.polls.order(created_at: :desc)
+    @core_sessions = @band.core_sessions.order(:starts_at)
 
     if policy(@band).show?
       active_memberships = @band.memberships.active

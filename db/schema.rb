@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_001923) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_010915) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -163,6 +163,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_001923) do
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.index ["created_at"], name: "index_contact_messages_on_created_at"
+  end
+
+  create_table "core_session_rsvps", force: :cascade do |t|
+    t.bigint "core_session_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["core_session_id", "user_id"], name: "index_core_session_rsvps_on_core_session_id_and_user_id", unique: true
+    t.index ["core_session_id"], name: "index_core_session_rsvps_on_core_session_id"
+    t.index ["user_id"], name: "index_core_session_rsvps_on_user_id"
+  end
+
+  create_table "core_sessions", force: :cascade do |t|
+    t.bigint "band_id", null: false
+    t.integer "capacity"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "session_type", null: false
+    t.datetime "starts_at", null: false
+    t.string "status", default: "draft", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["band_id"], name: "index_core_sessions_on_band_id"
+    t.check_constraint "capacity IS NULL OR capacity > 0", name: "core_sessions_capacity_check"
+    t.check_constraint "session_type::text = ANY (ARRAY['video'::character varying, 'audio'::character varying, 'qa'::character varying, 'listening_party'::character varying, 'meet_greet'::character varying]::text[])", name: "core_sessions_session_type_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "core_sessions_status_check"
   end
 
   create_table "events", force: :cascade do |t|
@@ -340,6 +366,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_001923) do
   add_foreign_key "categories", "categories", column: "parent_id"
   add_foreign_key "comments", "posts"
   add_foreign_key "comments", "users"
+  add_foreign_key "core_session_rsvps", "core_sessions"
+  add_foreign_key "core_session_rsvps", "users"
+  add_foreign_key "core_sessions", "bands"
   add_foreign_key "events", "bands"
   add_foreign_key "follows", "bands"
   add_foreign_key "follows", "users"

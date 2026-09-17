@@ -31,6 +31,7 @@ class PublicBandsController < ApplicationController
     @posts = @band.posts.published.with_attached_image.includes(comments: :user).order(created_at: :desc)
     @events = @band.events.published.upcoming
     @polls = @band.polls.published.order(created_at: :desc)
+    @core_sessions = @band.core_sessions.published.order(:starts_at)
   rescue ActiveRecord::RecordNotFound
     render "not_found", status: :not_found
   end
