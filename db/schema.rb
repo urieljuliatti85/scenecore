@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_090204) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_093934) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -121,6 +121,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_090204) do
     t.bigint "category_id"
     t.datetime "created_at", null: false
     t.text "description"
+    t.boolean "featured", default: false, null: false
     t.string "instagram_url"
     t.string "name", null: false
     t.string "slug", null: false
@@ -132,6 +133,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_090204) do
     t.string "website_url"
     t.string "youtube_url"
     t.index ["category_id"], name: "index_bands_on_category_id"
+    t.index ["featured"], name: "index_bands_on_featured", unique: true, where: "(featured = true)"
     t.index ["slug"], name: "index_bands_on_slug", unique: true
     t.index ["status"], name: "index_bands_on_status"
     t.index ["stripe_connect_account_id"], name: "index_bands_on_stripe_connect_account_id", unique: true

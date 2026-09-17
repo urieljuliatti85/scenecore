@@ -426,6 +426,119 @@ RSpec.describe "Bands", type: :request do
     end
   end
 
+  describe "PATCH /bands/:id/feature" do
+    it "allows a platform admin to feature an approved band" do
+      admin = create(:user, :platform_admin)
+      band = create(:band, :approved)
+      sign_in admin
+
+      patch feature_band_path(band)
+
+      expect(band.reload).to be_featured
+    end
+
+    it "records an admin action log" do
+      admin = create(:user, :platform_admin)
+      band = create(:band, :approved)
+      sign_in admin
+
+      expect {
+        patch feature_band_path(band)
+      }.to change(AdminActionLog, :count).by(1)
+
+      expect(AdminActionLog.last.action).to eq("feature_band")
+    end
+
+    it "unfeatures the previously featured band" do
+      admin = create(:user, :platform_admin)
+      previous = create(:band, :approved, featured: true)
+      band = create(:band, :approved)
+      sign_in admin
+
+      patch feature_band_path(band)
+
+      expect(previous.reload).not_to be_featured
+      expect(band.reload).to be_featured
+    end
+
+    it "shows the featured band on the home page" do
+      admin = create(:user, :platform_admin)
+      create(:band, :approved, name: "Newer Band")
+      band = create(:band, :approved, name: "Pinned Band")
+      sign_in admin
+
+      patch feature_band_path(band)
+      get root_path
+
+      expect(response.body).to include("Pinned Band")
+      expect(response.body).not_to include("Newer Band")
+    end
+
+    it "does not allow a regular user to feature a band" do
+      user = create(:user)
+      band = create(:band, :approved)
+      sign_in user
+
+      patch feature_band_path(band)
+
+      expect(band.reload).not_to be_featured
+    end
+
+    it "does not allow the band's own administrator to feature it" do
+      user = create(:user)
+      band = create(:band, :approved)
+      create(:band_membership, :administrator, band: band, user: user)
+      sign_in user
+
+      patch feature_band_path(band)
+
+      expect(band.reload).not_to be_featured
+    end
+
+    it "requires authentication" do
+      band = create(:band, :approved)
+
+      patch feature_band_path(band)
+
+      expect(response).to redirect_to(new_user_session_path)
+      expect(band.reload).not_to be_featured
+    end
+  end
+
+  describe "PATCH /bands/:id/unfeature" do
+    it "allows a platform admin to unfeature a band" do
+      admin = create(:user, :platform_admin)
+      band = create(:band, :approved, featured: true)
+      sign_in admin
+
+      patch unfeature_band_path(band)
+
+      expect(band.reload).not_to be_featured
+    end
+
+    it "records an admin action log" do
+      admin = create(:user, :platform_admin)
+      band = create(:band, :approved, featured: true)
+      sign_in admin
+
+      expect {
+        patch unfeature_band_path(band)
+      }.to change(AdminActionLog, :count).by(1)
+
+      expect(AdminActionLog.last.action).to eq("unfeature_band")
+    end
+
+    it "does not allow a regular user to unfeature a band" do
+      user = create(:user)
+      band = create(:band, :approved, featured: true)
+      sign_in user
+
+      patch unfeature_band_path(band)
+
+      expect(band.reload).to be_featured
+    end
+  end
+
   describe "PATCH /bands/:id/reactivate" do
     it "allows a platform admin to reactivate a suspended band" do
       admin = create(:user, :platform_admin)
