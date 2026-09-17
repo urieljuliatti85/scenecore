@@ -568,6 +568,56 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).not_to include("Old Show")
     end
 
+    it "shows a published core session's details and RSVP button to a Core Member" do
+      band = create(:band, :approved)
+      session = create(:core_session, :published, band: band, title: "Private Listening Session", capacity: 20)
+      user = create(:user)
+      create(:membership, :core_member, band: band, user: user)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Private Listening Session")
+      expect(response.body).to include(core_session_rsvp_path(band.slug, session))
+    end
+
+    it "locks a core session for a Supporter, showing its title but not its details" do
+      band = create(:band, :approved)
+      create(:core_session, :published, band: band, title: "Private Listening Session", description: "Secret details")
+      user = create(:user)
+      create(:membership, :supporter, band: band, user: user)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Private Listening Session")
+      expect(response.body).to include("Available to Core members and above.")
+      expect(response.body).not_to include("Secret details")
+    end
+
+    it "does not show a draft core session" do
+      band = create(:band, :approved)
+      create(:core_session, band: band, title: "Secret Session")
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Secret Session")
+    end
+
+    it "shows a cancel option instead of RSVP once the Core Member has RSVPed" do
+      band = create(:band, :approved)
+      session = create(:core_session, :published, band: band)
+      user = create(:user)
+      create(:membership, :core_member, band: band, user: user)
+      create(:core_session_rsvp, core_session: session, user: user)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("You're on the list")
+      expect(response.body).to include(cancel_core_session_rsvp_path(band.slug, session))
+    end
+
     it "does not show the empty state when the band has a published event" do
       band = create(:band, :approved)
       create(:event, :published, band: band)

@@ -35,6 +35,7 @@
       <%= link_to "New Post", new_band_post_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
       <%= link_to "Add Event", new_band_event_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
       <%= link_to "New Poll", new_band_poll_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
+      <%= link_to "New Core Session", new_band_core_session_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
     <% end %>
 
     <% if policy(@band).update? %>
@@ -57,7 +58,7 @@
     <% end %>
   </div>
 
-  <% if policy(@band).show? && (@albums.any? || @events.any? || @posts.any? || @polls.any?) %>
+  <% if policy(@band).show? && (@albums.any? || @events.any? || @posts.any? || @polls.any? || @core_sessions.any?) %>
     <h2 class="text-xs font-semibold uppercase tracking-wide text-neutral-500 mt-10 mb-2">Content</h2>
   <% end %>
 
@@ -185,6 +186,38 @@
 
               <%= link_to "Edit", edit_band_poll_path(@band, poll), class: "text-xs text-neutral-400 hover:text-white transition" %>
               <%= button_to "Delete", band_poll_path(@band, poll), method: :delete, class: "text-xs text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this poll?" } } %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if policy(@band).show? && @core_sessions.any? %>
+    <div class="mt-6">
+      <h3 class="text-lg font-semibold text-neutral-300 mb-4">Core Sessions</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <% @core_sessions.each do |core_session| %>
+          <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden hover:border-neutral-600 transition">
+            <%= link_to band_core_session_path(@band, core_session), class: "block px-5 py-4" do %>
+              <p class="font-semibold text-white"><%= core_session.title %></p>
+              <p class="text-sm text-neutral-400 mt-1"><%= core_session.starts_at.strftime("%d %b %Y · %H:%M") %></p>
+              <p class="text-xs uppercase tracking-wide text-neutral-500 mt-1">
+                <%= core_session.status %> &middot; <%= core_session.session_type.humanize %>
+              </p>
+            <% end %>
+
+            <div class="px-5 pb-4 flex flex-wrap items-center gap-2">
+              <% if policy(core_session).publish? && core_session.draft? %>
+                <%= button_to "Publish", publish_band_core_session_path(@band, core_session), method: :patch, class: "rounded-full bg-yellow-400 text-black text-xs font-semibold px-3 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+              <% end %>
+
+              <% if policy(core_session).unpublish? && core_session.published? %>
+                <%= button_to "Unpublish", unpublish_band_core_session_path(@band, core_session), method: :patch, class: "rounded-full border border-neutral-700 text-white text-xs font-semibold px-3 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
+              <% end %>
+
+              <%= link_to "Edit", edit_band_core_session_path(@band, core_session), class: "text-xs text-neutral-400 hover:text-white transition" %>
+              <%= button_to "Delete", band_core_session_path(@band, core_session), method: :delete, class: "text-xs text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this core session?" } } %>
             </div>
           </div>
         <% end %>

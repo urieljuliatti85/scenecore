@@ -132,6 +132,12 @@ Rails.application.routes.draw do
         patch :unpublish
       end
     end
+    resources :core_sessions, only: [ :new, :create, :show, :edit, :update, :destroy ] do
+      member do
+        patch :publish
+        patch :unpublish
+      end
+    end
   end
 
   # Defines the root path route ("/")
@@ -159,5 +165,7 @@ Rails.application.routes.draw do
     put "/:slug/polls/:poll_id/vote", to: "poll_votes#upsert", as: :poll_vote
     post "/:slug/posts/:post_id/comments", to: "comments#create", as: :post_comments
     delete "/:slug/posts/:post_id/comments/:id", to: "comments#destroy", as: :post_comment
+    post "/:slug/core_sessions/:core_session_id/rsvp", to: "core_session_rsvps#create", as: :core_session_rsvp
+    delete "/:slug/core_sessions/:core_session_id/rsvp", to: "core_session_rsvps#destroy", as: :cancel_core_session_rsvp
   end
 end

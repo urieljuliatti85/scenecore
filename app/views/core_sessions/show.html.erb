@@ -1,0 +1,53 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <%= link_to band_path(@band), class: "text-sm text-neutral-400 hover:text-white transition" do %>
+    &larr; <%= @band.name %>
+  <% end %>
+
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <h1 class="text-3xl font-extrabold tracking-tight"><%= @core_session.title %></h1>
+    <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= @core_session.status %></span>
+  </div>
+
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <% if policy(@core_session).publish? && @core_session.draft? %>
+      <%= button_to "Publish", publish_band_core_session_path(@band, @core_session), method: :patch, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+    <% end %>
+
+    <% if policy(@core_session).unpublish? && @core_session.published? %>
+      <%= button_to "Unpublish", unpublish_band_core_session_path(@band, @core_session), method: :patch, class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
+    <% end %>
+
+    <% if policy(@core_session).update? %>
+      <%= link_to "Edit", edit_band_core_session_path(@band, @core_session), class: "text-sm text-neutral-400 hover:text-white transition" %>
+    <% end %>
+
+    <% if policy(@core_session).destroy? %>
+      <%= button_to "Delete", band_core_session_path(@band, @core_session), method: :delete, class: "text-sm text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this core session?" } } %>
+    <% end %>
+  </div>
+
+  <dl class="mt-8 space-y-4 text-neutral-300">
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-neutral-500">Type</dt>
+      <dd class="mt-1"><%= @core_session.session_type.humanize %></dd>
+    </div>
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-neutral-500">When</dt>
+      <dd class="mt-1"><%= time_tag @core_session.starts_at, @core_session.starts_at.strftime("%d %b %Y · %H:%M") %></dd>
+    </div>
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-neutral-500">Seats</dt>
+      <dd class="mt-1">
+        <% if @core_session.capacity.present? %>
+          <%= @core_session.rsvps.count %> confirmed · <%= @core_session.spots_remaining %> available
+        <% else %>
+          <%= pluralize(@core_session.rsvps.count, "confirmed") %> · no limit
+        <% end %>
+      </dd>
+    </div>
+  </dl>
+
+  <% if @core_session.description.present? %>
+    <p class="mt-8 text-neutral-300 whitespace-pre-line"><%= @core_session.description %></p>
+  <% end %>
+</section>

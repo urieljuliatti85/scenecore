@@ -14,6 +14,7 @@ class Band < ApplicationRecord
   has_many :followers, through: :follows, source: :user
   has_many :posts, dependent: :destroy
   has_many :events, dependent: :destroy
+  has_many :core_sessions, dependent: :destroy
   has_many :polls, dependent: :destroy
   has_many :admin_action_logs, as: :subject, dependent: :destroy
   belongs_to :category, optional: true
