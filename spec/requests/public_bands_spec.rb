@@ -326,6 +326,50 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).not_to include("No music, merch, posts or shows published yet")
     end
 
+    it "links the hero to the merch section when the band has a published product" do
+      band = create(:band, :approved)
+      create(:product, :published, band: band)
+
+      get public_band_path(band.slug)
+
+      hero = Nokogiri::HTML(response.body).css(".grid").first
+
+      expect(hero.css("a[href='#merch']")).to be_present
+      expect(hero.css("a[href='#merch']").text).to include("Merch")
+    end
+
+    it "does not link the hero to merch when the band has only a draft product" do
+      band = create(:band, :approved)
+      create(:product, band: band)
+
+      get public_band_path(band.slug)
+
+      hero = Nokogiri::HTML(response.body).css(".grid").first
+
+      expect(hero.css("a[href='#merch']")).to be_empty
+    end
+
+    it "leaves a hero stat unlinked when its section is not on the page" do
+      band = create(:band, :approved)
+
+      get public_band_path(band.slug)
+
+      hero = Nokogiri::HTML(response.body).css(".grid").first
+
+      expect(hero.css("a[href='#albums']")).to be_empty
+    end
+
+    it "links the hero to the albums section when the band has a published album" do
+      band = create(:band, :approved)
+      create(:album, :published, band: band)
+
+      get public_band_path(band.slug)
+
+      hero = Nokogiri::HTML(response.body).css(".grid").first
+
+      expect(hero.css("a[href='#albums']")).to be_present
+    end
+
     it "shows the follower count" do
       band = create(:band, :approved)
       create_list(:follow, 2, band: band)
