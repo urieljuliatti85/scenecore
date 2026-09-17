@@ -297,17 +297,18 @@ RSpec.describe "Pages", type: :request do
       get how_it_works_path
 
       expect(response.body).to include("75% of memberships")
-      expect(response.body).to include("90% of store sales")
+      expect(response.body).to include("75% of store sales")
       expect(response.body).to include("Creating a band page is free")
     end
 
-    # The two splits differ, so quoting one figure for both would misstate
-    # what a band actually earns.
-    it "keeps the membership and store splits distinct" do
+    # Memberships and store sales carry the same rate, so the page must not
+    # quote a different figure for either and imply a band earns less one way.
+    it "quotes the same split for memberships and store sales" do
       get how_it_works_path
 
       expect(response.body).to include("25% to SceneCore")
-      expect(response.body).to include("10% to SceneCore")
+      expect(response.body).not_to include("10% to SceneCore")
+      expect(response.body).not_to include("90%")
     end
   end
 end
