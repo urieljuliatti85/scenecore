@@ -55,5 +55,17 @@ RSpec.describe GoogleAnalyticsClient do
 
       expect { described_class.new.summary }.to raise_error(described_class::Error, /not configured/)
     end
+
+    it "raises for a day range outside the allowed presets" do
+      allow(described_class).to receive(:configured?).and_return(true)
+
+      expect { described_class.new.summary(days: 15) }.to raise_error(described_class::Error, /Unsupported day range/)
+    end
+  end
+
+  describe "ALLOWED_DAY_RANGES" do
+    it "is exactly the three presets the admin UI offers" do
+      expect(described_class::ALLOWED_DAY_RANGES).to eq([ 7, 30, 90 ])
+    end
   end
 end

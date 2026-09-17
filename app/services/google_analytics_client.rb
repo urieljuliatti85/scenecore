@@ -13,9 +13,15 @@ class GoogleAnalyticsClient
   Error = Class.new(StandardError)
 
   CREDENTIALS_PATH = Rails.root.join("config/google_analytics_credentials.json")
+  ALLOWED_DAY_RANGES = [ 7, 30, 90 ].freeze
 
-  Metrics = Struct.new(:active_users, :sessions, :page_views, :top_pages, keyword_init: true)
+  Metrics = Struct.new(
+    :active_users, :sessions, :page_views, :top_pages, :daily_series, :channels, :devices,
+    keyword_init: true
+  )
   PageResult = Struct.new(:path, :views, keyword_init: true)
+  DailyPoint = Struct.new(:date, :active_users, :sessions, keyword_init: true)
+  BreakdownResult = Struct.new(:label, :sessions, keyword_init: true)
 
   # Local dev keeps the key as a file (gitignored); hosts that can't mount
   # a file as a secret (e.g. Railway) set GOOGLE_ANALYTICS_CREDENTIALS_JSON
@@ -32,15 +38,33 @@ class GoogleAnalyticsClient
     @property_id = ENV["GOOGLE_ANALYTICS_PROPERTY_ID"]
   end
 
-  # Summary totals plus the top pages by views, for the last `days` days.
+  # Totals, daily trend, top pages, traffic channel, and device breakdown
+  # for the last `days` days. `days` is restricted to ALLOWED_DAY_RANGES
+  # rather than accepting anything, since this only ever backs the three
+  # preset buttons in the admin UI — not a free-form report builder.
   def summary(days: 30)
     raise Error, "Google Analytics is not configured" unless self.class.configured?
+    raise Error, "Unsupported day range: #{days}" unless ALLOWED_DAY_RANGES.include?(days)
 
     date_range = Google::Analytics::Data::V1beta::DateRange.new(
       start_date: "#{days}daysAgo", end_date: "today"
     )
 
-    totals = client.run_report(
+    Metrics.new(
+      **totals(date_range),
+      top_pages: top_pages(date_range),
+      daily_series: daily_series(date_range),
+      channels: channel_breakdown(date_range),
+      devices: device_breakdown(date_range)
+    )
+  rescue Google::Cloud::Error, ::GRPC::BadStatus, Signet::AuthorizationError => e
+    raise Error, "Could not reach Google Analytics: #{e.message}"
+  end
+
+  private
+
+  def totals(date_range)
+    report = client.run_report(
       property: "properties/#{@property_id}",
       date_ranges: [ date_range ],
       metrics: [
@@ -50,30 +74,74 @@ class GoogleAnalyticsClient
       ]
     )
 
-    pages = client.run_report(
+    row = report.rows.first
+    {
+      active_users: row&.metric_values&.[](0)&.value.to_i,
+      sessions: row&.metric_values&.[](1)&.value.to_i,
+      page_views: row&.metric_values&.[](2)&.value.to_i
+    }
+  end
+
+  def top_pages(date_range)
+    report = client.run_report(
       property: "properties/#{@property_id}",
       date_ranges: [ date_range ],
       dimensions: [ Google::Analytics::Data::V1beta::Dimension.new(name: "pagePath") ],
       metrics: [ Google::Analytics::Data::V1beta::Metric.new(name: "screenPageViews") ],
-      order_bys: [ {
-        metric: { metric_name: "screenPageViews" },
-        desc: true
-      } ],
+      order_bys: [ { metric: { metric_name: "screenPageViews" }, desc: true } ],
       limit: 10
     )
 
-    row = totals.rows.first
-    Metrics.new(
-      active_users: row&.metric_values&.[](0)&.value.to_i,
-      sessions: row&.metric_values&.[](1)&.value.to_i,
-      page_views: row&.metric_values&.[](2)&.value.to_i,
-      top_pages: pages.rows.map { |r| PageResult.new(path: r.dimension_values[0].value, views: r.metric_values[0].value.to_i) }
-    )
-  rescue Google::Cloud::Error, ::GRPC::BadStatus, Signet::AuthorizationError => e
-    raise Error, "Could not reach Google Analytics: #{e.message}"
+    report.rows.map { |r| PageResult.new(path: r.dimension_values[0].value, views: r.metric_values[0].value.to_i) }
   end
 
-  private
+  # One point per calendar day so the admin view can chart it the same
+  # way as the band membership dashboard's bar chart — no separate
+  # charting library, just values to size bars by.
+  def daily_series(date_range)
+    report = client.run_report(
+      property: "properties/#{@property_id}",
+      date_ranges: [ date_range ],
+      dimensions: [ Google::Analytics::Data::V1beta::Dimension.new(name: "date") ],
+      metrics: [
+        Google::Analytics::Data::V1beta::Metric.new(name: "activeUsers"),
+        Google::Analytics::Data::V1beta::Metric.new(name: "sessions")
+      ],
+      order_bys: [ { dimension: { dimension_name: "date" } } ]
+    )
+
+    report.rows.map do |r|
+      DailyPoint.new(
+        date: Date.strptime(r.dimension_values[0].value, "%Y%m%d"),
+        active_users: r.metric_values[0].value.to_i,
+        sessions: r.metric_values[1].value.to_i
+      )
+    end
+  end
+
+  # GA4's own channel grouping (Organic Search, Direct, Social, Referral,
+  # etc.) rather than raw source/medium — that's the level of detail a
+  # "where do visitors come from" admin view needs, not a full attribution
+  # report.
+  def channel_breakdown(date_range)
+    breakdown_report("sessionDefaultChannelGroup", date_range)
+  end
+
+  def device_breakdown(date_range)
+    breakdown_report("deviceCategory", date_range)
+  end
+
+  def breakdown_report(dimension_name, date_range)
+    report = client.run_report(
+      property: "properties/#{@property_id}",
+      date_ranges: [ date_range ],
+      dimensions: [ Google::Analytics::Data::V1beta::Dimension.new(name: dimension_name) ],
+      metrics: [ Google::Analytics::Data::V1beta::Metric.new(name: "sessions") ],
+      order_bys: [ { metric: { metric_name: "sessions" }, desc: true } ]
+    )
+
+    report.rows.map { |r| BreakdownResult.new(label: r.dimension_values[0].value, sessions: r.metric_values[0].value.to_i) }
+  end
 
   def client
     @client ||= Google::Analytics::Data.analytics_data do |config|
