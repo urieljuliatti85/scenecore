@@ -18,4 +18,12 @@ RSpec.describe Band, "country code" do
     expect(band).not_to be_valid
     expect(band.errors[:country_code]).to include("must be a two-letter ISO country code")
   end
+
+  it "cannot change country after Stripe Connect setup has started" do
+    band = create(:band, country_code: "BR", stripe_connect_account_id: "acct_existing")
+
+    expect(band.update(country_code: "US")).to be(false)
+    expect(band.errors[:country_code]).to include("cannot be changed after Stripe Connect setup has started")
+    expect(band.reload.country_code).to eq("BR")
+  end
 end
