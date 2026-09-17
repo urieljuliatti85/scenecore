@@ -16,11 +16,15 @@ class GoogleAnalyticsClient
   ALLOWED_DAY_RANGES = [ 7, 30, 90 ].freeze
 
   Metrics = Struct.new(
-    :active_users, :sessions, :page_views, :top_pages, :daily_series, :channels, :devices,
+    :active_users, :sessions, :page_views, :bounce_rate, :session_duration,
+    :top_pages, :landing_pages, :daily_series, :channels, :devices,
     keyword_init: true
   )
-  PageResult = Struct.new(:path, :views, keyword_init: true)
-  DailyPoint = Struct.new(:date, :active_users, :sessions, keyword_init: true)
+  # bounce_rate is a fraction (0.0–1.0) as GA4 returns it; the view formats
+  # it. avg_duration and avg_time_on_page are seconds.
+  PageResult = Struct.new(:path, :views, :bounce_rate, :avg_duration, :avg_time_on_page, keyword_init: true)
+  LandingPageResult = Struct.new(:path, :users, :bounce_rate, :avg_duration, :avg_time_on_page, keyword_init: true)
+  DailyPoint = Struct.new(:date, :active_users, :sessions, :bounce_rate, keyword_init: true)
   BreakdownResult = Struct.new(:label, :sessions, keyword_init: true)
 
   # Local dev keeps the key as a file (gitignored); hosts that can't mount
@@ -53,6 +57,7 @@ class GoogleAnalyticsClient
     Metrics.new(
       **totals(date_range),
       top_pages: top_pages(date_range),
+      landing_pages: landing_pages(date_range),
       daily_series: daily_series(date_range),
       channels: channel_breakdown(date_range),
       devices: device_breakdown(date_range)
@@ -70,7 +75,9 @@ class GoogleAnalyticsClient
       metrics: [
         Google::Analytics::Data::V1beta::Metric.new(name: "activeUsers"),
         Google::Analytics::Data::V1beta::Metric.new(name: "sessions"),
-        Google::Analytics::Data::V1beta::Metric.new(name: "screenPageViews")
+        Google::Analytics::Data::V1beta::Metric.new(name: "screenPageViews"),
+        Google::Analytics::Data::V1beta::Metric.new(name: "bounceRate"),
+        Google::Analytics::Data::V1beta::Metric.new(name: "averageSessionDuration")
       ]
     )
 
@@ -78,7 +85,9 @@ class GoogleAnalyticsClient
     {
       active_users: row&.metric_values&.[](0)&.value.to_i,
       sessions: row&.metric_values&.[](1)&.value.to_i,
-      page_views: row&.metric_values&.[](2)&.value.to_i
+      page_views: row&.metric_values&.[](2)&.value.to_i,
+      bounce_rate: row&.metric_values&.[](3)&.value.to_f,
+      session_duration: row&.metric_values&.[](4)&.value.to_f
     }
   end
 
@@ -87,17 +96,62 @@ class GoogleAnalyticsClient
       property: "properties/#{@property_id}",
       date_ranges: [ date_range ],
       dimensions: [ Google::Analytics::Data::V1beta::Dimension.new(name: "pagePath") ],
-      metrics: [ Google::Analytics::Data::V1beta::Metric.new(name: "screenPageViews") ],
+      metrics: [
+        Google::Analytics::Data::V1beta::Metric.new(name: "screenPageViews"),
+        Google::Analytics::Data::V1beta::Metric.new(name: "bounceRate"),
+        Google::Analytics::Data::V1beta::Metric.new(name: "averageSessionDuration"),
+        Google::Analytics::Data::V1beta::Metric.new(name: "userEngagementDuration")
+      ],
       order_bys: [ { metric: { metric_name: "screenPageViews" }, desc: true } ],
       limit: 10
     )
 
-    report.rows.map { |r| PageResult.new(path: r.dimension_values[0].value, views: r.metric_values[0].value.to_i) }
+    report.rows.map do |r|
+      PageResult.new(
+        path: r.dimension_values[0].value,
+        views: r.metric_values[0].value.to_i,
+        bounce_rate: r.metric_values[1].value.to_f,
+        avg_duration: r.metric_values[2].value.to_f,
+        # userEngagementDuration is the total across views, so divide it
+        # back out to get the per-view average the table column means.
+        avg_time_on_page: r.metric_values[0].value.to_i.positive? ? r.metric_values[3].value.to_f / r.metric_values[0].value.to_i : 0
+      )
+    end
   end
 
-  # One point per calendar day so the admin view can chart it the same
-  # way as the band membership dashboard's bar chart — no separate
-  # charting library, just values to size bars by.
+  # GA4's landingPage dimension answers "where did people arrive", which is
+  # a different question from "which pages got viewed" above — a page can
+  # be heavily viewed without ever being an entry point.
+  def landing_pages(date_range)
+    report = client.run_report(
+      property: "properties/#{@property_id}",
+      date_ranges: [ date_range ],
+      dimensions: [ Google::Analytics::Data::V1beta::Dimension.new(name: "landingPage") ],
+      metrics: [
+        Google::Analytics::Data::V1beta::Metric.new(name: "activeUsers"),
+        Google::Analytics::Data::V1beta::Metric.new(name: "bounceRate"),
+        Google::Analytics::Data::V1beta::Metric.new(name: "averageSessionDuration"),
+        Google::Analytics::Data::V1beta::Metric.new(name: "userEngagementDuration"),
+        Google::Analytics::Data::V1beta::Metric.new(name: "screenPageViews")
+      ],
+      order_bys: [ { metric: { metric_name: "activeUsers" }, desc: true } ],
+      limit: 10
+    )
+
+    report.rows.map do |r|
+      views = r.metric_values[4].value.to_i
+      LandingPageResult.new(
+        path: r.dimension_values[0].value,
+        users: r.metric_values[0].value.to_i,
+        bounce_rate: r.metric_values[1].value.to_f,
+        avg_duration: r.metric_values[2].value.to_f,
+        avg_time_on_page: views.positive? ? r.metric_values[3].value.to_f / views : 0
+      )
+    end
+  end
+
+  # One point per calendar day, carrying bounce rate alongside the counts so
+  # the dashboard can plot users against bounce rate on one chart.
   def daily_series(date_range)
     report = client.run_report(
       property: "properties/#{@property_id}",
@@ -105,7 +159,8 @@ class GoogleAnalyticsClient
       dimensions: [ Google::Analytics::Data::V1beta::Dimension.new(name: "date") ],
       metrics: [
         Google::Analytics::Data::V1beta::Metric.new(name: "activeUsers"),
-        Google::Analytics::Data::V1beta::Metric.new(name: "sessions")
+        Google::Analytics::Data::V1beta::Metric.new(name: "sessions"),
+        Google::Analytics::Data::V1beta::Metric.new(name: "bounceRate")
       ],
       order_bys: [ { dimension: { dimension_name: "date" } } ]
     )
@@ -114,7 +169,8 @@ class GoogleAnalyticsClient
       DailyPoint.new(
         date: Date.strptime(r.dimension_values[0].value, "%Y%m%d"),
         active_users: r.metric_values[0].value.to_i,
-        sessions: r.metric_values[1].value.to_i
+        sessions: r.metric_values[1].value.to_i,
+        bounce_rate: r.metric_values[2].value.to_f
       )
     end
   end
