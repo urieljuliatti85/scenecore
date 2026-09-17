@@ -9,8 +9,15 @@
   <% else %>
     <ul class="space-y-3">
       <% @bands.each do |band| %>
-        <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-center justify-between">
-          <%= link_to band.name, band, class: "font-semibold text-white hover:text-yellow-400" %>
+        <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-center justify-between gap-4">
+          <div class="min-w-0">
+            <%= link_to band.name, band, class: "font-semibold text-white hover:text-yellow-400" %>
+            <% if policy(band).update? %>
+              <div class="mt-2">
+                <%= link_to "Products", band_products_path(band), class: "text-sm text-neutral-400 hover:text-white transition" %>
+              </div>
+            <% end %>
+          </div>
           <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= band.status %></span>
         </li>
       <% end %>
