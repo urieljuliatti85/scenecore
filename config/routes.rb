@@ -184,6 +184,7 @@ Rails.application.routes.draw do
 
   get "/search", to: "search#index", as: :search
 
+  get "/about", to: "pages#about", as: :about
   get "/how-it-works", to: "pages#how_it_works", as: :how_it_works
   get "/contact", to: "contact_messages#new", as: :contact
   post "/contact", to: "contact_messages#create"

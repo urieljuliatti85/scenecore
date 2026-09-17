@@ -267,6 +267,54 @@ RSpec.describe "Pages", type: :request do
     end
   end
 
+  describe "GET /about" do
+    it "is reachable without signing in" do
+      get about_path
+
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "leads with the product promise" do
+      get about_path
+
+      expect(Nokogiri::HTML(response.body).css("h1").text).to include("Your band. Your fans. Your home.")
+    end
+
+    # The page states what SceneCore is not, which is the part most likely
+    # to be softened into a claim the platform does not stand behind.
+    it "says it does not replace streaming" do
+      get about_path
+
+      expect(response.body).to include("Not a streaming replacement")
+    end
+
+    # Quoted from the same constants and ADRs the How it works page uses, so
+    # the two pages can never disagree about what a band keeps.
+    it "quotes the same revenue splits as How it works" do
+      get about_path
+
+      expect(response.body).to include("85% of memberships")
+      expect(response.body).to include("90% of store sales")
+    end
+
+    it "is linked from the header nav and the footer" do
+      get root_path
+
+      doc = Nokogiri::HTML(response.body)
+
+      expect(doc.css("#desktop-nav a[href='#{about_path}']")).to be_present
+      expect(doc.css("footer a[href='#{about_path}']")).to be_present
+    end
+
+    it "marks itself as the current page in the nav" do
+      get about_path
+
+      current = Nokogiri::HTML(response.body).css("#desktop-nav a[aria-current='page']")
+
+      expect(current.text).to include("About")
+    end
+  end
+
   describe "GET /how-it-works" do
     it "is reachable without signing in" do
       get how_it_works_path

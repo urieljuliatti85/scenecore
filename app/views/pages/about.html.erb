@@ -1,0 +1,144 @@
+<% content_for :title, "About — SceneCore" %>
+
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-4xl mx-auto">
+  <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 mb-3">About</p>
+  <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">
+    Your band. Your fans. Your home.
+  </h1>
+  <p class="text-lg text-neutral-300 mb-12 max-w-2xl">
+    SceneCore is a music-first home for independent bands — the place where a
+    band's music, its people and everything it shares with them stay together.
+  </p>
+
+  <h2 class="text-2xl font-extrabold tracking-tight mb-2">The problem</h2>
+  <p class="text-neutral-400 mb-8 max-w-2xl">
+    A band is discovered on one service, publishes on another, sells somewhere
+    else, and talks to its fans through two or three more.
+  </p>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-16">
+    <%= render layout: "info_card" do %>
+      <h3 class="text-lg font-semibold text-white">It isn't only scattered tools</h3>
+      <p class="text-neutral-300">
+        Every one of those services is good at its part. What breaks is the
+        relationship itself: it ends up split across places the band does not
+        own, on terms the band does not set.
+      </p>
+    <% end %>
+
+    <%= render layout: "info_card" do %>
+      <h3 class="text-lg font-semibold text-white">A rented audience is a fragile one</h3>
+      <p class="text-neutral-300">
+        When the people who care about a band live inside someone else's
+        platform, reaching them depends on that platform continuing to allow
+        it. A following built this way can thin out without anyone leaving.
+      </p>
+    <% end %>
+  </div>
+
+  <h2 class="text-2xl font-extrabold tracking-tight mb-2">What SceneCore does</h2>
+  <p class="text-neutral-400 mb-8 max-w-2xl">
+    It gives that relationship one continuous home, with the music at its
+    centre.
+  </p>
+
+  <div class="flex flex-col gap-4 mb-16">
+    <%= render layout: "info_card" do %>
+      <h3 class="font-semibold text-white">For bands</h3>
+      <p class="text-neutral-300 text-sm">
+        A page that is yours: publish your albums, write to the people
+        following you, share what only members see, sell merchandise, announce
+        shows, and see how that relationship is going — without deciding first
+        which service each piece belongs to.
+      </p>
+    <% end %>
+
+    <%= render layout: "info_card" do %>
+      <h3 class="font-semibold text-white">For fans</h3>
+      <p class="text-neutral-300 text-sm">
+        Discover a band, listen, follow, keep up with what it publishes, and
+        support it directly if you want to — without leaving the band's own
+        page to do each of those things.
+      </p>
+    <% end %>
+
+    <%= render layout: "info_card" do %>
+      <h3 class="font-semibold text-white">Music first, not content in general</h3>
+      <p class="text-neutral-300 text-sm">
+        A band is not a generic creator with a posting schedule. The music is
+        what the relationship is built on, so it stays at the centre of the
+        page rather than becoming one more kind of post.
+      </p>
+    <% end %>
+  </div>
+
+  <h2 class="text-2xl font-extrabold tracking-tight mb-2">What SceneCore is not</h2>
+  <p class="text-neutral-400 mb-8 max-w-2xl">
+    Being clear about this is more useful than claiming to replace everything.
+  </p>
+
+  <div class="flex flex-col gap-4 mb-16">
+    <%= render layout: "info_card" do %>
+      <h3 class="font-semibold text-white">Not a streaming replacement</h3>
+      <p class="text-neutral-300 text-sm">
+        Streaming services are where most people find new music, and that is
+        worth keeping. SceneCore links out to them rather than asking anyone to
+        listen somewhere new. Use them to be discovered; use SceneCore to build
+        on it.
+      </p>
+    <% end %>
+
+    <%= render layout: "info_card" do %>
+      <h3 class="font-semibold text-white">Not a store with extra features</h3>
+      <p class="text-neutral-300 text-sm">
+        Selling a record is one moment in a relationship, not the whole of it.
+        Commerce here sits inside the band's page because the people buying are
+        the same people following, reading and showing up.
+      </p>
+    <% end %>
+
+    <%= render layout: "info_card" do %>
+      <h3 class="font-semibold text-white">Not a social network</h3>
+      <p class="text-neutral-300 text-sm">
+        There is no feed ranking bands against each other and no algorithm
+        deciding who hears from whom. A fan follows a band and hears from that
+        band.
+      </p>
+    <% end %>
+  </div>
+
+  <h2 class="text-2xl font-extrabold tracking-tight mb-2">How we make money</h2>
+  <p class="text-neutral-400 mb-8 max-w-2xl">
+    Bands pay nothing to be here. SceneCore takes a share only when a band
+    earns.
+  </p>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-4">
+    <%= render layout: "info_card" do %>
+      <h3 class="font-semibold text-white">Bands keep 85% of memberships</h3>
+      <p class="text-neutral-300 text-sm">
+        The remaining 15% covers running the platform: hosting the music and
+        content, handling payments, and keeping the band's home online.
+      </p>
+    <% end %>
+
+    <%= render layout: "info_card" do %>
+      <h3 class="font-semibold text-white">Bands keep 90% of store sales</h3>
+      <p class="text-neutral-300 text-sm">
+        The band supplies and ships the goods, so the platform takes less.
+      </p>
+    <% end %>
+  </div>
+
+  <p class="text-sm text-neutral-500 mb-16">
+    <%= link_to "How it works", how_it_works_path, class: "text-yellow-300 hover:text-yellow-200 transition" %>
+    goes through the membership levels and the money side in full.
+  </p>
+
+  <div class="flex flex-wrap items-center gap-3">
+    <%= link_to "Discover bands", discover_bands_path, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-6 py-3 hover:bg-yellow-400/20 hover:text-yellow-200 transition" %>
+    <% unless user_signed_in? %>
+      <%= link_to "Create your band's home", new_user_registration_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
+    <% end %>
+  </div>
+</section>
