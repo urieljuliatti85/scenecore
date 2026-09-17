@@ -141,6 +141,45 @@ RSpec.describe "Band Admin products", type: :request do
       expect(product.image).not_to be_attached
     end
 
+    # A failed create re-renders the form with an unsaved product that
+    # already holds the imported cover in memory. Previewing it needs a
+    # signed id, which only a persisted record has, so the form has to
+    # guard on persisted? — without it the validation error page itself
+    # raises and the band sees a 500 instead of what it typed wrong.
+    it "re-renders the form when validation fails on a Discogs import" do
+      band = create(:band)
+      admin = create(:user)
+      create(:band_membership, :administrator, band: band, user: admin)
+      sign_in admin
+
+      details = DiscogsClient::ReleaseDetails.new(
+        discogs_release_id: 123, title: "Distant Place",
+        image_url: "https://img.example.com/front.jpg", metadata: {}
+      )
+      allow(DiscogsClient).to receive(:new).and_return(instance_double(DiscogsClient, fetch_release: details))
+      allow_any_instance_of(RemoteImageFetcher).to receive(:call).and_return(
+        RemoteImageFetcher::Result.new(
+          io: StringIO.new("image-bytes"), filename: "front.jpg", content_type: "image/jpeg"
+        )
+      )
+
+      # A SKU another variant already holds is the ordinary way this fails.
+      taken = create(:product, band: band)
+      taken.variants.create!(name: "Existing", sku: "TAKEN-SKU", price_cents: 100, stock_quantity: 1)
+
+      expect {
+        post band_products_path(band), params: {
+          discogs_release_id: "123",
+          product: { variants_attributes: {
+            "0" => { name: "Default", sku: "TAKEN-SKU", price_cents: 12_000, stock_quantity: 1 }
+          } }
+        }
+      }.not_to change(Product, :count)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include("Sku has already been taken")
+    end
+
     it "lets a band administrator search Discogs releases" do
       band = create(:band)
       admin = create(:user)

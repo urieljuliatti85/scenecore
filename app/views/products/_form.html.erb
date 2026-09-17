@@ -51,8 +51,12 @@
   <div>
     <%= form.label :image, "Photo", class: "block text-sm font-medium text-neutral-300 mb-1" %>
     <%# A Discogs import brings the release's front cover with it, so this
-        is for replacing that or for a product that has none. %>
-    <% if product.image.attached? %>
+        is for replacing that or for a product that has none.
+
+        persisted? guards the preview: after a failed create the product is
+        unsaved while the imported cover is already attached in memory, and
+        a URL for it needs a signed id only a saved record can produce. %>
+    <% if product.persisted? && product.image.attached? %>
       <div class="flex items-center gap-4 mb-3">
         <%= image_tag product.image, class: "h-20 w-20 rounded-lg object-cover border border-neutral-800" %>
         <p class="text-xs text-neutral-500">
