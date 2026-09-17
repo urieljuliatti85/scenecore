@@ -51,8 +51,17 @@ export default class extends Controller {
       details.className = "text-xs text-neutral-500 mt-1"
       details.textContent = [release.year, release.format, release.label, release.catalog_number, release.country].filter(Boolean).join(" · ")
 
+      const attribution = document.createElement("a")
+      attribution.href = `https://www.discogs.com/release/${release.discogs_release_id}`
+      attribution.target = "_blank"
+      attribution.rel = "noopener"
+      attribution.className = "text-xs text-neutral-500 underline hover:text-neutral-300"
+      attribution.textContent = "Data provided by Discogs"
+      attribution.addEventListener("click", (event) => event.stopPropagation())
+
       item.appendChild(title)
       item.appendChild(details)
+      item.appendChild(attribution)
       item.addEventListener("click", () => this.select(release))
       this.resultsTarget.appendChild(item)
     })
@@ -69,7 +78,17 @@ export default class extends Controller {
   select(release) {
     this.selectedIdTarget.value = release.discogs_release_id
     this.nameTarget.value = release.title || ""
-    this.selectedLabelTarget.textContent = `Selected: ${release.title || "Untitled"} — ${release.artist || "Unknown artist"} · Data provided by Discogs`
+    this.selectedLabelTarget.innerHTML = ""
+    this.selectedLabelTarget.append(`Selected: ${release.title || "Untitled"} — ${release.artist || "Unknown artist"} · `)
+
+    const attribution = document.createElement("a")
+    attribution.href = `https://www.discogs.com/release/${release.discogs_release_id}`
+    attribution.target = "_blank"
+    attribution.rel = "noopener"
+    attribution.className = "underline hover:text-white"
+    attribution.textContent = "Data provided by Discogs"
+    this.selectedLabelTarget.appendChild(attribution)
+
     this.selectedLabelTarget.hidden = false
     this.renderResults([])
     this.queryTarget.value = ""
