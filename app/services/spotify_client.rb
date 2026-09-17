@@ -33,6 +33,25 @@ class SpotifyClient
 
   AlbumResult = Struct.new(:spotify_id, :name, :artist, :image_url, :release_year, keyword_init: true)
   AlbumDetails = Struct.new(:name, :cover_image_url, keyword_init: true)
+  ArtistResult = Struct.new(:spotify_id, :name, :image_url, :spotify_url, keyword_init: true)
+
+  # Used to prefill a new band's details from its Spotify profile. The
+  # external_urls link is taken from Spotify's own response rather than
+  # built from the id, so the band is never sent to a URL Spotify did
+  # not give us.
+  def search_artists(query)
+    return [] if query.blank?
+
+    response = get("/search", q: query, type: "artist", limit: 10)
+    response.fetch("artists", {}).fetch("items", []).map do |item|
+      ArtistResult.new(
+        spotify_id: item["id"],
+        name: item["name"],
+        image_url: item.dig("images", 0, "url"),
+        spotify_url: item.dig("external_urls", "spotify")
+      )
+    end
+  end
 
   def search_albums(query)
     return [] if query.blank?

@@ -1,4 +1,5 @@
-<%= form_with model: band, class: "flex flex-col gap-5" do |form| %>
+<%= form_with model: band, class: "flex flex-col gap-5",
+              data: band.new_record? ? { controller: "band-search", "band-search-url-value": search_bands_path } : {} do |form| %>
   <% if band.errors.any? %>
     <ul class="rounded-xl border border-red-900 bg-red-950/40 text-red-400 text-sm p-4 space-y-1">
       <% band.errors.full_messages.each do |message| %>
@@ -7,9 +8,30 @@
     </ul>
   <% end %>
 
+  <%# Only when signing a band up: on edit the details are already set, and
+      re-running a lookup would just risk overwriting them. %>
+  <% if band.new_record? %>
+    <div class="rounded-xl border border-neutral-800 bg-neutral-900/40 p-4 flex flex-col gap-2">
+      <label for="spotify_artist_query" class="block text-sm font-medium text-neutral-300">Find your band on Spotify (optional)</label>
+      <p class="text-xs text-neutral-500">Fills in the name, Spotify link and photo below. You can edit anything afterwards.</p>
+      <input type="text" id="spotify_artist_query" autocomplete="off" placeholder="Search by artist name"
+             data-band-search-target="query" data-action="input->band-search#search"
+             class="w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+      <ul data-band-search-target="results" class="text-sm text-neutral-300 empty:hidden"></ul>
+
+      <div data-band-search-target="preview" hidden class="flex items-center gap-3 border-t border-neutral-800 pt-3">
+        <img data-band-search-target="previewImage" src="" alt="" class="w-12 h-12 rounded object-cover">
+        <span class="text-sm text-neutral-300 flex-1">Photo from <span data-band-search-target="previewName"></span></span>
+        <button type="button" data-action="band-search#clearPhoto" class="text-xs text-neutral-400 hover:text-white underline cursor-pointer">Remove</button>
+      </div>
+
+      <%= hidden_field_tag :spotify_image_url, nil, data: { "band-search-target": "imageUrl" } %>
+    </div>
+  <% end %>
+
   <div>
     <%= form.label :name, class: "block text-sm font-medium text-neutral-300 mb-1" %>
-    <%= form.text_field :name, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    <%= form.text_field :name, data: { "band-search-target": "name" }, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
   </div>
 
   <div>
@@ -36,7 +58,7 @@
 
     <div>
       <%= form.label :spotify_url, "Spotify", class: "block text-sm font-medium text-neutral-300 mb-1" %>
-      <%= form.url_field :spotify_url, placeholder: "https://open.spotify.com/...", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+      <%= form.url_field :spotify_url, placeholder: "https://open.spotify.com/...", data: { "band-search-target": "spotifyUrl" }, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
     </div>
 
     <div>

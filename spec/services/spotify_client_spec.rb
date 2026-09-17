@@ -52,6 +52,59 @@ RSpec.describe SpotifyClient do
     end
   end
 
+  describe "#search_artists" do
+    it "returns an empty array for a blank query" do
+      expect(client.search_artists("")).to eq([])
+    end
+
+    it "maps Spotify's search response into ArtistResult structs" do
+      stub_http_response(body: {
+        artists: {
+          items: [
+            {
+              id: "artist123",
+              name: "Daft Punk",
+              images: [ { url: "https://example.com/artist.jpg" } ],
+              external_urls: { spotify: "https://open.spotify.com/artist/artist123" }
+            }
+          ]
+        }
+      })
+
+      results = client.search_artists("Daft Punk")
+
+      expect(results.size).to eq(1)
+      expect(results.first).to have_attributes(
+        spotify_id: "artist123",
+        name: "Daft Punk",
+        image_url: "https://example.com/artist.jpg",
+        spotify_url: "https://open.spotify.com/artist/artist123"
+      )
+    end
+
+    it "handles an artist with no image or external url" do
+      stub_http_response(body: {
+        artists: { items: [ { id: "artist123", name: "Unknown", images: [], external_urls: {} } ] }
+      })
+
+      expect(client.search_artists("Unknown").first).to have_attributes(
+        name: "Unknown", image_url: nil, spotify_url: nil
+      )
+    end
+
+    it "returns an empty array when Spotify reports no artists" do
+      stub_http_response(body: { artists: { items: [] } })
+
+      expect(client.search_artists("nothing")).to eq([])
+    end
+
+    it "raises SpotifyClient::Error when the request fails" do
+      stub_http_response(body: {}, success: false)
+
+      expect { client.search_artists("Daft Punk") }.to raise_error(SpotifyClient::Error)
+    end
+  end
+
   describe "#fetch_album" do
     it "maps Spotify's album response into AlbumDetails" do
       stub_http_response(body: {

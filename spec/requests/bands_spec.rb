@@ -54,6 +54,101 @@ RSpec.describe "Bands", type: :request do
     end
   end
 
+  describe "GET /bands/search" do
+    let(:artist) do
+      SpotifyClient::ArtistResult.new(
+        spotify_id: "artist123", name: "Daft Punk",
+        image_url: "https://example.com/artist.jpg",
+        spotify_url: "https://open.spotify.com/artist/artist123"
+      )
+    end
+
+    it "returns matching artists for a signed-in user" do
+      sign_in create(:user)
+      allow_any_instance_of(SpotifyClient).to receive(:search_artists).and_return([ artist ])
+
+      get search_bands_path, params: { q: "Daft Punk" }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.first).to include(
+        "name" => "Daft Punk",
+        "spotify_url" => "https://open.spotify.com/artist/artist123"
+      )
+    end
+
+    # Otherwise this is an open proxy to Spotify's API for anyone at all.
+    it "requires authentication" do
+      get search_bands_path, params: { q: "Daft Punk" }
+
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it "returns no results when platform-wide sign-ups are disabled" do
+      sign_in create(:user)
+      PlatformSetting.current.update!(band_signups_enabled: false)
+      allow_any_instance_of(SpotifyClient).to receive(:search_artists).and_return([ artist ])
+
+      get search_bands_path, params: { q: "Daft Punk" }
+
+      expect(response.parsed_body).to eq([])
+    end
+
+    it "reports a bad gateway when Spotify is unavailable" do
+      sign_in create(:user)
+      allow_any_instance_of(SpotifyClient).to receive(:search_artists).and_raise(SpotifyClient::Error)
+
+      get search_bands_path, params: { q: "Daft Punk" }
+
+      expect(response).to have_http_status(:bad_gateway)
+    end
+  end
+
+  describe "POST /bands with a Spotify photo" do
+    let(:image) do
+      RemoteImageFetcher::Result.new(
+        io: StringIO.new(file_fixture("band_photo.png").read),
+        filename: "artist.png", content_type: "image/png"
+      )
+    end
+
+    it "attaches the artist photo fetched from Spotify" do
+      sign_in create(:user)
+      allow_any_instance_of(RemoteImageFetcher).to receive(:call).and_return(image)
+
+      post bands_path, params: {
+        band: { name: "The Testers" },
+        spotify_image_url: "https://example.com/artist.jpg"
+      }
+
+      expect(Band.last.photo).to be_attached
+    end
+
+    # A Spotify outage must not cost the user their sign-up.
+    it "still creates the band when the photo cannot be fetched" do
+      sign_in create(:user)
+      allow_any_instance_of(RemoteImageFetcher).to receive(:call).and_raise(RemoteImageFetcher::Error)
+
+      expect {
+        post bands_path, params: {
+          band: { name: "The Testers" },
+          spotify_image_url: "https://example.com/artist.jpg"
+        }
+      }.to change(Band, :count).by(1)
+
+      expect(Band.last.photo).not_to be_attached
+      expect(response).to redirect_to(band_path(Band.last))
+    end
+
+    it "does not fetch anything when no Spotify image was chosen" do
+      sign_in create(:user)
+      expect_any_instance_of(RemoteImageFetcher).not_to receive(:call)
+
+      post bands_path, params: { band: { name: "The Testers" } }
+
+      expect(Band.last.photo).not_to be_attached
+    end
+  end
+
   describe "GET /bands/:id" do
     it "allows a band administrator to view their band" do
       user = create(:user)

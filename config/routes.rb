@@ -99,6 +99,10 @@ Rails.application.routes.draw do
   end
 
   resources :bands, only: [ :index, :new, :create, :show, :edit, :update ] do
+    collection do
+      get :search
+    end
+
     member do
       patch :approve
       patch :reject
