@@ -326,6 +326,30 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).not_to include("No music, merch, posts or shows published yet")
     end
 
+    # Prices are stored as integer cents and rendered through the Rails
+    # default, which is US dollars. This partial used to override it to BRL.
+    it "prices merch in dollars" do
+      band = create(:band, :approved)
+      product = create(:product, :published, band: band)
+      product.variants.create!(name: "Standard", sku: "V-1", price_cents: 12_000, stock_quantity: 3)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("$120.00")
+      expect(response.body).not_to include("R$")
+    end
+
+    it "shows a from-price when the variants differ" do
+      band = create(:band, :approved)
+      product = create(:product, :published, band: band)
+      product.variants.create!(name: "S", sku: "T-S", price_cents: 2_500, stock_quantity: 1)
+      product.variants.create!(name: "L", sku: "T-L", price_cents: 3_500, stock_quantity: 1)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("$25.00")
+    end
+
     it "links the hero to the merch section when the band has a published product" do
       band = create(:band, :approved)
       create(:product, :published, band: band)

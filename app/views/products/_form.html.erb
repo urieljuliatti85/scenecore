@@ -66,7 +66,7 @@
           <div>
             <%= variant_form.label :price_cents, "Price (cents)", class: "block text-sm font-medium text-neutral-300 mb-1" %>
             <%= variant_form.number_field :price_cents, required: true, min: 0, step: 1, placeholder: "12000", class: "w-full rounded-lg bg-neutral-950 border border-neutral-800 text-white px-4 py-2.5" %>
-            <p class="text-xs text-neutral-600 mt-1">Example: 12000 = 120.00 in the Store currency.</p>
+            <p class="text-xs text-neutral-600 mt-1">Example: 12000 = $120.00.</p>
           </div>
           <div>
             <%= variant_form.label :stock_quantity, "Stock", class: "block text-sm font-medium text-neutral-300 mb-1" %>
