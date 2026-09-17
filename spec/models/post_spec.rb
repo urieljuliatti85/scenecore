@@ -36,11 +36,15 @@ RSpec.describe Post, type: :model do
     expect(create(:post).post_type).to eq("announcement")
   end
 
-  it "restricts post_type to announcement or composition_journal" do
+  it "restricts post_type to announcement, composition_journal, or rehearsal_recording" do
     post = build(:post)
     post.post_type = "interview"
 
     expect(post).not_to be_valid
+  end
+
+  it "accepts rehearsal_recording as a post_type" do
+    expect(build(:post, post_type: :rehearsal_recording)).to be_valid
   end
 
   it "restricts visibility to public, followers, fan, supporter, or core_member" do

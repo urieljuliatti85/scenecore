@@ -30,5 +30,10 @@ FactoryBot.define do
       post_type { :composition_journal }
       visibility { :supporter }
     end
+
+    trait :rehearsal_recording do
+      post_type { :rehearsal_recording }
+      visibility { :supporter }
+    end
   end
 end
