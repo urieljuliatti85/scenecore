@@ -11,6 +11,7 @@
         <% unless user_signed_in? %>
           <li><%= link_to "Subscribe", new_user_registration_path, class: "text-sm text-neutral-300 hover:text-white transition" %></li>
         <% end %>
+        <li><%= link_to "About", about_path, class: "text-sm text-neutral-300 hover:text-white transition" %></li>
         <li><%= link_to "Contact", contact_path, class: "text-sm text-neutral-300 hover:text-white transition" %></li>
         <li><%= link_to "Support", support_path, class: "text-sm text-neutral-300 hover:text-white transition" %></li>
         <li><%= link_to "How it Works", how_it_works_path, class: "text-sm text-neutral-300 hover:text-white transition" %></li>
