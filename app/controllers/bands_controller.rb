@@ -54,7 +54,7 @@ class BandsController < ApplicationController
   # than navigating away, though each still has its own page for deep links
   # and for the forms that live there.
   CONTENT_TABS = %w[overview music posts shows community].freeze
-  MANAGE_TABS = %w[profile members supporters products payments].freeze
+  MANAGE_TABS = %w[profile members supporters products orders payments].freeze
   TABS = (CONTENT_TABS + MANAGE_TABS).freeze
 
   def show
@@ -142,6 +142,13 @@ class BandsController < ApplicationController
     when "products"
       authorize @band, :index?, policy_class: ProductPolicy
       @products = @band.products.includes(:variants).order(created_at: :desc)
+    when "orders"
+      authorize @band, :update?, policy_class: BandPolicy
+      # Orders the band still owes goods on come first: that is the work.
+      # The rest stay visible below as a record of what has been sold.
+      @orders_awaiting = @band.orders.awaiting_band.includes(:order_items, :shipping_address)
+      @orders_settled = @band.orders.where.not(status: [ :paid, :processing ])
+                             .includes(:order_items).order(created_at: :desc)
     when "payments"
       authorize @band, :update?, policy_class: BandPolicy
       @active_subscribers = @band.subscriptions.where(status: Subscription::BILLING_STATUSES).count

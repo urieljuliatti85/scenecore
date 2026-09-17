@@ -119,6 +119,11 @@ Rails.application.routes.draw do
     # link, so it is not a form page despite the name.
     resource :stripe_connect_account, only: [ :new, :create ], path: "stripe-connect"
     resource :payments, only: [ :show ], controller: "band_payments"
+    resources :orders, only: [ :show ], controller: "band_orders" do
+      member do
+        patch :fulfil
+      end
+    end
     resources :products, only: [ :index, :new, :create, :edit, :update, :destroy ] do
       member do
         patch :publish
