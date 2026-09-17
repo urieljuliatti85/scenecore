@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_162120) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_204415) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -403,6 +403,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_162120) do
     t.check_constraint "visibility::text = ANY (ARRAY['public'::character varying, 'followers'::character varying, 'fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[])", name: "posts_visibility_check"
   end
 
+  create_table "product_shipping_rates", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "product_id", null: false
+    t.integer "shipping_cents", null: false
+    t.bigint "shipping_zone_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_id", "shipping_zone_id"], name: "idx_on_product_id_shipping_zone_id_1f0dc9b69f", unique: true
+    t.index ["product_id"], name: "index_product_shipping_rates_on_product_id"
+    t.index ["shipping_zone_id"], name: "index_product_shipping_rates_on_shipping_zone_id"
+    t.check_constraint "shipping_cents >= 0", name: "product_shipping_rates_shipping_cents_non_negative"
+  end
+
   create_table "product_variants", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name", null: false
@@ -481,6 +493,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_162120) do
     t.string "state", null: false
     t.datetime "updated_at", null: false
     t.index ["order_id"], name: "index_shipping_addresses_on_order_id", unique: true
+  end
+
+  create_table "shipping_zone_countries", force: :cascade do |t|
+    t.bigint "band_id", null: false
+    t.string "country_code", null: false
+    t.datetime "created_at", null: false
+    t.bigint "shipping_zone_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["band_id", "country_code"], name: "index_shipping_zone_countries_on_band_id_and_country_code", unique: true
+    t.index ["band_id"], name: "index_shipping_zone_countries_on_band_id"
+    t.index ["shipping_zone_id"], name: "index_shipping_zone_countries_on_shipping_zone_id"
+    t.check_constraint "country_code::text ~ '^[A-Z]{2}$'::text", name: "shipping_zone_countries_country_code_iso"
+  end
+
+  create_table "shipping_zones", force: :cascade do |t|
+    t.bigint "band_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.integer "shipping_cents", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["band_id", "name"], name: "index_shipping_zones_on_band_id_and_name", unique: true
+    t.index ["band_id"], name: "index_shipping_zones_on_band_id"
+    t.check_constraint "shipping_cents >= 0", name: "shipping_zones_shipping_cents_non_negative"
   end
 
   create_table "stripe_webhook_events", force: :cascade do |t|
@@ -578,12 +614,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_162120) do
   add_foreign_key "poll_votes", "users"
   add_foreign_key "polls", "bands"
   add_foreign_key "posts", "bands"
+  add_foreign_key "product_shipping_rates", "products"
+  add_foreign_key "product_shipping_rates", "shipping_zones"
   add_foreign_key "product_variants", "products"
   add_foreign_key "products", "bands"
   add_foreign_key "ratings", "albums"
   add_foreign_key "ratings", "users"
   add_foreign_key "reports", "users", column: "reporter_id"
   add_foreign_key "shipping_addresses", "orders"
+  add_foreign_key "shipping_zone_countries", "bands"
+  add_foreign_key "shipping_zone_countries", "shipping_zones"
+  add_foreign_key "shipping_zones", "bands"
   add_foreign_key "subscriptions", "bands"
   add_foreign_key "subscriptions", "users"
   add_foreign_key "tracks", "albums"

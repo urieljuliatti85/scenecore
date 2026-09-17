@@ -95,6 +95,76 @@ RSpec.describe "Checkouts", type: :request do
       expect(order.platform_fee_cents).to eq(1_200)
     end
 
+    describe "destinations the band serves" do
+      # A band lists where it ships, so an unlisted country is a refusal.
+      # Charging nothing or falling back to a flat rate would commit the
+      # band to a parcel it never agreed to send.
+      it "refuses an address outside the band's destinations" do
+        create(:shipping_zone, band: band, name: "Brazil", shipping_cents: 1_500, country_codes: [ "BR" ])
+
+        expect { post checkout_path, params: { shipping_address: address_params } }
+          .not_to change(Order, :count)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.body).to include("is not a destination The Testers ships to")
+      end
+
+      it "leaves the cart active so the fan can fix the address" do
+        create(:shipping_zone, band: band, name: "Brazil", shipping_cents: 1_500, country_codes: [ "BR" ])
+
+        post checkout_path, params: { shipping_address: address_params }
+
+        expect(user.carts.sole).to be_active
+      end
+
+      it "charges the destination's rate rather than the product's flat rate" do
+        create(:shipping_zone, band: band, name: "United States", shipping_cents: 4_000, country_codes: [ "US" ])
+
+        post checkout_path, params: { shipping_address: address_params }
+
+        order = Order.last
+        expect(order.shipping_cents).to eq(4_000)
+        expect(order.total_cents).to eq(16_000)
+      end
+
+      it "prefers a product's own override for that destination" do
+        zone = create(:shipping_zone, band: band, name: "United States", shipping_cents: 4_000, country_codes: [ "US" ])
+        create(:product_shipping_rate, product: product, shipping_zone: zone, shipping_cents: 250)
+
+        post checkout_path, params: { shipping_address: address_params }
+
+        expect(Order.last.shipping_cents).to eq(250)
+      end
+
+      it "keeps selling at the flat rate while the band has no destinations" do
+        post checkout_path, params: { shipping_address: address_params }
+
+        expect(Order.last.shipping_cents).to eq(1_500)
+      end
+
+      # The select narrows the form to what can actually be ordered, so a
+      # fan does not fill the whole thing in only to be refused. The server
+      # still checks the choice — see the refusal above.
+      it "offers only the countries the band ships to" do
+        create(:shipping_zone, band: band, name: "Brazil", shipping_cents: 1_500, country_codes: [ "BR" ])
+        create(:shipping_zone, band: band, name: "Europe", shipping_cents: 4_000, country_codes: [ "PT" ])
+
+        get new_checkout_path
+
+        options = Nokogiri::HTML(response.body).css("#shipping_address_country option").map { |o| o["value"] }
+
+        expect(options).to contain_exactly("", "BR", "PT")
+      end
+
+      it "offers every country while the band has no destinations" do
+        get new_checkout_path
+
+        options = Nokogiri::HTML(response.body).css("#shipping_address_country option").map { |o| o["value"] }
+
+        expect(options.size).to eq(Country::CODES.size + 1)
+      end
+    end
+
     # docs/database.md OrderItems: the line is frozen at purchase time, so a
     # later price edit cannot rewrite what someone agreed to pay.
     it "snapshots the product name and price onto the order item" do

@@ -1,0 +1,8 @@
+<% content_for :title, "#{@zone.name} — #{@band.name}" %>
+
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <p class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Band Admin · Shipping</p>
+  <h1 class="text-3xl font-extrabold tracking-tight mb-8"><%= @zone.name %></h1>
+
+  <%= render "form", band: @band, zone: @zone %>
+</section>

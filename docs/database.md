@@ -314,9 +314,103 @@ The delivery address for one Order.
 - Belongs to exactly one order (addresses are captured per order, not
   reused from a stored address book in this version — a fan re-enters
   the address each purchase).
-- Shipping cost calculation method (flat rate per band, weight/zone-based,
-  or a carrier-rate API) is not yet decided — an open question, not a
-  data-model blocker, since `shipping_cents` on Order is provider-agnostic.
+- `country` holds an ISO-3166-1 alpha-2 code, not a country name. This is
+  what lets a destination be matched against a band's ShippingZones by
+  equality; free text ("Brasil", "brazil", "BR") could not be matched
+  reliably. Addresses written before the field became a select may still
+  hold a name, so anything reading the column must tolerate that.
+- `shipping_cents` on Order stays a plain snapshot rather than a reference
+  to the zone that produced it, so a band re-pricing a destination never
+  rewrites what a past order charged — and a carrier-rate API could replace
+  the calculation later without migrating order data.
+
+---
+
+## ShippingZones
+
+### Purpose
+
+One destination a band ships to, and the flat rate it charges to send a
+product there. Bands define their own (see `docs/product.md` Store →
+Shipping).
+
+### Attributes
+
+- id
+- band_id
+- name (the band's own label, e.g. "Rest of world"; never shown to fans)
+- shipping_cents
+- position
+- created_at
+- updated_at
+
+### Rules
+
+- `name` is unique per band, case-insensitively.
+- `shipping_cents >= 0` (DB check constraint). Zero is free shipping.
+- Charged once per distinct product in an order, not per unit — two copies
+  of one record ship together.
+- **A country covered by no zone cannot be checked out.** A band's zone
+  list is a sales territory as much as a price list; there is no
+  platform-wide fallback rate.
+- A band with no zones at all is the one exception: its products charge
+  `products.shipping_cents` anywhere. Zones arrived after bands were
+  already selling, and treating "not configured" as "ships nowhere" would
+  have closed those stores.
+
+---
+
+## ShippingZoneCountries
+
+### Purpose
+
+One country inside a band's ShippingZone.
+
+### Attributes
+
+- id
+- shipping_zone_id
+- band_id (denormalised from the zone — see Rules)
+- country_code (ISO-3166-1 alpha-2)
+- created_at
+- updated_at
+
+### Rules
+
+- `country_code` matches `^[A-Z]{2}$` (DB check constraint), the same
+  format as `bands.country_code`.
+- Unique on `(band_id, country_code)` (DB unique index). `band_id` is
+  denormalised from the zone precisely so the database can enforce this:
+  without it, two zones of one band could each claim BR and the rate for
+  Brazil would depend on join order.
+
+---
+
+## ProductShippingRates
+
+### Purpose
+
+A product's own rate for one of its band's ShippingZones, overriding the
+zone's figure for an item that is unusually heavy or light.
+
+### Attributes
+
+- id
+- product_id
+- shipping_zone_id
+- shipping_cents
+- created_at
+- updated_at
+
+### Rules
+
+- `shipping_cents >= 0` (DB check constraint).
+- Unique on `(product_id, shipping_zone_id)` (DB unique index).
+- The zone must belong to the product's band — otherwise one band's rates
+  could decide another band's shipping.
+- **A missing row means "charge the zone's rate", which is not the same as
+  a row holding 0** (deliberate free shipping for that item). Clearing the
+  field in the product form deletes the row rather than storing a zero.
 
 ---
 
@@ -332,7 +426,12 @@ Band
   ├── has_many Albums
   ├── has_many Products
   ├── has_many Carts
-  └── has_many Orders
+  ├── has_many Orders
+  └── has_many ShippingZones
+        └── has_many ShippingZoneCountries
+
+Product
+  └── has_many ProductShippingRates (one per ShippingZone, optional)
 
 Album
   └── (links out to Spotify; no Tracks association since 2026-09-16)

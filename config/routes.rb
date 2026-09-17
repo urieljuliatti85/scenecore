@@ -124,6 +124,7 @@ Rails.application.routes.draw do
         patch :fulfil
       end
     end
+    resources :shipping_zones, only: [ :index, :new, :create, :edit, :update, :destroy ], path: "shipping"
     resources :products, only: [ :index, :new, :create, :edit, :update, :destroy ] do
       member do
         patch :publish

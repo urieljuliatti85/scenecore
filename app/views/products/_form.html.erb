@@ -67,11 +67,56 @@
     <%= form.file_field :image, accept: "image/png,image/jpeg,image/webp", class: "w-full text-sm text-neutral-300 file:mr-4 file:rounded-full file:border-0 file:bg-yellow-400 file:text-black file:font-semibold file:px-4 file:py-2 file:cursor-pointer" %>
   </div>
 
-  <div>
-    <%= form.label :shipping_cents, "Shipping (cents)", class: "block text-sm font-medium text-neutral-300 mb-1" %>
-    <%= form.number_field :shipping_cents, min: 0, step: 1, class: "w-full rounded-lg bg-neutral-950 border border-neutral-800 text-white px-4 py-2.5" %>
-    <p class="text-xs text-neutral-600 mt-1">Charged once per order for this product, however many the fan buys. Leave at 0 for free shipping.</p>
-  </div>
+  <%# Two shipping models coexist: a flat per-product rate for bands that
+      have not set up destinations, and per-destination rates for those
+      that have. Showing both at once would suggest they combine, so the
+      form shows whichever one is actually in use. %>
+  <% zones = band.shipping_zones.includes(:zone_countries).ordered %>
+
+  <% if zones.empty? %>
+    <div>
+      <%= form.label :shipping_cents, "Shipping (cents)", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.number_field :shipping_cents, min: 0, step: 1, class: "w-full rounded-lg bg-neutral-950 border border-neutral-800 text-white px-4 py-2.5" %>
+      <p class="text-xs text-neutral-600 mt-1">
+        Charged once per order for this product, however many the fan buys. Leave at 0 for free shipping.
+        <%= link_to "Set up shipping destinations", band_shipping_zones_path(band), class: "text-neutral-400 hover:text-white underline underline-offset-2" %>
+        to charge different rates by country.
+      </p>
+    </div>
+  <% else %>
+    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5">
+      <h2 class="text-lg font-semibold text-white">Shipping</h2>
+      <p class="text-sm text-neutral-500 mt-1 mb-5">
+        Leave a destination blank to charge your usual rate for it. Fill it in only when
+        this item costs something different to send.
+      </p>
+
+      <div class="space-y-4">
+        <% zones.each do |zone| %>
+          <% rate = product.shipping_rates.find { |r| r.shipping_zone_id == zone.id } %>
+          <%= form.fields_for :shipping_rates, rate || product.shipping_rates.new(shipping_zone: zone) do |rate_form| %>
+            <div class="grid sm:grid-cols-2 gap-3 sm:items-center">
+              <div>
+                <%= rate_form.hidden_field :shipping_zone_id, value: zone.id %>
+                <%= rate_form.label :shipping_cents, zone.name, class: "block text-sm font-medium text-neutral-300" %>
+                <p class="text-xs text-neutral-600 mt-0.5">
+                  Usually <%= zone.shipping_cents.zero? ? "free" : number_to_currency(zone.shipping_cents / 100.0) %>
+                </p>
+              </div>
+              <%= rate_form.number_field :shipping_cents, min: 0, step: 1,
+                    placeholder: zone.shipping_cents.to_s,
+                    class: "w-full rounded-lg bg-neutral-950 border border-neutral-800 text-white px-4 py-2.5" %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <p class="text-xs text-neutral-600 mt-5">
+        <%= link_to "Manage destinations", band_shipping_zones_path(band), class: "text-neutral-400 hover:text-white underline underline-offset-2" %>
+        to change your usual rates or add a country.
+      </p>
+    </div>
+  <% end %>
 
   <% if product.new_record? %>
     <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5">

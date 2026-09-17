@@ -928,11 +928,39 @@ phase):
   with a 10% platform commission (ADR-007), shipping address and cost
   captured on the order (`docs/database.md` Products/ProductVariants/
   Carts/Orders)
-- Not yet built. No longer blocked on payment provider selection — Stripe
-  is already integrated and used for Subscriptions (see Payments below)
-  — but Store specifically needs Stripe Connect (band onboarding,
-  connected accounts), which is separate infrastructure from the plain
-  Checkout Sessions Subscriptions already uses.
+- Built. Cart, checkout through Stripe Connect destination charges, and
+  band-side order fulfilment are in production use.
+
+#### Shipping
+
+Decided 2026-09-17, resolving the open question about how Store shipping is
+calculated. **Bands define their own destinations.** A band creates named
+destinations — "Brazil", "South America", "Rest of world" — each holding a
+set of countries and a flat rate charged once per product in the order. A
+product may override the rate for a destination when it is unusually heavy
+or light.
+
+This follows Discogs rather than a carrier-rate API, and the consequence is
+deliberate: **a country no destination covers cannot be checked out at
+all.** The destination list is a sales territory as much as a price list. A
+band is the only party that knows what it can actually post and for how
+much, and a wrong automatic quote costs the band real money on every order,
+so the platform does not guess on its behalf.
+
+Countries are stored as ISO-3166-1 alpha-2 codes throughout — the same
+format `bands.country_code` already used for Stripe Connect — so a buyer's
+address matches a destination by equality rather than by parsing free text.
+
+A band that has defined no destinations keeps charging the flat
+per-product rate anywhere in the world. Zones arrived after bands were
+already selling, and treating "not configured" as "ships nowhere" would
+have closed those stores on deploy.
+
+Not chosen, and why: weight-based rates need per-product weights and a
+carrier table the MVP has no source for; a carrier-rate API (Correios,
+EasyPost) adds an external dependency in the checkout path whose downtime
+would block sales, and it still cannot answer whether a band is willing to
+post to a given country.
 
 **Payments** (Phase 9)
 - Stripe is the approved and already-integrated payment provider
@@ -1163,9 +1191,6 @@ yet made, tracked in §7 Open Questions:
 - Store refund behavior — does refunding also reverse SceneCore's
   application fee, and who initiates it, the band or SceneCore
   (`docs/payments.md` Financial Rules)?
-- Shipping cost calculation method for Store orders (flat rate, zone/
-  weight-based, or a carrier-rate API — `docs/database.md`
-  ShippingAddresses).
 - Door/check-in role for ticket validation (ROADMAP.md 11.5 assumes
   someone validates tickets, but that role isn't in `docs/permissions.md`
   yet — likely a Band Member/Administrator action, to be confirmed).

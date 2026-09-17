@@ -57,6 +57,8 @@ A Band Member with elevated permissions within their own band. Can:
 - everything Band Member can
 - manage their own band's profile
 - manage band's products
+- manage band's shipping destinations and rates (which also decides the
+  countries the band's Store sells to at all)
 - manage band's events
 - invite, remove, and change the role of their band's members
 
@@ -99,4 +101,5 @@ must never be able to:
 - edit Band B
 - access Band B private content
 - modify Band B products
+- modify Band B shipping destinations or rates
 - view Band B private financial information
