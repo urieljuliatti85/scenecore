@@ -326,6 +326,23 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).to include("2 followers")
     end
 
+    it "links to the Core Members page when the band has active Core Members" do
+      band = create(:band, :approved)
+      create(:membership, band: band, user: create(:user), level: :core_member)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include(public_band_credits_path(band.slug))
+    end
+
+    it "does not link to the Core Members page when the band has none" do
+      band = create(:band, :approved)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include(public_band_credits_path(band.slug))
+    end
+
     it "does not show a follow button to an anonymous visitor" do
       band = create(:band, :approved)
 
@@ -741,6 +758,81 @@ RSpec.describe "Public band pages", type: :request do
 
     it "returns 404 for a nonexistent slug" do
       get public_band_subscriptions_path("no-such-band")
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
+  describe "GET /:slug/credits" do
+    it "lists active Core Members" do
+      band = create(:band, :approved)
+      core_member = create(:user, name: "Alex Core")
+      create(:membership, band: band, user: core_member, level: :core_member)
+
+      get public_band_credits_path(band.slug)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Alex Core")
+    end
+
+    it "does not list a Fan or Supporter" do
+      band = create(:band, :approved)
+      fan = create(:user, name: "Just A Fan")
+      create(:membership, band: band, user: fan, level: :fan)
+
+      get public_band_credits_path(band.slug)
+
+      expect(response.body).not_to include("Just A Fan")
+    end
+
+    it "does not list a Core Member whose membership is paused" do
+      band = create(:band, :approved)
+      paused = create(:user, name: "Paused Core")
+      create(:membership, :paused, band: band, user: paused, level: :core_member)
+
+      get public_band_credits_path(band.slug)
+
+      expect(response.body).not_to include("Paused Core")
+    end
+
+    it "does not list a Core Member from a different band" do
+      band = create(:band, :approved)
+      other_band = create(:band, :approved)
+      outsider = create(:user, name: "Other Band Core")
+      create(:membership, band: other_band, user: outsider, level: :core_member)
+
+      get public_band_credits_path(band.slug)
+
+      expect(response.body).not_to include("Other Band Core")
+    end
+
+    it "shows an empty state when the band has no Core Members" do
+      band = create(:band, :approved)
+
+      get public_band_credits_path(band.slug)
+
+      expect(response.body).to include("No Core Members yet")
+    end
+
+    it "is visible to an anonymous visitor" do
+      band = create(:band, :approved)
+      create(:membership, band: band, user: create(:user, name: "Alex Core"), level: :core_member)
+
+      get public_band_credits_path(band.slug)
+
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "returns 404 for a band that is not approved" do
+      band = create(:band, name: "Pending Band")
+
+      get public_band_credits_path(band.slug)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns 404 for a nonexistent slug" do
+      get public_band_credits_path("no-such-band")
 
       expect(response).to have_http_status(:not_found)
     end

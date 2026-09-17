@@ -1,0 +1,20 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <%= link_to public_band_path(@band.slug), class: "text-sm text-neutral-400 hover:text-white transition" do %>
+    &larr; <%= @band.name %>
+  <% end %>
+
+  <h1 class="mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight">Core Members</h1>
+  <p class="mt-2 text-neutral-400">The people who make up <%= @band.name %>'s core — thank you.</p>
+
+  <% if @core_members.empty? %>
+    <p class="mt-8 text-neutral-500">No Core Members yet.</p>
+  <% else %>
+    <ul class="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <% @core_members.each do |membership| %>
+        <li class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-4 py-3 text-center">
+          <span class="text-sm font-semibold text-white"><%= membership.user.name %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>
