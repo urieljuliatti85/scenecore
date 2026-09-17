@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_010915) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_014910) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -191,6 +191,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_010915) do
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "core_sessions_status_check"
   end
 
+  create_table "direct_message_threads", force: :cascade do |t|
+    t.bigint "band_id", null: false
+    t.datetime "created_at", null: false
+    t.string "status", default: "open", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["band_id", "user_id"], name: "index_direct_message_threads_on_band_id_and_user_id", unique: true
+    t.index ["band_id"], name: "index_direct_message_threads_on_band_id"
+    t.index ["user_id"], name: "index_direct_message_threads_on_user_id"
+    t.check_constraint "status::text = ANY (ARRAY['open'::character varying, 'archived'::character varying, 'blocked'::character varying]::text[])", name: "direct_message_threads_status_check"
+  end
+
+  create_table "direct_messages", force: :cascade do |t|
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.bigint "direct_message_thread_id", null: false
+    t.boolean "sent_by_band", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["direct_message_thread_id"], name: "index_direct_messages_on_direct_message_thread_id"
+    t.index ["user_id"], name: "index_direct_messages_on_user_id"
+    t.check_constraint "char_length(body) > 0 AND char_length(body) <= 2000", name: "direct_messages_body_length_check"
+  end
+
   create_table "events", force: :cascade do |t|
     t.bigint "band_id", null: false
     t.datetime "created_at", null: false
@@ -369,6 +393,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_010915) do
   add_foreign_key "core_session_rsvps", "core_sessions"
   add_foreign_key "core_session_rsvps", "users"
   add_foreign_key "core_sessions", "bands"
+  add_foreign_key "direct_message_threads", "bands"
+  add_foreign_key "direct_message_threads", "users"
+  add_foreign_key "direct_messages", "direct_message_threads"
+  add_foreign_key "direct_messages", "users"
   add_foreign_key "events", "bands"
   add_foreign_key "follows", "bands"
   add_foreign_key "follows", "users"

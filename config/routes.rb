@@ -138,6 +138,14 @@ Rails.application.routes.draw do
         patch :unpublish
       end
     end
+    resources :direct_message_threads, only: [ :index, :show ] do
+      resources :direct_messages, only: [ :create ]
+      member do
+        patch :archive
+        patch :block
+        patch :unblock
+      end
+    end
   end
 
   # Defines the root path route ("/")
@@ -160,6 +168,8 @@ Rails.application.routes.draw do
   constraints(slug: /[a-z0-9\-]+/) do
     get "/:slug", to: "public_bands#show", as: :public_band
     get "/:slug/subscriptions", to: "public_bands#subscriptions", as: :public_band_subscriptions
+    get "/:slug/messages", to: "band_direct_messages#show", as: :my_band_direct_messages
+    post "/:slug/messages", to: "band_direct_messages#create"
     get "/:slug/albums/:id", to: "public_albums#show", as: :public_album
     put "/:slug/albums/:album_id/rating", to: "ratings#upsert", as: :album_rating
     put "/:slug/polls/:poll_id/vote", to: "poll_votes#upsert", as: :poll_vote

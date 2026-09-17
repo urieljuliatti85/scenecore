@@ -15,6 +15,8 @@ class User < ApplicationRecord
   has_many :comments, dependent: :destroy
   has_many :album_credits, dependent: :destroy
   has_many :core_session_rsvps, dependent: :destroy
+  has_many :direct_message_threads, dependent: :destroy
+  has_many :direct_messages, dependent: :destroy
 
   validates :name, presence: true
 

@@ -1,0 +1,28 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <%= link_to public_band_path(@band.slug), class: "text-sm text-neutral-400 hover:text-white transition" do %>
+    &larr; <%= @band.name %>
+  <% end %>
+
+  <h1 class="mt-4 text-3xl font-extrabold tracking-tight mb-2">Messages with <%= @band.name %></h1>
+  <p class="text-neutral-500 mb-8">Direct messages are a Core Member benefit. The band may not reply immediately or individually.</p>
+
+  <% if @thread.present? %>
+    <div class="flex flex-col gap-4">
+      <% @thread.direct_messages.order(:created_at).each do |message| %>
+        <div class="rounded-2xl border border-neutral-800 px-5 py-4 <%= message.sent_by_band? ? "bg-yellow-400/10 border-yellow-400/30 self-start" : "bg-neutral-900/60 self-end" %> max-w-lg">
+          <p class="text-xs uppercase tracking-wide text-neutral-500 mb-1"><%= message.sent_by_band? ? @band.name : "You" %></p>
+          <p class="text-neutral-200 whitespace-pre-line"><%= message.body %></p>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @thread&.blocked? %>
+    <p class="mt-8 text-sm text-neutral-500">You can no longer send messages to this band.</p>
+  <% else %>
+    <%= form_with model: DirectMessage.new, url: my_band_direct_messages_path(@band.slug), method: :post, class: "mt-8 flex flex-col gap-3" do |form| %>
+      <%= form.text_area :body, rows: 3, maxlength: 2000, placeholder: "Write a message...", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+      <%= form.submit "Send", class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-2.5 hover:bg-yellow-300 transition cursor-pointer self-start" %>
+    <% end %>
+  <% end %>
+</section>

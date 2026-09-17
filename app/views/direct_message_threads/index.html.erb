@@ -1,0 +1,27 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <%= link_to band_path(@band), class: "text-sm text-neutral-400 hover:text-white transition" do %>
+    &larr; <%= @band.name %>
+  <% end %>
+
+  <h1 class="mt-4 text-3xl font-extrabold tracking-tight mb-8">Messages</h1>
+
+  <% if @threads.empty? %>
+    <p class="text-neutral-500">No messages from Core Members yet.</p>
+  <% else %>
+    <ul class="flex flex-col gap-3">
+      <% @threads.each do |thread| %>
+        <li>
+          <%= link_to band_direct_message_thread_path(@band, thread), class: "block rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 hover:border-neutral-600 transition" do %>
+            <div class="flex items-center justify-between gap-3">
+              <p class="font-semibold text-white"><%= thread.user.name %></p>
+              <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-2 py-0.5"><%= thread.status %></span>
+            </div>
+            <% if (last_message = thread.direct_messages.order(created_at: :desc).first) %>
+              <p class="text-sm text-neutral-500 mt-1 truncate">"<%= last_message.body %>"</p>
+            <% end %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>
