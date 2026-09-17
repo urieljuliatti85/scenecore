@@ -4,21 +4,24 @@
 <h1 class="text-3xl font-extrabold tracking-tight mb-8">Dashboard</h1>
 
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-  <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-6 py-5">
-    <p class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Pending bands</p>
-    <p class="text-3xl font-extrabold"><%= @pending_bands_count %></p>
-    <%= link_to "View bands", admin_bands_path(status: "pending"), class: "text-sm text-yellow-400 hover:text-yellow-300 transition" %>
-  </div>
+  <%= render "card",
+        section: :bands,
+        label: "Pending bands",
+        count: @pending_bands_count,
+        link_label: "View bands",
+        link_path: admin_bands_path(status: "pending") %>
 
-  <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-6 py-5">
-    <p class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Total bands</p>
-    <p class="text-3xl font-extrabold"><%= @bands_count %></p>
-    <%= link_to "View all", admin_bands_path, class: "text-sm text-yellow-400 hover:text-yellow-300 transition" %>
-  </div>
+  <%= render "card",
+        section: :bands,
+        label: "Total bands",
+        count: @bands_count,
+        link_label: "View all",
+        link_path: admin_bands_path %>
 
-  <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-6 py-5">
-    <p class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Total users</p>
-    <p class="text-3xl font-extrabold"><%= @users_count %></p>
-    <%= link_to "View users", admin_users_path, class: "text-sm text-yellow-400 hover:text-yellow-300 transition" %>
-  </div>
+  <%= render "card",
+        section: :users,
+        label: "Total users",
+        count: @users_count,
+        link_label: "View users",
+        link_path: admin_users_path %>
 </div>
