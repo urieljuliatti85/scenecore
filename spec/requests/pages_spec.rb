@@ -75,6 +75,44 @@ RSpec.describe "Pages", type: :request do
         expect(response.body).to include("Tickets")
       end
 
+      # Music and Posts have no global index — each band's page is where
+      # that content lives — so on the home page they point at the band
+      # directory rather than rendering as dead cards.
+      it "links the Music and Posts cards to the band directory" do
+        create(:band, :approved, name: "Farscape")
+
+        get root_path
+
+        expect(response.body).to include("href=\"#{discover_bands_path}\"")
+      end
+
+      it "sends a signed-out visitor from Subscriptions to the band directory" do
+        create(:band, :approved, name: "Farscape")
+
+        get root_path
+
+        expect(response.body).not_to include("href=\"#{subscriptions_path}\"")
+      end
+
+      it "sends a signed-in user from Subscriptions to their own subscriptions" do
+        create(:band, :approved, name: "Farscape")
+        sign_in create(:user)
+
+        get root_path
+
+        expect(response.body).to include("href=\"#{subscriptions_path}\"")
+      end
+
+      # Neither feature exists yet, so the home page must not imply it does.
+      it "keeps Exclusive Content and Tickets disabled with a Soon badge" do
+        create(:band, :approved, name: "Farscape")
+
+        get root_path
+
+        expect(response.body).to include("Soon")
+        expect(response.body).to include("cursor-not-allowed")
+      end
+
       it "shows social links when present" do
         create(:band, :approved, name: "Farscape", spotify_url: "https://open.spotify.com/artist/1")
 
