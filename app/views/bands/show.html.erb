@@ -1,4 +1,4 @@
-<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-6xl mx-auto">
   <div class="flex items-center gap-3 mb-4">
     <h1 class="text-3xl font-extrabold tracking-tight"><%= @band.name %></h1>
     <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= @band.status %></span>
@@ -8,23 +8,28 @@
     <p class="text-neutral-300 mb-8"><%= @band.description %></p>
   <% end %>
 
-  <%= render "tabs", band: @band, current_tab: @tab, tabs: [
-        [ "overview", "Overview", nil ],
-        [ "music", "Music", @albums.size ],
-        [ "posts", "Posts", @posts.size ],
-        [ "shows", "Shows", @events.size ],
-        [ "community", "Community", @polls.size + @core_sessions.size ]
-      ], manage: (policy(@band).update? ? [
-        [ "profile", "Profile", nil ],
-        [ "members", "Members", nil ],
-        [ "supporters", "Supporters", nil ],
-        [ "products", "Products", nil ],
-        [ "orders", "Orders", @band.orders.awaiting_band.size ],
-        [ "payments", "Payments", nil ]
-      ] : []) %>
+  <%# Navigation on the left, the panel on the right — the sidebar keeps
+      every section one click away instead of hiding them in a wrapped row
+      of pills. It stacks above the content below lg, where a fixed column
+      would leave the panel too narrow to read. %>
+  <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
+    <%= render "tabs", band: @band, current_tab: @tab, tabs: [
+          [ "overview", "Overview", nil ],
+          [ "music", "Music", @albums.size ],
+          [ "posts", "Posts", @posts.size ],
+          [ "shows", "Shows", @events.size ],
+          [ "community", "Community", @polls.size + @core_sessions.size ]
+        ], manage: (policy(@band).update? ? [
+          [ "profile", "Profile", nil ],
+          [ "members", "Members", nil ],
+          [ "supporters", "Supporters", nil ],
+          [ "products", "Products", nil ],
+          [ "orders", "Orders", @band.orders.awaiting_band.size ],
+          [ "payments", "Payments", nil ]
+        ] : []) %>
 
-  <div class="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 sm:p-8">
-    <% case @tab %>
+    <div class="flex-1 min-w-0 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 sm:p-8">
+      <% case @tab %>
     <% when "music" %>
       <%= render "tab_actions", actions: [
             [ "Add album", new_band_album_path(@band), true ]
@@ -103,7 +108,8 @@
     <% else %>
       <%= render "overview_section" %>
 
-    <% end %>
+      <% end %>
+    </div>
   </div>
 
   <%# Moderation belongs to a platform administrator, not to the band's own

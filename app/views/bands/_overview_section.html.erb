@@ -1,47 +1,104 @@
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
-      <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex flex-col gap-1">
-        <span class="text-xs uppercase tracking-wide text-neutral-500">Fans</span>
-        <span class="text-xl font-bold text-white"><%= @membership_counts["fan"] %></span>
-        <% if @total_active_members.positive? %>
-          <span class="text-xs text-neutral-500"><%= number_to_percentage(100.0 * @membership_counts["fan"] / @total_active_members, precision: 0) %></span>
+<div class="flex flex-col gap-6">
+  <%# The overview used to open with four zeros and nothing to act on. It
+      now leads with whatever the band needs to do next, alongside the one
+      number that answers "is this working" — and both disappear once
+      there is nothing outstanding. %>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <% if @next_step %>
+      <div class="lg:col-span-2 relative overflow-hidden rounded-2xl border border-yellow-500/30 bg-neutral-950 p-6 sm:p-7">
+        <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-yellow-400/10 blur-3xl pointer-events-none" aria-hidden="true"></div>
+
+        <div class="relative">
+          <span class="inline-flex items-center gap-2 rounded-full border border-yellow-500/30 px-3 py-1 mb-4">
+            <span class="h-1.5 w-1.5 rounded-full bg-yellow-400" aria-hidden="true"></span>
+            <span class="font-mono text-xs uppercase tracking-wider text-yellow-300">Next step</span>
+          </span>
+
+          <h3 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white mb-2"><%= @next_step[:title] %></h3>
+          <p class="text-sm text-neutral-400 max-w-lg mb-6"><%= @next_step[:body] %></p>
+
+          <%= link_to @next_step[:label], @next_step[:path], class: "inline-block rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-sm font-semibold px-5 py-2.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition" %>
+        </div>
+      </div>
+    <% elsif policy(@band).update? %>
+      <div class="lg:col-span-2 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 sm:p-7 flex flex-col justify-center">
+        <h3 class="text-xl font-extrabold tracking-tight text-white mb-1">Everything's set up</h3>
+        <p class="text-sm text-neutral-400">
+          Your page has music, payments are connected, and nothing is waiting to be sent.
+        </p>
+      </div>
+    <% else %>
+      <div class="lg:col-span-2 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 sm:p-7 flex flex-col justify-center">
+        <h3 class="text-xl font-extrabold tracking-tight text-white mb-1"><%= @band.name %></h3>
+        <p class="text-sm text-neutral-400">
+          You're a member of this band. Setting up the page and its payments is an
+          administrator's job.
+        </p>
+      </div>
+    <% end %>
+
+    <%# Revenue is the band's own number, so it gets its own card rather
+        than sitting among the counts. %>
+    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 flex flex-col">
+      <p class="font-mono text-xs uppercase tracking-wider text-neutral-500 mb-2">Monthly revenue</p>
+      <p class="text-3xl font-extrabold tracking-tight text-white">
+        <%= number_to_currency(@monthly_recurring_revenue_cents / 100.0) %>
+      </p>
+
+      <% if @total_active_members.positive? %>
+        <p class="text-sm text-neutral-400 mt-2">
+          from <%= pluralize(@total_active_members, "paying member") %>
+        </p>
+      <% end %>
+
+      <p class="text-xs text-neutral-600 mt-auto pt-4">
+        At current plan prices, before SceneCore's
+        <%= PlatformSetting.current.membership_fee_percentage %>% — not reconciled with Stripe.
+      </p>
+    </div>
+  </div>
+
+  <%# Percentages only mean something once there is a total to divide, so
+      a band with no members sees plain counts rather than "0%" four times. %>
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <% [
+         [ "Fans", @membership_counts["fan"], "bg-sky-400" ],
+         [ "Supporters", @membership_counts["supporter"], "bg-violet-400" ],
+         [ "Core Members", @membership_counts["core_member"], "bg-emerald-400" ],
+         [ "New this month", @new_members_this_month, nil ]
+       ].each do |label, count, dot| %>
+      <div data-metric="<%= label.parameterize %>" class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5 flex flex-col gap-2">
+        <p class="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-neutral-500">
+          <% if dot %>
+            <span class="h-1.5 w-1.5 rounded-full shrink-0 <%= dot %>" aria-hidden="true"></span>
+          <% end %>
+          <%= label %>
+        </p>
+        <p class="text-3xl font-extrabold tracking-tight text-white"><%= count %></p>
+
+        <% if dot && @total_active_members.positive? %>
+          <p class="text-xs text-neutral-500">
+            <%= number_to_percentage(100.0 * count / @total_active_members, precision: 0) %> of members
+          </p>
         <% end %>
       </div>
-      <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex flex-col gap-1">
-        <span class="text-xs uppercase tracking-wide text-neutral-500">Supporters</span>
-        <span class="text-xl font-bold text-white"><%= @membership_counts["supporter"] %></span>
-        <% if @total_active_members.positive? %>
-          <span class="text-xs text-neutral-500"><%= number_to_percentage(100.0 * @membership_counts["supporter"] / @total_active_members, precision: 0) %></span>
-        <% end %>
-      </div>
-      <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex flex-col gap-1">
-        <span class="text-xs uppercase tracking-wide text-neutral-500">Core Members</span>
-        <span class="text-xl font-bold text-white"><%= @membership_counts["core_member"] %></span>
-        <% if @total_active_members.positive? %>
-          <span class="text-xs text-neutral-500"><%= number_to_percentage(100.0 * @membership_counts["core_member"] / @total_active_members, precision: 0) %></span>
-        <% end %>
-      </div>
-      <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex flex-col gap-1">
-        <span class="text-xs uppercase tracking-wide text-neutral-500">New this month</span>
-        <span class="text-xl font-bold text-white"><%= @new_members_this_month %></span>
-      </div>
+    <% end %>
+  </div>
+
+  <div class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
+    <div class="flex items-baseline justify-between gap-4 mb-4">
+      <h3 class="text-sm font-semibold text-white">New members</h3>
+      <span class="font-mono text-xs uppercase tracking-wider text-neutral-600">Last 6 months</span>
     </div>
 
-    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex flex-col gap-1 mb-4 max-w-xs">
-      <span class="text-xs uppercase tracking-wide text-neutral-500">Estimated monthly revenue</span>
-      <span class="text-xl font-bold text-white"><%= number_to_currency(@monthly_recurring_revenue_cents / 100.0) %></span>
-      <span class="text-xs text-neutral-600">Based on current plan prices — not reconciled with Stripe</span>
-    </div>
-
-    <div class="mb-8">
-      <h3 class="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">New members, last 6 months</h3>
-      <div class="flex items-end gap-2 h-20">
-        <% max_count = [ @new_members_by_month.values.max, 1 ].max %>
-        <% @new_members_by_month.each do |month, count| %>
-          <div class="flex-1 flex flex-col items-center gap-1">
-            <div class="w-full bg-yellow-400/70 rounded-t" style="height: <%= (count.to_f / max_count * 100).round %>%"></div>
-            <span class="text-[10px] text-neutral-500"><%= month.strftime("%b") %></span>
-            <span class="text-[10px] text-neutral-600"><%= count %></span>
-          </div>
-        <% end %>
-      </div>
-    </div>
+    <%# Chartkick rather than CSS bars: the previous hand-rolled version
+        sized bars by percentage of the tallest, so a band with no members
+        yet got six invisible bars and a row of stray labels. %>
+    <% if @new_members_by_month.values.sum.positive? %>
+      <%= column_chart @new_members_by_month.transform_keys { |month| month.strftime("%b") },
+            height: "200px", colors: [ "#facc15" ], library: { scales: { y: { ticks: { precision: 0 } } } } %>
+    <% else %>
+      <p class="text-sm text-neutral-500">No members yet — this fills in as people join.</p>
+    <% end %>
+  </div>
+</div>

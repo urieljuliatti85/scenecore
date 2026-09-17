@@ -76,6 +76,7 @@ class BandsController < ApplicationController
         month = months_ago.months.ago.beginning_of_month
         [ month, @band.memberships.where(created_at: month..month.end_of_month).count ]
       end
+      @next_step = next_step_for(@band)
     end
   end
 
@@ -127,6 +128,33 @@ class BandsController < ApplicationController
   end
 
   private
+
+  # The overview opens with whatever the band most needs to do next. A new
+  # band's panel is otherwise a wall of zeros that says nothing about how
+  # to change them, so the order here is the order the work actually has
+  # to happen in: a page with no music is not ready for an audience, and
+  # an audience cannot pay without Stripe.
+  def next_step_for(band)
+    return nil unless policy(band).update?
+
+    if band.albums.none?
+      { title: "Add your first release",
+        body: "Bring an album over from Spotify, or add one by hand. Music is what the rest of the page is built around.",
+        label: "Add album", path: new_band_album_path(band), tab: "music" }
+    elsif !band.payouts_ready?
+      { title: "Connect Stripe to get paid",
+        body: "Fans cannot start a membership or buy from your Store until Stripe has cleared your account.",
+        label: "Set up payments", path: band_path(band, tab: "payments"), tab: "payments" }
+    elsif band.posts.none?
+      { title: "Write to your followers",
+        body: "A post is how the people following you hear from you directly, without an algorithm deciding who sees it.",
+        label: "New post", path: new_band_post_path(band), tab: "posts" }
+    elsif band.orders.awaiting_band.any?
+      { title: "You have orders to send",
+        body: "#{helpers.pluralize(band.orders.awaiting_band.size, 'order')} paid for and waiting to be packed.",
+        label: "View orders", path: band_path(band, tab: "orders"), tab: "orders" }
+    end
+  end
 
   # Each manage tab needs what its own controller loads. Authorization is
   # the same policy those controllers check, applied here too so opening a
