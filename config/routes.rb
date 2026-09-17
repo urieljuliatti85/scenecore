@@ -153,6 +153,7 @@ Rails.application.routes.draw do
         patch :unblock
       end
     end
+    resource :merch_discounts, only: [ :update ]
   end
 
   # Defines the root path route ("/")
