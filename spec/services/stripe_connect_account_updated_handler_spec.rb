@@ -49,4 +49,48 @@ RSpec.describe StripeConnectAccountUpdatedHandler do
       }.not_to raise_error
     end
   end
+
+  # A v2 account reports readiness through the transfer capability, not
+  # through charges_enabled/payouts_enabled — those are v1 fields Stripe
+  # deprecates for accounts created this way.
+  describe "a v2 account payload" do
+    def v2_account(status)
+      double(
+        id: "acct_v2",
+        configuration: double(
+          recipient: double(
+            capabilities: double(
+              stripe_balance: double(
+                stripe_transfers: double(status: status)
+              )
+            )
+          )
+        )
+      )
+    end
+
+    it "marks the band active once transfers are live" do
+      band = create(:band, stripe_connect_account_id: "acct_v2", stripe_connect_status: :onboarding)
+
+      described_class.call(v2_account("active"))
+
+      expect(band.reload).to be_stripe_connect_active
+    end
+
+    it "marks the band restricted when Stripe restricts the capability" do
+      band = create(:band, stripe_connect_account_id: "acct_v2", stripe_connect_status: :active)
+
+      described_class.call(v2_account("restricted"))
+
+      expect(band.reload).to be_stripe_connect_restricted
+    end
+
+    it "leaves the band onboarding while the capability is pending" do
+      band = create(:band, stripe_connect_account_id: "acct_v2", stripe_connect_status: :onboarding)
+
+      described_class.call(v2_account("pending"))
+
+      expect(band.reload).to be_stripe_connect_onboarding
+    end
+  end
 end

@@ -1,16 +1,17 @@
 require "rails_helper"
 
 RSpec.describe "StripeConnectAccounts", type: :request do
-  let(:accounts_service) { instance_double(Stripe::AccountService) }
-  let(:account_links_service) { instance_double(Stripe::AccountLinkService) }
-  let(:v1) { instance_double(Stripe::V1Services, accounts: accounts_service, account_links: account_links_service) }
-  let(:stripe_client) { instance_double(Stripe::StripeClient, v1: v1) }
+  let(:accounts_service) { instance_double(Stripe::V2::Core::AccountService) }
+  let(:account_links_service) { instance_double(Stripe::V2::Core::AccountLinkService) }
+  let(:core) { instance_double(Stripe::V2::CoreService, accounts: accounts_service, account_links: account_links_service) }
+  let(:v2) { instance_double(Stripe::V2Services, core: core) }
+  let(:stripe_client) { instance_double(Stripe::StripeClient, v2: v2) }
 
   before do
     allow(StripeClient).to receive(:instance).and_return(stripe_client)
-    allow(accounts_service).to receive(:create).and_return(instance_double(Stripe::Account, id: "acct_new"))
+    allow(accounts_service).to receive(:create).and_return(double(id: "acct_new"))
     allow(account_links_service).to receive(:create)
-      .and_return(instance_double(Stripe::AccountLink, url: "https://connect.stripe.com/setup/x"))
+      .and_return(double(url: "https://connect.stripe.com/setup/x"))
   end
 
   describe "POST /bands/:band_id/stripe-connect" do
