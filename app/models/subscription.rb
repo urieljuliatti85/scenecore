@@ -1,10 +1,4 @@
 class Subscription < ApplicationRecord
-  # SceneCore's membership commission (ADR-008). Higher than the Store's
-  # 10% because the platform hosts and serves that relationship every
-  # month rather than settling a one-off sale. Applied as Stripe's
-  # application_fee_percent so each monthly charge splits at source.
-  PLATFORM_FEE_PERCENT = 15
-
   belongs_to :user
   belongs_to :band
 

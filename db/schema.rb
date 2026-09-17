@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_143430) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_162120) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -337,13 +337,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_143430) do
   create_table "platform_settings", force: :cascade do |t|
     t.boolean "band_signups_enabled", default: true, null: false
     t.datetime "created_at", null: false
+    t.integer "membership_fee_percentage", default: 15, null: false
     t.string "notification_sender_email"
-    t.integer "platform_fee_percentage", default: 0, null: false
     t.string "privacy_policy_url"
+    t.integer "store_fee_percentage", default: 10, null: false
     t.string "support_email"
     t.string "terms_of_service_url"
     t.datetime "updated_at", null: false
-    t.check_constraint "platform_fee_percentage >= 0 AND platform_fee_percentage <= 100", name: "platform_settings_fee_range_check"
+    t.check_constraint "membership_fee_percentage >= 0 AND membership_fee_percentage <= 100", name: "platform_settings_membership_fee_range_check"
+    t.check_constraint "store_fee_percentage >= 0 AND store_fee_percentage <= 100", name: "platform_settings_store_fee_range_check"
   end
 
   create_table "poll_options", force: :cascade do |t|

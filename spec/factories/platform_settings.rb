@@ -1,6 +1,7 @@
 FactoryBot.define do
   factory :platform_setting do
-    platform_fee_percentage { 0 }
+    membership_fee_percentage { 15 }
+    store_fee_percentage { 10 }
     band_signups_enabled { true }
   end
 end

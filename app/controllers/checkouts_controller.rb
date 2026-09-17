@@ -59,7 +59,7 @@ class CheckoutsController < ApplicationController
       subtotal_cents: subtotal,
       shipping_cents: shipping,
       total_cents: total,
-      platform_fee_cents: (subtotal * Order::PLATFORM_FEE_RATE).round
+      platform_fee_cents: (subtotal * PlatformSetting.current.store_fee_percentage / 100.0).round
     )
 
     @cart.cart_items.each do |item|

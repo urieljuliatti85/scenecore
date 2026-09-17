@@ -31,7 +31,7 @@ class SubscriptionsController < ApplicationController
       customer: customer_id,
       line_items: [ { price: price_id, quantity: 1 } ],
       subscription_data: {
-        application_fee_percent: Subscription::PLATFORM_FEE_PERCENT,
+        application_fee_percent: PlatformSetting.current.membership_fee_percentage,
         transfer_data: { destination: @band.stripe_connect_account_id }
       },
       success_url: public_band_url(@band.slug),

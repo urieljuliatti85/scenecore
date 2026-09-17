@@ -115,7 +115,7 @@ namespace :subscriptions do
       StripeClient.instance.v1.subscriptions.update(
         subscription.stripe_subscription_id,
         {
-          application_fee_percent: Subscription::PLATFORM_FEE_PERCENT,
+          application_fee_percent: PlatformSetting.current.membership_fee_percentage,
           transfer_data: { destination: subscription.band.stripe_connect_account_id }
         }
       )
