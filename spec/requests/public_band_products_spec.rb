@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe "Public band products", type: :request do
-  it "shows published products and their local variant price without authentication" do
+  it "shows published products and their variant price without authentication" do
     band = create(:band, :approved)
     product = create(:product, :published, band: band, name: "Distant Place LP", description: "Limited black vinyl")
     create(:product_variant, product: product, name: "Black vinyl", price_cents: 12_000, stock_quantity: 8)
@@ -13,7 +13,7 @@ RSpec.describe "Public band products", type: :request do
     expect(response.body).to include("Distant Place LP")
     expect(response.body).to include("Limited black vinyl")
     expect(response.body).to include("Black vinyl")
-    expect(response.body).to include("R$120,00")
+    expect(response.body).to include("$120.00")
     expect(response.body).to include("In stock")
     expect(response.body).to include("#merch")
   end

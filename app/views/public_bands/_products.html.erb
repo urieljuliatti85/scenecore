@@ -59,9 +59,9 @@
               <p class="text-lg font-bold text-white">
                 <% if lowest_price.present? %>
                   <% if lowest_price == highest_price %>
-                    <%= number_to_currency(lowest_price / 100.0, unit: "R$", separator: ",", delimiter: ".") %>
+                    <%= number_to_currency(lowest_price / 100.0) %>
                   <% else %>
-                    From <%= number_to_currency(lowest_price / 100.0, unit: "R$", separator: ",", delimiter: ".") %>
+                    From <%= number_to_currency(lowest_price / 100.0) %>
                   <% end %>
                 <% else %>
                   —
