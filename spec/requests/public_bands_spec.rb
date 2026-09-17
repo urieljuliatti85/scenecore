@@ -399,6 +399,31 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).not_to include("Composition Journal")
     end
 
+    it "labels a rehearsal recording visible to the viewer" do
+      band = create(:band, :approved)
+      create(:post, :published, :rehearsal_recording, band: band, title: "Live room take 3")
+      user = create(:user)
+      create(:membership, band: band, user: user, level: :supporter)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Rehearsal Recording")
+      expect(response.body).to include("Live room take 3")
+    end
+
+    it "does not label a locked rehearsal recording the viewer cannot see" do
+      band = create(:band, :approved)
+      create(:post, :published, :rehearsal_recording, band: band, title: "Live room take 3")
+      user = create(:user)
+      create(:membership, band: band, user: user, level: :fan)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Rehearsal Recording")
+    end
+
     it "shows a published post's attached image" do
       band = create(:band, :approved)
       post_record = create(:post, :published, band: band, title: "Public News")

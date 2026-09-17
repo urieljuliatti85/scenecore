@@ -13,8 +13,11 @@ class Post < ApplicationRecord
 
   enum :status, { draft: "draft", published: "published" },
        default: :draft, validate: true
-  enum :post_type, { announcement: "announcement", composition_journal: "composition_journal" },
-       default: :announcement, validate: true
+  enum :post_type, {
+    announcement: "announcement",
+    composition_journal: "composition_journal",
+    rehearsal_recording: "rehearsal_recording"
+  }, default: :announcement, validate: true
   enum :early_access_level, Membership::LEVELS.index_with(&:itself), prefix: :early_access, validate: { allow_nil: true }
 
   validates :title, presence: true
