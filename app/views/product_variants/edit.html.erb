@@ -1,0 +1,11 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-xl mx-auto">
+  <p class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Band Admin · Store</p>
+  <h1 class="text-3xl font-extrabold tracking-tight mb-2">Edit variant</h1>
+  <p class="text-neutral-400 mb-8"><%= @product.name %> · <%= @variant.name %></p>
+
+  <%= render "form", band: @band, product: @product, variant: @variant, submit_label: "Save variant" %>
+
+  <div class="mt-8">
+    <%= link_to "← Back to product", edit_band_product_path(@band, @product), class: "text-sm text-neutral-400 hover:text-white transition" %>
+  </div>
+</section>
