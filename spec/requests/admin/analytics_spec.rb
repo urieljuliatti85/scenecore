@@ -55,6 +55,27 @@ RSpec.describe "Admin::Analytics", type: :request do
       expect(response.body).to include("Desktop")
     end
 
+    it "lists the countries visitors came from" do
+      admin = create(:user, :platform_admin)
+      summary = GoogleAnalyticsClient::Metrics.new(
+        active_users: 42, sessions: 55, page_views: 120,
+        top_pages: [], daily_series: [], channels: [], devices: [],
+        countries: [
+          GoogleAnalyticsClient::BreakdownResult.new(label: "Brazil", sessions: 713),
+          GoogleAnalyticsClient::BreakdownResult.new(label: "Portugal", sessions: 240)
+        ]
+      )
+      allow(GoogleAnalyticsClient).to receive(:configured?).and_return(true)
+      allow_any_instance_of(GoogleAnalyticsClient).to receive(:summary).with(days: 30).and_return(summary)
+      sign_in admin
+
+      get admin_analytics_path
+
+      expect(response.body).to include("Countries")
+      expect(response.body).to include("Brazil")
+      expect(response.body).to include("713")
+    end
+
     it "shows bounce rate, session duration and the landing pages table" do
       admin = create(:user, :platform_admin)
       summary = GoogleAnalyticsClient::Metrics.new(

@@ -1,0 +1,11 @@
+<%# The reference sets the headline numbers in a single row separated by
+    rules rather than in boxes, so the period's totals read as one statement
+    instead of five competing cards. %>
+<div class="grid grid-cols-2 lg:grid-cols-5 divide-y divide-neutral-800 lg:divide-y-0 lg:divide-x lg:divide-neutral-800 border-y border-neutral-800">
+  <% metrics.each do |label, value| %>
+    <div class="px-0 lg:px-6 py-5 first:lg:pl-0">
+      <p class="text-sm text-neutral-500 mb-1"><%= label %></p>
+      <p class="text-3xl font-extrabold tracking-tight text-white"><%= value %></p>
+    </div>
+  <% end %>
+</div>

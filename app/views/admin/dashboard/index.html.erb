@@ -1,27 +1,85 @@
 <% content_for :title, "Dashboard — Admin — SceneCore" %>
 
-<p class="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">Overview</p>
-<h1 class="text-3xl font-extrabold tracking-tight mb-8">Dashboard</h1>
+<div class="max-w-6xl">
+  <div class="flex flex-wrap items-center justify-between gap-4 mb-1">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">Overview</p>
+      <h1 class="text-3xl font-extrabold tracking-tight">Dashboard</h1>
+    </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-  <%= render "card",
-        section: :bands,
-        label: "Pending bands",
-        count: @pending_bands_count,
-        link_label: "View bands",
-        link_path: admin_bands_path(status: "pending") %>
+    <% if @summary %>
+      <div class="flex items-center gap-2">
+        <% GoogleAnalyticsClient::ALLOWED_DAY_RANGES.each do |range| %>
+          <%= link_to "Last #{range} days", admin_root_path(days: range), class: "rounded-lg text-xs font-semibold px-3 py-2 transition #{@days == range ? "bg-neutral-800 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-900"}" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
 
-  <%= render "card",
-        section: :bands,
-        label: "Total bands",
-        count: @bands_count,
-        link_label: "View all",
-        link_path: admin_bands_path %>
+  <p class="text-neutral-500 mb-8">The platform at a glance.</p>
 
-  <%= render "card",
-        section: :users,
-        label: "Total users",
-        count: @users_count,
-        link_label: "View users",
-        link_path: admin_users_path %>
+  <div id="platform-counts" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+    <%= render "card",
+          section: :bands,
+          label: "Pending bands",
+          count: @pending_bands_count,
+          link_label: "View bands",
+          link_path: admin_bands_path(status: "pending") %>
+
+    <%= render "card",
+          section: :bands,
+          label: "Total bands",
+          count: @bands_count,
+          link_label: "View all",
+          link_path: admin_bands_path %>
+
+    <%= render "card",
+          section: :users,
+          label: "Total users",
+          count: @users_count,
+          link_label: "View users",
+          link_path: admin_users_path %>
+  </div>
+
+  <div class="flex flex-wrap items-baseline justify-between gap-3 mb-1">
+    <h2 class="text-xl font-extrabold tracking-tight">Traffic</h2>
+    <%= link_to "Full analytics →", admin_analytics_path, class: "text-sm text-cyan-400 hover:text-white transition" %>
+  </div>
+  <p class="text-neutral-500 text-sm mb-6">Across all bands, last <%= @days %> days, from Google Analytics.</p>
+
+  <% if @analytics_error %>
+    <p class="rounded-xl border border-red-900 bg-red-950/40 text-red-400 text-sm p-4"><%= @analytics_error %></p>
+  <% elsif @summary.nil? %>
+    <p class="text-neutral-500 text-sm">
+      Google Analytics isn't configured yet, so there is no traffic to show.
+      <%= link_to "See what it needs", admin_analytics_path, class: "text-cyan-400 hover:text-white transition" %>.
+    </p>
+  <% else %>
+    <%= render "admin/analytics/metric_row", metrics: [
+          [ "Unique Visitors", number_with_delimiter(@summary.active_users) ],
+          [ "Sessions", number_with_delimiter(@summary.sessions) ],
+          [ "Total Pageviews", number_with_delimiter(@summary.page_views) ],
+          [ "Bounce Rate", analytics_percentage(@summary.bounce_rate) ],
+          [ "Average Session", analytics_duration(@summary.session_duration) ]
+        ] %>
+
+    <div class="py-8 border-b border-neutral-800 mb-8">
+      <% if @summary.daily_series.any? %>
+        <%= area_chart @summary.daily_series.to_h { |p| [ p.date.strftime("%d %b"), p.active_users ] },
+              height: "260px", colors: [ "#facc15" ], legend: false, curve: false,
+              library: { interaction: { mode: "index" } } %>
+      <% else %>
+        <p class="text-neutral-500 text-sm">No data for this period.</p>
+      <% end %>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <%= render "admin/analytics/breakdown", title: "Sources", count_header: "Sessions",
+            rows: @summary.channels, count_method: :sessions, accent: "bg-yellow-500/15", limit: 5 %>
+
+      <%= render "admin/analytics/breakdown", title: "Pages", count_header: "Pageviews",
+            rows: @summary.top_pages, count_method: :views, label_method: :path,
+            accent: "bg-emerald-500/15", limit: 5 %>
+    </div>
+  <% end %>
 </div>

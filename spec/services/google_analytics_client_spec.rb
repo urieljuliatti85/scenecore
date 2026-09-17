@@ -63,6 +63,14 @@ RSpec.describe GoogleAnalyticsClient do
     end
   end
 
+  describe "Metrics" do
+    # The dashboard reads countries alongside channels and devices, so the
+    # struct has to carry it or the view silently renders an empty list.
+    it "carries a countries breakdown" do
+      expect(described_class::Metrics.members).to include(:countries)
+    end
+  end
+
   describe "ALLOWED_DAY_RANGES" do
     it "is exactly the three presets the admin UI offers" do
       expect(described_class::ALLOWED_DAY_RANGES).to eq([ 7, 30, 90 ])
