@@ -207,7 +207,7 @@ RSpec.describe Band, type: :model do
   end
 
   describe ".featured" do
-    it "returns the most recently approved band" do
+    it "falls back to the most recently approved band when none is pinned" do
       create(:band, :approved, name: "Older")
       newer = create(:band, :approved, name: "Newer")
 
@@ -219,6 +219,100 @@ RSpec.describe Band, type: :model do
       create(:band, :rejected, name: "Rejected")
 
       expect(Band.featured).to be_empty
+    end
+
+    it "prefers the pinned band over the most recently approved one" do
+      pinned = create(:band, :approved, name: "Pinned")
+      create(:band, :approved, name: "Newer")
+      pinned.feature!
+
+      expect(Band.featured).to contain_exactly(pinned)
+    end
+
+    # A suspended band must drop off the home page even while still
+    # flagged, otherwise suspension would not take effect publicly.
+    it "ignores a pinned band that is no longer approved" do
+      pinned = create(:band, :approved, name: "Pinned")
+      pinned.feature!
+      newer = create(:band, :approved, name: "Newer")
+      pinned.update!(status: :suspended)
+
+      expect(Band.featured).to contain_exactly(newer)
+    end
+  end
+
+  describe "#feature!" do
+    it "pins the band" do
+      band = create(:band, :approved)
+
+      band.feature!
+
+      expect(band.reload).to be_featured
+    end
+
+    it "unpins the previously featured band" do
+      first = create(:band, :approved)
+      second = create(:band, :approved)
+      first.feature!
+
+      second.feature!
+
+      expect(first.reload).not_to be_featured
+      expect(second.reload).to be_featured
+      expect(Band.where(featured: true).count).to eq(1)
+    end
+
+    it "is idempotent for the band already featured" do
+      band = create(:band, :approved)
+      band.feature!
+
+      expect { band.feature! }.not_to raise_error
+      expect(band.reload).to be_featured
+    end
+  end
+
+  describe "#unfeature!" do
+    it "unpins the band and leaves none featured" do
+      band = create(:band, :approved)
+      band.feature!
+
+      band.unfeature!
+
+      expect(band.reload).not_to be_featured
+      expect(Band.where(featured: true)).to be_empty
+    end
+  end
+
+  describe "at most one featured band" do
+    it "is enforced by the database, not just the model" do
+      create(:band, :approved, featured: true)
+
+      expect { create(:band, :approved, featured: true) }
+        .to raise_error(ActiveRecord::RecordNotUnique)
+    end
+  end
+
+  describe "#store_open? (ADR-007)" do
+    it "is true only once the connected account is active" do
+      band = build(:band, stripe_connect_account_id: "acct_1", stripe_connect_status: :active)
+
+      expect(band.store_open?).to be(true)
+    end
+
+    it "is false before Stripe Connect onboarding has started" do
+      expect(build(:band).store_open?).to be(false)
+    end
+
+    it "is false while onboarding is still in progress" do
+      band = build(:band, stripe_connect_account_id: "acct_1", stripe_connect_status: :onboarding)
+
+      expect(band.store_open?).to be(false)
+    end
+
+    it "is false when Stripe has restricted the account" do
+      band = build(:band, stripe_connect_account_id: "acct_1", stripe_connect_status: :restricted)
+
+      expect(band.store_open?).to be(false)
     end
   end
 end

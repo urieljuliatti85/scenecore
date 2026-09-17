@@ -31,7 +31,16 @@ class Band < ApplicationRecord
        default: :not_started, validate: true, prefix: :stripe_connect
 
   scope :approved, -> { where(status: :approved) }
-  scope :featured, -> { approved.order(created_at: :desc).limit(1) }
+  scope :explicitly_featured, -> { approved.where(featured: true) }
+
+  # The home page hero. A platform administrator may pin one band via
+  # Band#feature!; with nothing pinned this falls back to the most
+  # recently approved band, which is what the home page showed before
+  # featuring became explicit.
+  scope :featured, lambda {
+    pinned = explicitly_featured.limit(1)
+    pinned.exists? ? pinned : approved.order(created_at: :desc).limit(1)
+  }
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
@@ -48,6 +57,20 @@ class Band < ApplicationRecord
   # a band mid-onboarding or restricted by Stripe cannot accept payment.
   def store_open?
     stripe_connect_active? && stripe_connect_account_id.present?
+  end
+
+  # Unpinning the previous band and pinning this one must happen together:
+  # the partial unique index on featured rejects a second featured row, so
+  # doing it in two separate statements would fail half the time.
+  def feature!
+    self.class.transaction do
+      self.class.where(featured: true).where.not(id: id).update_all(featured: false)
+      update!(featured: true)
+    end
+  end
+
+  def unfeature!
+    update!(featured: false)
   end
 
   def social_links

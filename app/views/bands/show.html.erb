@@ -86,6 +86,14 @@
     <% if policy(@band).reactivate? && @band.suspended? %>
       <%= button_to "Reactivate", reactivate_band_path(@band), method: :patch, class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition cursor-pointer" %>
     <% end %>
+
+    <% if policy(@band).feature? && @band.approved? %>
+      <% if @band.featured? %>
+        <%= button_to "Unfeature", unfeature_band_path(@band), method: :patch, class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition cursor-pointer" %>
+      <% else %>
+        <%= button_to "Feature on home", feature_band_path(@band), method: :patch, class: "rounded-full border border-yellow-700 text-yellow-400 font-semibold px-5 py-2.5 hover:border-yellow-500 transition cursor-pointer" %>
+      <% end %>
+    <% end %>
   </div>
 
   <% if policy(@band).show? && (@albums.any? || @events.any? || @posts.any? || @polls.any? || @core_sessions.any?) %>

@@ -104,6 +104,8 @@ Rails.application.routes.draw do
       patch :reject
       patch :suspend
       patch :reactivate
+      patch :feature
+      patch :unfeature
     end
 
     resources :band_memberships, only: [ :index, :new, :create, :edit, :update, :destroy ], path: "members"
