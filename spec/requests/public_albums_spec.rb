@@ -43,6 +43,38 @@ RSpec.describe "Public album pages", type: :request do
       expect(response.body).not_to include("<iframe")
     end
 
+    it "shows the Spotify player when the album has a Spotify id" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band, spotify_id: "4aawyAB9vmqN3uQ7FjRGTy")
+
+      get public_album_path(band.slug, album)
+
+      expect(response.body).to include("https://open.spotify.com/embed/album/4aawyAB9vmqN3uQ7FjRGTy")
+    end
+
+    # spotify_link_id re-checks the stored value against the id format, so a
+    # record written around the model can't put arbitrary text in an iframe src.
+    it "does not embed a player for a malformed Spotify id" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band)
+      album.update_column(:spotify_id, "javascript:alert(1)")
+
+      get public_album_path(band.slug, album)
+
+      expect(response.body).not_to include("open.spotify.com/embed")
+      expect(response.body).not_to include("javascript:alert(1)")
+    end
+
+    it "shows both players when the album has a Spotify id and a Bandcamp embed" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band, spotify_id: "4aawyAB9vmqN3uQ7FjRGTy",
+                                         bandcamp_embed_url: "https://bandcamp.com/EmbeddedPlayer/album=1234567890/size=large/")
+
+      get public_album_path(band.slug, album)
+
+      expect(response.body.scan("<iframe").size).to eq(2)
+    end
+
     it "shows credited supporters" do
       band = create(:band, :approved)
       album = create(:album, :published, band: band)
