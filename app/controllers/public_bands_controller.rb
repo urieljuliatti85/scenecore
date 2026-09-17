@@ -32,6 +32,7 @@ class PublicBandsController < ApplicationController
     @events = @band.events.published.upcoming
     @polls = @band.polls.published.order(created_at: :desc)
     @core_sessions = @band.core_sessions.published.order(:starts_at)
+    @products = @band.products.published.includes(:variants).order(created_at: :desc)
     @core_members_count = @band.memberships.active.core_member.count
   rescue ActiveRecord::RecordNotFound
     render "not_found", status: :not_found
