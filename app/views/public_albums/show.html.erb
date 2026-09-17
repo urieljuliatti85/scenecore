@@ -43,6 +43,14 @@
     </div>
   </div>
 
+  <%# The src is assembled from the validated, re-checked embed URL, so the
+      scheme and host are fixed to bandcamp.com. See Album#bandcamp_embed_link. %>
+  <% if (bandcamp_embed_url = @album.bandcamp_embed_link) %>
+    <div class="mt-6">
+      <iframe style="border: 0; width: 100%; max-width: 400px; height: 120px;" src="<%= bandcamp_embed_url %>" seamless title="Bandcamp player for <%= @album.title %>"></iframe>
+    </div>
+  <% end %>
+
   <div class="mt-10 rounded-2xl border border-neutral-800 bg-neutral-900/40 px-5 py-4">
     <% if user_signed_in? %>
       <h2 class="text-sm font-semibold text-neutral-300 mb-3">

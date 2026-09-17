@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_022031) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_031926) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -75,6 +75,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_022031) do
 
   create_table "albums", force: :cascade do |t|
     t.bigint "band_id", null: false
+    t.string "bandcamp_embed_url"
     t.datetime "created_at", null: false
     t.string "early_access_level"
     t.datetime "early_access_until"

@@ -515,6 +515,33 @@ RSpec.describe "Albums", type: :request do
       expect(album.early_access_until).to be_present
     end
 
+    it "lets a band member set a Bandcamp embed URL" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      album = create(:album, band: band)
+      sign_in user
+
+      url = "https://bandcamp.com/EmbeddedPlayer/album=1234567890/size=large/"
+      patch band_album_path(band, album), params: { album: { bandcamp_embed_url: url } }
+
+      expect(response).to redirect_to(band_path(band))
+      expect(album.reload.bandcamp_embed_url).to eq(url)
+    end
+
+    it "rejects a Bandcamp embed URL that does not point at bandcamp.com" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      album = create(:album, band: band)
+      sign_in user
+
+      patch band_album_path(band, album), params: { album: { bandcamp_embed_url: "https://evil.com/EmbeddedPlayer/album=123" } }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(album.reload.bandcamp_embed_url).to be_nil
+    end
+
     it "rejects a non-image file and re-renders the form without erroring" do
       user = create(:user)
       band = create(:band)

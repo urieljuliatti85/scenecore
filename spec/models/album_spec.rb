@@ -71,6 +71,47 @@ RSpec.describe Album, type: :model do
     end
   end
 
+  describe "#bandcamp_embed_link" do
+    it "returns a valid Bandcamp embed player URL" do
+      url = "https://bandcamp.com/EmbeddedPlayer/album=1234567890/size=large/bgcol=333333/linkcol=0f91ff/artwork=small/transparent=true/"
+      album = build(:album, bandcamp_embed_url: url)
+
+      expect(album.bandcamp_embed_link).to eq(url)
+    end
+
+    it "is nil for an album with no Bandcamp embed URL" do
+      expect(build(:album, bandcamp_embed_url: nil).bandcamp_embed_link).to be_nil
+    end
+
+    # The value goes straight into an iframe src, so a row written outside
+    # the model's validation must not be able to put a hostile scheme or
+    # another host in front of a visitor.
+    it "refuses anything that is not a bandcamp.com/EmbeddedPlayer URL" do
+      hostile = [
+        "javascript:alert(1)",
+        "https://evil.com/EmbeddedPlayer/album=123",
+        "https://bandcamp.com.evil.com/EmbeddedPlayer/album=123",
+        "http://bandcamp.com/EmbeddedPlayer/album=123",
+        "https://bandcamp.com/album/foo"
+      ]
+
+      hostile.each do |value|
+        expect(build(:album, bandcamp_embed_url: value).bandcamp_embed_link).to be_nil
+      end
+    end
+
+    it "rejects a malformed Bandcamp embed URL on save" do
+      album = build(:album, bandcamp_embed_url: "javascript:alert(1)")
+
+      expect(album).not_to be_valid
+      expect(album.errors[:bandcamp_embed_url]).to be_present
+    end
+
+    it "is valid without a Bandcamp embed URL" do
+      expect(build(:album, bandcamp_embed_url: nil)).to be_valid
+    end
+  end
+
   it "destroys its admin action logs when destroyed" do
     album = create(:album)
     create(:admin_action_log, subject: album)

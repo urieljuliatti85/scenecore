@@ -3,6 +3,7 @@ class Album < ApplicationRecord
 
   SPOTIFY_ALBUM_URL = "https://open.spotify.com/album/%s".freeze
   SPOTIFY_ID_FORMAT = /\A[a-zA-Z0-9]{22}\z/
+  BANDCAMP_EMBED_URL_FORMAT = %r{\Ahttps://bandcamp\.com/EmbeddedPlayer/[a-zA-Z0-9=/_-]+\z}
 
   belongs_to :band
   has_many :admin_action_logs, as: :subject, dependent: :destroy
@@ -17,6 +18,7 @@ class Album < ApplicationRecord
 
   validates :title, presence: true
   validates :spotify_id, format: { with: SPOTIFY_ID_FORMAT }, allow_nil: true
+  validates :bandcamp_embed_url, format: { with: BANDCAMP_EMBED_URL_FORMAT }, allow_blank: true
   validates :early_access_until, presence: true, if: :early_access_level?
   validates :early_access_level, presence: true, if: :early_access_until?
 
@@ -40,6 +42,14 @@ class Album < ApplicationRecord
   # literal so the scheme and host are visibly fixed at the call site.
   def spotify_link_id
     spotify_id if spotify_id.to_s.match?(SPOTIFY_ID_FORMAT)
+  end
+
+  # The embed URL only if it really is a bandcamp.com/EmbeddedPlayer/...
+  # URL — re-checked the same way as spotify_link_id above, since this
+  # value ends up as an iframe src and validation only guards records
+  # saved through the model.
+  def bandcamp_embed_link
+    bandcamp_embed_url if bandcamp_embed_url.to_s.match?(BANDCAMP_EMBED_URL_FORMAT)
   end
 
   def cover_url
