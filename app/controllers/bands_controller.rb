@@ -15,6 +15,20 @@ class BandsController < ApplicationController
     end
   end
 
+  # Artist lookup used to prefill the new-band form. Authorized as a band
+  # creation so it can't be used as an open proxy to Spotify's API by
+  # anyone who is not allowed to create a band in the first place.
+  def search
+    authorize Band.new, :create?
+
+    return render json: [] unless PlatformSetting.current.band_signups_enabled?
+
+    results = SpotifyClient.new.search_artists(params[:q])
+    render json: results.map(&:to_h)
+  rescue SpotifyClient::Error
+    render json: { error: "Spotify search is unavailable right now." }, status: :bad_gateway
+  end
+
   def create
     @band = Band.new(band_params)
     authorize @band
@@ -27,6 +41,8 @@ class BandsController < ApplicationController
       @band.save!
       @band.band_memberships.create!(user: current_user, role: :administrator)
     end
+
+    attach_spotify_photo(params[:spotify_image_url])
 
     redirect_to @band, notice: "Band created. Awaiting platform approval."
   rescue ActiveRecord::RecordInvalid
@@ -92,6 +108,19 @@ class BandsController < ApplicationController
 
   def log_admin_action(action)
     AdminActionLog.create!(actor: current_user, action: action, subject: @band)
+  end
+
+  # The band is already saved by this point, so a Spotify image that
+  # can't be fetched leaves it without a photo rather than failing the
+  # sign-up — the band is the thing worth keeping, the photo is a
+  # convenience the user can upload later.
+  def attach_spotify_photo(image_url)
+    return if image_url.blank? || @band.photo.attached?
+
+    image = RemoteImageFetcher.new.call(image_url)
+    @band.photo.attach(io: image.io, filename: image.filename, content_type: image.content_type)
+  rescue RemoteImageFetcher::Error
+    nil
   end
 
   # show/edit/update rely on band membership (or platform admin); anyone
