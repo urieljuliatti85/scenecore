@@ -1,0 +1,42 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <%= link_to band_direct_message_threads_path(@band), class: "text-sm text-neutral-400 hover:text-white transition" do %>
+    &larr; Messages
+  <% end %>
+
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <h1 class="text-3xl font-extrabold tracking-tight"><%= @thread.user.name %></h1>
+    <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= @thread.status %></span>
+  </div>
+
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <% if policy(@thread).archive? && !@thread.archived? %>
+      <%= button_to "Archive", archive_band_direct_message_thread_path(@band, @thread), method: :patch, class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
+    <% end %>
+
+    <% if policy(@thread).block? && !@thread.blocked? %>
+      <%= button_to "Block", block_band_direct_message_thread_path(@band, @thread), method: :patch, class: "rounded-full border border-red-900 text-red-400 text-sm font-semibold px-4 py-1.5 hover:border-red-700 transition cursor-pointer" %>
+    <% end %>
+
+    <% if policy(@thread).unblock? && @thread.blocked? %>
+      <%= button_to "Unblock", unblock_band_direct_message_thread_path(@band, @thread), method: :patch, class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+    <% end %>
+  </div>
+
+  <div class="mt-8 flex flex-col gap-4">
+    <% @thread.direct_messages.order(:created_at).each do |message| %>
+      <div class="rounded-2xl border border-neutral-800 px-5 py-4 <%= message.sent_by_band? ? "bg-yellow-400/10 border-yellow-400/30 self-end" : "bg-neutral-900/60 self-start" %> max-w-lg">
+        <p class="text-xs uppercase tracking-wide text-neutral-500 mb-1"><%= message.sent_by_band? ? @band.name : @thread.user.name %></p>
+        <p class="text-neutral-200 whitespace-pre-line"><%= message.body %></p>
+      </div>
+    <% end %>
+  </div>
+
+  <% if policy(@thread).create_message? %>
+    <%= form_with model: DirectMessage.new, url: band_direct_message_thread_direct_messages_path(@band, @thread), method: :post, class: "mt-8 flex flex-col gap-3" do |form| %>
+      <%= form.text_area :body, rows: 3, maxlength: 2000, placeholder: "Write a reply...", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+      <%= form.submit "Send", class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-2.5 hover:bg-yellow-300 transition cursor-pointer self-start" %>
+    <% end %>
+  <% else %>
+    <p class="mt-8 text-sm text-neutral-500">This member is blocked and can't send new messages.</p>
+  <% end %>
+</section>
