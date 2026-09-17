@@ -1,4 +1,4 @@
-<%= form_with model: [ band, product ], class: "flex flex-col gap-6" do |form| %>
+<%= form_with model: [ band, product ], class: "flex flex-col gap-6", data: (product.new_record? ? { controller: "discogs-product-search", discogs_product_search_url_value: band_products_path(band, format: :json) } : {}) do |form| %>
   <% errors = product.errors.full_messages + product.variants.flat_map { |variant| variant.errors.full_messages.map { |message| "Variant: #{message}" } } %>
   <% if errors.any? %>
     <ul class="rounded-xl border border-red-900 bg-red-950/40 text-red-400 text-sm p-4 space-y-1">
@@ -8,9 +8,39 @@
     </ul>
   <% end %>
 
+  <% if product.new_record? %>
+    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5">
+      <div class="mb-4">
+        <h2 class="text-lg font-semibold text-white">Import from Discogs</h2>
+        <p class="text-sm text-neutral-500 mt-1">Optional. Search for the exact physical release. SceneCore imports release metadata only; you still set SKU, price and stock below.</p>
+      </div>
+
+      <div class="relative">
+        <%= label_tag :discogs_product_search_query, "Release or artist", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+        <input type="text"
+               data-discogs-product-search-target="query"
+               data-action="input->discogs-product-search#search"
+               placeholder="Artist, release, catalog number..."
+               autocomplete="off"
+               class="w-full rounded-lg bg-neutral-950 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+        <ul data-discogs-product-search-target="results" class="absolute z-10 w-full mt-1 rounded-lg bg-neutral-900 border border-neutral-800 max-h-72 overflow-y-auto"></ul>
+      </div>
+
+      <p data-discogs-product-search-target="selectedLabel" hidden class="text-sm text-neutral-300 mt-3"></p>
+      <%= hidden_field_tag :discogs_release_id, params[:discogs_release_id], data: { discogs_product_search_target: "selectedId" } %>
+
+      <p class="text-xs text-neutral-600 mt-4">
+        This application uses Discogs’ API but is not affiliated with, sponsored or endorsed by Discogs. “Discogs” is a trademark of Zink Media, LLC.
+      </p>
+    </div>
+  <% end %>
+
   <div>
     <%= form.label :name, class: "block text-sm font-medium text-neutral-300 mb-1" %>
-    <%= form.text_field :name, required: true, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    <%= form.text_field :name, required: true, data: (product.new_record? ? { discogs_product_search_target: "name" } : {}), class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    <% if product.new_record? %>
+      <p class="text-xs text-neutral-600 mt-1">Selecting a Discogs release fills this field; the server verifies the title again when saving.</p>
+    <% end %>
   </div>
 
   <div>
@@ -31,12 +61,12 @@
           </div>
           <div>
             <%= variant_form.label :sku, "SKU", class: "block text-sm font-medium text-neutral-300 mb-1" %>
-            <%= variant_form.text_field :sku, required: true, placeholder: "TEE-BLK-M", class: "w-full rounded-lg bg-neutral-950 border border-neutral-800 text-white px-4 py-2.5" %>
+            <%= variant_form.text_field :sku, required: true, placeholder: "VINYL-LP-001", class: "w-full rounded-lg bg-neutral-950 border border-neutral-800 text-white px-4 py-2.5" %>
           </div>
           <div>
             <%= variant_form.label :price_cents, "Price (cents)", class: "block text-sm font-medium text-neutral-300 mb-1" %>
-            <%= variant_form.number_field :price_cents, required: true, min: 0, step: 1, placeholder: "2500", class: "w-full rounded-lg bg-neutral-950 border border-neutral-800 text-white px-4 py-2.5" %>
-            <p class="text-xs text-neutral-600 mt-1">Example: 2500 = 25.00 in the Store currency.</p>
+            <%= variant_form.number_field :price_cents, required: true, min: 0, step: 1, placeholder: "12000", class: "w-full rounded-lg bg-neutral-950 border border-neutral-800 text-white px-4 py-2.5" %>
+            <p class="text-xs text-neutral-600 mt-1">Example: 12000 = 120.00 in the Store currency.</p>
           </div>
           <div>
             <%= variant_form.label :stock_quantity, "Stock", class: "block text-sm font-medium text-neutral-300 mb-1" %>
