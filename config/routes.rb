@@ -108,6 +108,10 @@ Rails.application.routes.draw do
 
     resources :band_memberships, only: [ :index, :new, :create, :edit, :update, :destroy ], path: "members"
     resources :memberships, only: [ :index, :new, :create, :edit, :update, :destroy ], path: "supporters"
+    # `new` is the refresh_url Stripe redirects to when an onboarding link
+    # expires before the band finishes (ADR-007); it just mints a fresh
+    # link, so it is not a form page despite the name.
+    resource :stripe_connect_account, only: [ :new, :create ], path: "stripe-connect"
     resources :albums, only: [ :new, :create, :show, :edit, :update ] do
       member do
         patch :publish

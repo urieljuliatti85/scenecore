@@ -121,3 +121,46 @@ Product decisions in the MVP should be evaluated in part against whether
 they improve follower retention, not just raw follow or signup counts.
 Analytics/reporting for this metric is not yet built and is not implied by
 this decision.
+
+---
+
+## ADR-007 — Stripe Connect for Store Revenue Split
+
+Status: Accepted (2026-09-17)
+
+### Decision
+
+Store checkout (product purchases, ADR-003) uses Stripe Connect, not the
+plain Stripe Checkout Sessions already used for Subscriptions. Each band
+onboards a Stripe Connect account; a Store checkout session's payment is
+split automatically at charge time via `application_fee_amount`: 10% to
+SceneCore, the remaining 90% to the band's connected account.
+
+### Reason
+
+A store sells one band's physical/digital goods directly to a fan; the
+platform's 10% commission on that sale must be explicit per
+`docs/payments.md` and must not require a manual reconciliation process.
+Stripe Connect's destination charges compute and route both sides of the
+split within the same payment, so SceneCore never holds funds it must
+later redistribute, and there is nothing new to reconcile beyond what
+Stripe's own dashboard/reports already provide the band.
+
+### Consequence
+
+- A `Band` needs a `stripe_connect_account_id` and an onboarding status
+  (not yet started / onboarding / active / restricted) before it can sell
+  products; a band cannot open a Store checkout until its connected
+  account is active (Stripe's own capability checks, surfaced to the band
+  in Band Admin).
+- Subscriptions (ADR/Phase 10) are unaffected — they keep using the
+  existing plain Stripe Checkout Sessions and SceneCore's own Stripe
+  account; no commission split exists on subscription revenue today and
+  this decision does not introduce one retroactively. A future decision
+  to also split subscription revenue would need its own ADR.
+- Store's Stripe webhooks must handle events under the connected account
+  (Stripe sends these with an `account` field identifying which connected
+  account they belong to) in addition to the platform-account events
+  Subscriptions already handles — `StripeWebhooksController` must
+  distinguish the two rather than assuming every webhook is
+  platform-level.

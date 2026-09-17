@@ -40,6 +40,12 @@ class StripeWebhooksController < ActionController::Base
       StripeSubscriptionUpdatedHandler.call(event.data.object)
     when "customer.subscription.deleted"
       StripeSubscriptionDeletedHandler.call(event.data.object)
+    when "account.updated"
+      # Only ever sent for a connected account (ADR-007's Store/Connect
+      # flow) — the platform account itself does not receive its own
+      # account.updated events, so no `event.account` check is needed to
+      # tell this apart from Subscriptions' platform-level events above.
+      StripeConnectAccountUpdatedHandler.call(event.data.object)
     end
   end
 end

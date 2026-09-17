@@ -19,11 +19,16 @@ class Band < ApplicationRecord
   has_many :merch_discounts, dependent: :destroy
   has_many :polls, dependent: :destroy
   has_many :admin_action_logs, as: :subject, dependent: :destroy
+  has_many :products, dependent: :destroy
+  has_many :carts, dependent: :destroy
+  has_many :orders, dependent: :destroy
   belongs_to :category, optional: true
   has_image :photo
 
   enum :status, { pending: "pending", approved: "approved", rejected: "rejected", suspended: "suspended" },
        default: :pending, validate: true
+  enum :stripe_connect_status, { not_started: "not_started", onboarding: "onboarding", active: "active", restricted: "restricted" },
+       default: :not_started, validate: true, prefix: :stripe_connect
 
   scope :approved, -> { where(status: :approved) }
   scope :featured, -> { approved.order(created_at: :desc).limit(1) }
@@ -37,6 +42,12 @@ class Band < ApplicationRecord
 
   def followers_count
     followers.size
+  end
+
+  # ADR-007: Store checkout requires an active Stripe Connect account —
+  # a band mid-onboarding or restricted by Stripe cannot accept payment.
+  def store_open?
+    stripe_connect_active? && stripe_connect_account_id.present?
   end
 
   def social_links

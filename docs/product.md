@@ -829,32 +829,36 @@ blocked on Phase 10).*
 
 ### Journey 7 — Purchase a Product
 
-*Not built (Phase 8 — Store — skipped; depends on Phase 9 — Payments —
-also skipped). Describes the intended flow only.*
+*Not built (Phase 8 — Store). Payments (Stripe) is available, but Store
+also needs Stripe Connect band onboarding (ADR-007), not yet built.
+Describes the intended flow only.*
 
 1. Fan opens a band's store and selects a product (and variant, if
    applicable).
-2. Fan adds the product to a cart scoped to that one band (ADR-003).
-3. Fan checks out and pays through the approved payment provider.
+2. Fan adds the product to their cart — at most one active cart at a
+   time, scoped to that one band (ADR-003, clarified 2026-09-17).
+3. Fan enters a shipping address and checks out via Stripe Connect
+   (destination charge, 10% platform commission — ADR-007).
 4. Payment is confirmed and an order is created with a price/product
    snapshot.
-5. Inventory is decremented consistently with the purchase.
+5. Inventory (per variant/SKU) is decremented consistently with the
+   purchase.
 
 ### Journey 8 — Subscribe
 
-*Not built (Phase 10 — Subscriptions — depends on Phase 9 — Payments —
-both not yet implemented). Describes the intended flow only.*
+*Built (Phase 10 — Subscriptions, on top of Phase 9 — Payments/Stripe,
+both implemented as of 2026-09-16/17 — see `docs/architecture.md` §5).*
 
 1. Fan selects a band's subscription plan.
-2. Fan completes checkout through the approved payment provider.
-3. Payment is confirmed.
+2. Fan completes checkout through Stripe Checkout Sessions.
+3. Payment is confirmed via webhook.
 4. Subscription becomes active.
 5. Subscriber-only content becomes available to the Fan (see Journey 6).
 
 ### Journey 9 — Purchase an Event Ticket
 
-*Not built (Phase 11 — Events and Tickets — depends on Phase 9 —
-Payments). Describes the intended flow only.*
+*Not built (Phase 11 — Events and Tickets). Payments (Stripe) is
+available; this phase has not been scoped/implemented yet.*
 
 1. Fan opens a band's published event.
 2. Fan selects a ticket batch and quantity.
@@ -918,23 +922,37 @@ phase):
   storage (not yet built — ROADMAP.md 10.2)
 
 **Store** (Phase 8)
-- Products, variants (only where a product needs them), inventory, cart,
-  checkout, orders (single-band cart per ADR-003)
-- Currently skipped pending a named payment provider (see Payments); not
-  removed from MVP scope.
+- Products, variants (SKU-level price and stock, per-product min. one
+  default variant), inventory, single-active-cart-per-user (one band at
+  a time — ADR-003, clarified 2026-09-17), checkout via Stripe Connect
+  with a 10% platform commission (ADR-007), shipping address and cost
+  captured on the order (`docs/database.md` Products/ProductVariants/
+  Carts/Orders)
+- Not yet built. No longer blocked on payment provider selection — Stripe
+  is already integrated and used for Subscriptions (see Payments below)
+  — but Store specifically needs Stripe Connect (band onboarding,
+  connected accounts), which is separate infrastructure from the plain
+  Checkout Sessions Subscriptions already uses.
 
 **Payments** (Phase 9)
-- Integration with the approved payment provider (not yet named — see
-  `docs/product.md` §7 Open Questions)
-- Currently skipped; blocks Store, Subscriptions, and Events checkout.
+- Stripe is the approved and already-integrated payment provider
+  (`docs/architecture.md` §5) — the "not yet named" status below Phase 9
+  in earlier drafts of this document is outdated as of 2026-09-17.
+- Built and in production use for Subscriptions (Checkout Sessions,
+  webhooks, idempotency — see `docs/architecture.md`). Store's use of
+  Payments (Stripe Connect, destination charges, per-band onboarding) is
+  not yet built — see Store above and ADR-007.
 
 **Subscriptions** (Phase 10)
 - Plans, recurring billing, subscriber content access
-- Not yet built; depends on Payments.
+- Built (`Subscription`, `BandMembershipPrice`, `StripeSubscriptionSwitcher`,
+  `StripeCheckoutCompletedHandler`, `StripeSubscriptionUpdatedHandler`,
+  `StripeSubscriptionDeletedHandler` — see `docs/architecture.md` §5).
 
 **Events and tickets** (Phase 11)
 - Events, ticket batches, QR-coded tickets, check-in/validation
-- Not yet built; depends on Payments.
+- Not yet built. Payments (Stripe) is available; this phase itself has
+  not been scoped/implemented yet.
 
 **Platform administration** (Phase 12)
 - Band moderation, administrative audit log, admin panel (bands/users/
@@ -958,6 +976,20 @@ approved (see ROADMAP.md §22 Future Features for the authoritative list):
 - Advanced band metrics/analytics beyond follower count
 - Band member history across bands (e.g., "played in Band A 2022–2024,
   now in Band B")
+- Discogs Marketplace integration (proposed 2026-09-17): let a band's vinyl
+  and physical-media listings from Discogs Marketplace surface inside its
+  SceneCore store, with checkout completing on SceneCore (money flows
+  through the band's Store, ADR-007) rather than handing off to Discogs'
+  own checkout — that checkout-ownership decision was made 2026-09-17,
+  approving the larger of the two integration shapes originally proposed.
+  Still blocked, not merely deferred: it depends on Store (Phase 8)
+  existing first, including the Stripe Connect band-onboarding flow
+  (ADR-007) — Payments (Stripe) itself is no longer the blocker, that part
+  was already built for Subscriptions, but Store's Connect-specific
+  checkout is not. Once Store is built, this still needs its own scoping
+  pass for the Discogs-specific parts: order/inventory sync with Discogs'
+  own API, and how a Discogs-sourced listing maps onto
+  `docs/database.md`'s Product/ProductVariant model.
 
 ### 4.3 Explicitly Excluded Functionality
 
@@ -1043,19 +1075,28 @@ tracks.
 - A post's visibility (Public/Followers/Subscribers) determines who can see
   it; enforcement happens server-side, not by hiding UI.
 - A non-follower cannot see Follower-visibility posts.
-- A non-subscriber cannot see Subscriber-visibility posts (blocked until
-  Subscriptions exists — see Unresolved Requirements).
+- A non-subscriber cannot see Subscriber-visibility posts. Subscriptions
+  (Phase 10) is now built, so this gate is reachable — confirm current
+  test coverage rather than treating it as still blocked.
 - A band administrator can manage only their own band's posts.
 
 ### Store (not yet built)
 
-- One order/cart contains products from exactly one band (ADR-003).
+- At most one active cart per user platform-wide, and that cart holds
+  products from exactly one band (ADR-003, clarified 2026-09-17).
+- A product's price and stock live on its variant (SKU), not the product
+  itself — every product has at least one variant.
 - Inventory never goes negative; concurrent purchases cannot both consume
-  the last unit.
-- An order snapshots product and price at time of purchase, independent of
-  later product edits.
+  the last unit of a variant.
+- An order snapshots product name, variant name, and price at time of
+  purchase, independent of later product/variant edits.
+- Checkout happens through the band's Stripe Connect account; SceneCore's
+  10% commission (ADR-007) is applied via `application_fee_amount` in the
+  same transaction, not a separate transfer.
+- A band without an active Stripe Connect account cannot open Store
+  checkout.
 
-### Payments (not yet built)
+### Payments
 
 - Monetary values are stored as integer cents (`docs/payments.md`).
 - Every payment webhook validates authenticity before acting on it.
@@ -1063,17 +1104,23 @@ tracks.
   out-of-order delivery.
 - No complete card data or sensitive payment payloads are logged or stored.
 - Payment state transitions follow `docs/payments.md`'s defined states;
-  the payment provider is the source of truth for payment status.
+  the payment provider (Stripe) is the source of truth for payment status.
+- Built and verified for Subscriptions. Store's Stripe Connect flow is not
+  yet built — its webhooks must additionally distinguish connected-account
+  events from platform-account events (ADR-007).
 
-### Subscriptions (not yet built)
+### Subscriptions
 
 - A subscription's active/cancelled/past-due/expired state stays
-  synchronized with the payment provider's webhooks.
+  synchronized with Stripe's webhooks.
 - Subscriber-only content access is granted only while the underlying
   subscription is active, per the approved grace-period rule (see
   Unresolved Requirements).
 - Cancelling a subscription does not retroactively delete content already
   consumed, only future access.
+- Built (`Subscription`, `StripeSubscriptionUpdatedHandler`,
+  `StripeSubscriptionDeletedHandler`) — confirm current test coverage
+  against this list rather than treating these as unimplemented.
 
 ### Events and Tickets (not yet built)
 
@@ -1102,8 +1149,12 @@ yet made, tracked in §7 Open Questions:
   be started before account creation?).
 - Subscription cancellation/failed-payment grace-period rule (referenced
   in ROADMAP.md Phase 10 but not yet defined).
-- Payment provider selection, which blocks writing concrete Payments
-  acceptance tests against a specific provider's webhook format.
+- Store refund behavior — does refunding also reverse SceneCore's
+  application fee, and who initiates it, the band or SceneCore
+  (`docs/payments.md` Financial Rules)?
+- Shipping cost calculation method for Store orders (flat rate, zone/
+  weight-based, or a carrier-rate API — `docs/database.md`
+  ShippingAddresses).
 - Door/check-in role for ticket validation (ROADMAP.md 11.5 assumes
   someone validates tickets, but that role isn't in `docs/permissions.md`
   yet — likely a Band Member/Administrator action, to be confirmed).
