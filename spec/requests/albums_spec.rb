@@ -330,6 +330,65 @@ RSpec.describe "Albums", type: :request do
 
       expect(response).to redirect_to(root_path)
     end
+
+    it "creates an album from Bandcamp for a band member" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      sign_in user
+
+      url = "https://bandcamp.com/EmbeddedPlayer/album=1234567890/size=large/"
+
+      expect {
+        post band_albums_path(band), params: { album: { title: "Bandcamp Release", bandcamp_embed_url: url } }
+      }.to change(Album, :count).by(1)
+
+      album = Album.last
+      expect(album.title).to eq("Bandcamp Release")
+      expect(album.band).to eq(band)
+      expect(album.bandcamp_embed_url).to eq(url)
+      expect(album.spotify_id).to be_nil
+      expect(response).to redirect_to(band_path(band))
+    end
+
+    it "does not create a Bandcamp album without a title" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      sign_in user
+
+      expect {
+        post band_albums_path(band), params: { album: { title: "", bandcamp_embed_url: "https://bandcamp.com/EmbeddedPlayer/album=123/" } }
+      }.not_to change(Album, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
+    it "does not create a Bandcamp album with a URL that does not point at bandcamp.com" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      sign_in user
+
+      expect {
+        post band_albums_path(band), params: { album: { title: "Bandcamp Release", bandcamp_embed_url: "https://evil.com/EmbeddedPlayer/album=123" } }
+      }.not_to change(Album, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
+    it "prevents a member of another band from creating a Bandcamp album" do
+      band = create(:band)
+      outsider = create(:user)
+      create(:band_membership, band: create(:band), user: outsider)
+      sign_in outsider
+
+      expect {
+        post band_albums_path(band), params: { album: { title: "Bandcamp Release", bandcamp_embed_url: "https://bandcamp.com/EmbeddedPlayer/album=123/" } }
+      }.not_to change(Album, :count)
+
+      expect(response).to redirect_to(root_path)
+    end
   end
 
   describe "PATCH /bands/:band_id/albums/:id/publish" do

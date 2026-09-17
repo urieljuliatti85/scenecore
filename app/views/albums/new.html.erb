@@ -25,4 +25,28 @@
       <%= form.submit "Add Album", data: { album_search_target: "submit" }, disabled: true, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition cursor-pointer self-start disabled:opacity-40 disabled:cursor-not-allowed" %>
     <% end %>
   </div>
+
+  <div class="mt-10 pt-8 border-t border-neutral-800">
+    <h2 class="text-sm font-semibold text-neutral-300 mb-1">Or add from Bandcamp</h2>
+    <p class="text-xs text-neutral-500 mb-4">
+      Bandcamp has no search here, so enter the title and paste the embed
+      player URL from your Bandcamp album — go to Share/Embed on Bandcamp,
+      choose a player size, and copy the <code>src</code> from the embed code
+      (starts with <code>https://bandcamp.com/EmbeddedPlayer/...</code>).
+    </p>
+
+    <%= form_with url: band_albums_path(@band), scope: :album, class: "flex flex-col gap-5" do |form| %>
+      <div>
+        <%= form.label :title, class: "block text-sm font-medium text-neutral-300 mb-1" %>
+        <%= form.text_field :title, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+      </div>
+
+      <div>
+        <%= form.label :bandcamp_embed_url, "Embed player URL", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+        <%= form.url_field :bandcamp_embed_url, placeholder: "https://bandcamp.com/EmbeddedPlayer/album=...", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+      </div>
+
+      <%= form.submit "Add from Bandcamp", class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition cursor-pointer self-start" %>
+    <% end %>
+  </div>
 </section>
