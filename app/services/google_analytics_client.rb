@@ -2,6 +2,7 @@ require "google/analytics/data"
 require "google/analytics/data/v1beta"
 require "google-cloud-errors"
 require "grpc"
+require "googleauth"
 
 # Reads traffic reports from the Google Analytics Data API for the
 # platform admin dashboard. Uses a service account (read-only "Viewer"
@@ -16,8 +17,15 @@ class GoogleAnalyticsClient
   Metrics = Struct.new(:active_users, :sessions, :page_views, :top_pages, keyword_init: true)
   PageResult = Struct.new(:path, :views, keyword_init: true)
 
+  # Local dev keeps the key as a file (gitignored); hosts that can't mount
+  # a file as a secret (e.g. Railway) set GOOGLE_ANALYTICS_CREDENTIALS_JSON
+  # to the key's raw JSON content as an env var instead. Either is enough.
   def self.configured?
-    ENV["GOOGLE_ANALYTICS_PROPERTY_ID"].present? && CREDENTIALS_PATH.exist?
+    ENV["GOOGLE_ANALYTICS_PROPERTY_ID"].present? && credentials_source.present?
+  end
+
+  def self.credentials_source
+    ENV["GOOGLE_ANALYTICS_CREDENTIALS_JSON"].presence || (CREDENTIALS_PATH.to_s if CREDENTIALS_PATH.exist?)
   end
 
   def initialize
@@ -69,7 +77,22 @@ class GoogleAnalyticsClient
 
   def client
     @client ||= Google::Analytics::Data.analytics_data do |config|
-      config.credentials = CREDENTIALS_PATH.to_s
+      config.credentials = credentials
     end
+  end
+
+  # A file path can go straight into config.credentials, but a raw JSON
+  # string (from ENV, since Railway can't mount a file as a secret) has to
+  # be built into an actual credentials object first — config.credentials=
+  # only accepts a path string or an already-constructed credentials
+  # instance, not a JSON string or IO.
+  def credentials
+    source = self.class.credentials_source
+    return source unless source.start_with?("{")
+
+    Google::Auth::ServiceAccountCredentials.make_creds(
+      json_key_io: StringIO.new(source),
+      scope: "https://www.googleapis.com/auth/analytics.readonly"
+    )
   end
 end

@@ -6,8 +6,9 @@
 
   <% unless GoogleAnalyticsClient.configured? %>
     <p class="text-neutral-500">
-      Google Analytics isn't configured yet — set <code>GOOGLE_ANALYTICS_PROPERTY_ID</code> and add a
-      service account credentials file at <code>config/google_analytics_credentials.json</code>.
+      Google Analytics isn't configured yet — set <code>GOOGLE_ANALYTICS_PROPERTY_ID</code> and either a
+      service account credentials file at <code>config/google_analytics_credentials.json</code> or the
+      <code>GOOGLE_ANALYTICS_CREDENTIALS_JSON</code> environment variable.
     </p>
   <% end %>
 
