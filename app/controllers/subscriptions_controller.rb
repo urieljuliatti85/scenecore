@@ -9,6 +9,13 @@ class SubscriptionsController < ApplicationController
     @subscription = @band.subscriptions.find_or_initialize_by(user: current_user)
     authorize @subscription, :join?, policy_class: SubscriptionPolicy
 
+    # Without a cleared connected account there is nowhere to send the
+    # band's 85%, so the fan is stopped before a subscription exists
+    # rather than being charged into an arrangement that cannot pay out.
+    unless @band.payouts_ready?
+      return redirect_to public_band_path(@band.slug), alert: "#{@band.name} can't take payments yet."
+    end
+
     level = subscription_params[:level]
     price_id = StripePriceResolver.resolve(@band, level)
 
@@ -23,6 +30,10 @@ class SubscriptionsController < ApplicationController
       mode: "subscription",
       customer: customer_id,
       line_items: [ { price: price_id, quantity: 1 } ],
+      subscription_data: {
+        application_fee_percent: Subscription::PLATFORM_FEE_PERCENT,
+        transfer_data: { destination: @band.stripe_connect_account_id }
+      },
       success_url: public_band_url(@band.slug),
       cancel_url: public_band_url(@band.slug),
       metadata: { user_id: current_user.id, band_id: @band.id, level: level }

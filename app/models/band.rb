@@ -34,10 +34,11 @@ class Band < ApplicationRecord
 
   scope :explicitly_featured, -> { approved.where(featured: true) }
 
-  # A band can only take Store money once Stripe has cleared its connected
-  # account (ADR-007). An onboarding or restricted account can still hold a
-  # Connect id, so the id alone is not enough to charge against.
-  def store_checkout_ready?
+  # A band can only take money once Stripe has cleared its connected
+  # account (ADR-007/ADR-008). An onboarding or restricted account can
+  # still hold a Connect id, so the id alone is not enough to charge
+  # against — both the Store and memberships route payment to it.
+  def payouts_ready?
     stripe_connect_active? && stripe_connect_account_id.present?
   end
 

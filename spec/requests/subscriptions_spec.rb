@@ -20,7 +20,7 @@ RSpec.describe "Subscriptions", type: :request do
 
   describe "POST /bands/:band_id/subscription" do
     it "starts a Stripe Checkout session and redirects the user to it" do
-      band = create(:band, :approved)
+      band = create(:band, :approved, :payouts_ready)
       user = create(:user)
       sign_in user
 
@@ -55,7 +55,7 @@ RSpec.describe "Subscriptions", type: :request do
     end
 
     it "reuses an existing BandMembershipPrice instead of creating a new Stripe product" do
-      band = create(:band, :approved)
+      band = create(:band, :approved, :payouts_ready)
       create(:band_membership_price, band: band, level: :fan, stripe_price_id: "price_cached")
       user = create(:user)
       sign_in user
@@ -75,7 +75,7 @@ RSpec.describe "Subscriptions", type: :request do
     end
 
     it "reuses the user's existing Stripe customer id instead of creating a new one" do
-      band = create(:band, :approved)
+      band = create(:band, :approved, :payouts_ready)
       user = create(:user, stripe_customer_id: "cus_existing")
       sign_in user
 
@@ -93,6 +93,58 @@ RSpec.describe "Subscriptions", type: :request do
       expect(Subscription.find_by(band: band, user: user).stripe_customer_id).to eq("cus_existing")
     end
 
+    # ADR-008: each monthly charge splits at source, so the band's 85%
+    # reaches its own Stripe account rather than landing in SceneCore's and
+    # waiting on a manual payout.
+    it "routes the charge to the band's connected account" do
+      band = create(:band, :approved, :payouts_ready)
+      create(:band_membership_price, band: band, level: :fan, stripe_price_id: "price_fan")
+      user = create(:user)
+      sign_in user
+
+      customer = instance_double(Stripe::Customer, id: "cus_1")
+      session = instance_double(Stripe::Checkout::Session, id: "cs_1", url: "https://checkout.stripe.com/pay/cs_1")
+      allow(customers_service).to receive(:create).and_return(customer)
+      allow(sessions_service).to receive(:create).and_return(session)
+
+      post band_subscription_path(band), params: { subscription: { level: "fan" } }
+
+      expect(sessions_service).to have_received(:create).with(
+        hash_including(
+          subscription_data: {
+            application_fee_percent: 15,
+            transfer_data: { destination: band.stripe_connect_account_id }
+          }
+        )
+      )
+    end
+
+    # A band that has not finished onboarding has nowhere to receive its
+    # share, so the fan is stopped before any charge exists rather than
+    # being signed into an arrangement that cannot pay the band.
+    it "refuses a band whose Connect account Stripe has not cleared" do
+      band = create(:band, :approved)
+      user = create(:user)
+      sign_in user
+
+      post band_subscription_path(band), params: { subscription: { level: "fan" } }
+
+      expect(response).to redirect_to(public_band_path(band.slug))
+      expect(flash[:alert]).to include("can't take payments")
+      expect(Subscription.find_by(band: band, user: user)).to be_nil
+    end
+
+    it "refuses a band whose Connect account is restricted" do
+      band = create(:band, :approved, :payouts_ready, stripe_connect_status: :restricted)
+      user = create(:user)
+      sign_in user
+
+      post band_subscription_path(band), params: { subscription: { level: "fan" } }
+
+      expect(flash[:alert]).to include("can't take payments")
+      expect(Subscription.find_by(band: band, user: user)).to be_nil
+    end
+
     it "does not allow starting a subscription for a band that is not approved" do
       band = create(:band)
       user = create(:user)
@@ -105,7 +157,7 @@ RSpec.describe "Subscriptions", type: :request do
     end
 
     it "requires authentication" do
-      band = create(:band, :approved)
+      band = create(:band, :approved, :payouts_ready)
 
       post band_subscription_path(band), params: { subscription: { level: "fan" } }
 
@@ -113,7 +165,7 @@ RSpec.describe "Subscriptions", type: :request do
     end
 
     it "redirects back with an alert when Stripe raises an error" do
-      band = create(:band, :approved)
+      band = create(:band, :approved, :payouts_ready)
       user = create(:user)
       sign_in user
 
@@ -126,7 +178,7 @@ RSpec.describe "Subscriptions", type: :request do
     end
 
     it "switches the existing Stripe subscription's price instead of starting a second subscription when the fan already has an active one" do
-      band = create(:band, :approved)
+      band = create(:band, :approved, :payouts_ready)
       create(:band_membership_price, band: band, level: :supporter, stripe_price_id: "price_supporter")
       user = create(:user)
       subscription = create(:subscription, :active, band: band, user: user, level: :fan, stripe_subscription_id: "sub_1")
@@ -150,7 +202,7 @@ RSpec.describe "Subscriptions", type: :request do
     end
 
     it "does not switch the subscription when the fan re-selects the level they already have" do
-      band = create(:band, :approved)
+      band = create(:band, :approved, :payouts_ready)
       create(:band_membership_price, band: band, level: :fan, stripe_price_id: "price_fan")
       user = create(:user)
       subscription = create(:subscription, :active, band: band, user: user, level: :fan, stripe_subscription_id: "sub_1")
@@ -170,7 +222,7 @@ RSpec.describe "Subscriptions", type: :request do
     end
 
     it "redirects back with an alert when switching the subscription level fails on Stripe" do
-      band = create(:band, :approved)
+      band = create(:band, :approved, :payouts_ready)
       create(:band_membership_price, band: band, level: :supporter, stripe_price_id: "price_supporter")
       user = create(:user)
       subscription = create(:subscription, :active, band: band, user: user, level: :fan, stripe_subscription_id: "sub_1")
@@ -187,7 +239,7 @@ RSpec.describe "Subscriptions", type: :request do
 
   describe "DELETE /bands/:band_id/subscription" do
     it "cancels the subscription on Stripe and marks it (and the membership) cancelled locally" do
-      band = create(:band, :approved)
+      band = create(:band, :approved, :payouts_ready)
       user = create(:user)
       subscription = create(:subscription, :active, band: band, user: user, stripe_subscription_id: "sub_1")
       create(:membership, band: band, user: user, level: subscription.level, status: :active)
@@ -204,7 +256,7 @@ RSpec.describe "Subscriptions", type: :request do
     end
 
     it "does not call Stripe when the subscription never completed checkout" do
-      band = create(:band, :approved)
+      band = create(:band, :approved, :payouts_ready)
       user = create(:user)
       create(:subscription, band: band, user: user, stripe_subscription_id: nil)
       sign_in user
@@ -218,7 +270,7 @@ RSpec.describe "Subscriptions", type: :request do
     end
 
     it "redirects with an alert when Stripe raises an error" do
-      band = create(:band, :approved)
+      band = create(:band, :approved, :payouts_ready)
       user = create(:user)
       subscription = create(:subscription, :active, band: band, user: user, stripe_subscription_id: "sub_1")
       sign_in user
@@ -232,7 +284,7 @@ RSpec.describe "Subscriptions", type: :request do
     end
 
     it "returns 404 when the user has no subscription with the band" do
-      band = create(:band, :approved)
+      band = create(:band, :approved, :payouts_ready)
       user = create(:user)
       sign_in user
 
@@ -242,7 +294,7 @@ RSpec.describe "Subscriptions", type: :request do
     end
 
     it "returns 404 when trying to cancel another user's subscription (the lookup is scoped to current_user)" do
-      band = create(:band, :approved)
+      band = create(:band, :approved, :payouts_ready)
       subscription = create(:subscription, :active, band: band, stripe_subscription_id: "sub_1")
       outsider = create(:user)
       sign_in outsider
@@ -254,7 +306,7 @@ RSpec.describe "Subscriptions", type: :request do
     end
 
     it "requires authentication" do
-      band = create(:band, :approved)
+      band = create(:band, :approved, :payouts_ready)
       create(:subscription, :active, band: band)
 
       delete band_subscription_path(band)
