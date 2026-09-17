@@ -79,6 +79,68 @@ RSpec.describe "Band Admin products", type: :request do
       expect(product.variants.first).to have_attributes(sku: "LIFE-DP-LP", price_cents: 12000, stock_quantity: 20)
     end
 
+    # The cover is what makes the store look like a record shop
+    # (docs/product.md, Store, decided 2026-09-17).
+    it "attaches the release cover from Discogs" do
+      band = create(:band)
+      admin = create(:user)
+      create(:band_membership, :administrator, band: band, user: admin)
+      sign_in admin
+
+      details = DiscogsClient::ReleaseDetails.new(
+        discogs_release_id: 123, title: "Distant Place",
+        image_url: "https://img.example.com/front.jpg",
+        metadata: {}
+      )
+      allow(DiscogsClient).to receive(:new).and_return(instance_double(DiscogsClient, fetch_release: details))
+
+      fetched = RemoteImageFetcher::Result.new(
+        io: StringIO.new("image-bytes"), filename: "front.jpg", content_type: "image/jpeg"
+      )
+      allow_any_instance_of(RemoteImageFetcher).to receive(:call)
+        .with("https://img.example.com/front.jpg").and_return(fetched)
+
+      post band_products_path(band), params: {
+        discogs_release_id: "123",
+        product: { variants_attributes: {
+          "0" => { name: "Default", sku: "COVER-1", price_cents: 12000, stock_quantity: 1 }
+        } }
+      }
+
+      expect(band.products.last.image).to be_attached
+    end
+
+    # A cover that cannot be downloaded must not cost the band the import:
+    # the metadata is already correct and a photo can be uploaded by hand.
+    it "still imports the product when the cover cannot be fetched" do
+      band = create(:band)
+      admin = create(:user)
+      create(:band_membership, :administrator, band: band, user: admin)
+      sign_in admin
+
+      details = DiscogsClient::ReleaseDetails.new(
+        discogs_release_id: 123, title: "Distant Place",
+        image_url: "https://img.example.com/front.jpg",
+        metadata: {}
+      )
+      allow(DiscogsClient).to receive(:new).and_return(instance_double(DiscogsClient, fetch_release: details))
+      allow_any_instance_of(RemoteImageFetcher).to receive(:call)
+        .and_raise(RemoteImageFetcher::Error, "too large")
+
+      expect {
+        post band_products_path(band), params: {
+          discogs_release_id: "123",
+          product: { variants_attributes: {
+            "0" => { name: "Default", sku: "COVER-2", price_cents: 12000, stock_quantity: 1 }
+          } }
+        }
+      }.to change(Product, :count).by(1)
+
+      product = band.products.last
+      expect(product.name).to eq("Distant Place")
+      expect(product.image).not_to be_attached
+    end
+
     it "lets a band administrator search Discogs releases" do
       band = create(:band)
       admin = create(:user)

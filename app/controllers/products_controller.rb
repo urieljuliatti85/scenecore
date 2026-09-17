@@ -112,6 +112,22 @@ class ProductsController < ApplicationController
       discogs_metadata: details.metadata,
       discogs_synced_at: Time.current
     )
+
+    attach_discogs_cover(details.image_url)
+  end
+
+  # Discogs serves cover art from its own CDN, so this is a server-side
+  # fetch of a URL the app did not choose — RemoteImageFetcher is what
+  # makes that safe (see its comments on SSRF). A failure here is
+  # swallowed: the release metadata is already imported and correct, and
+  # a missing cover is something the band can fix by uploading one.
+  def attach_discogs_cover(image_url)
+    return if image_url.blank? || @product.image.attached?
+
+    image = RemoteImageFetcher.new.call(image_url)
+    @product.image.attach(io: image.io, filename: image.filename, content_type: image.content_type)
+  rescue RemoteImageFetcher::Error => e
+    Rails.logger.info("Could not attach Discogs cover for release #{@product.discogs_release_id}: #{e.message}")
   end
 
   def discogs_api_error_message(status)
@@ -141,6 +157,7 @@ class ProductsController < ApplicationController
     params.require(:product).permit(
       :name,
       :description,
+      :image,
       :shipping_cents,
       variants_attributes: [ :id, :sku, :name, :price_cents, :stock_quantity ]
     )
