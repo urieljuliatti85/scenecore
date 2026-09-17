@@ -21,16 +21,26 @@ class Admin::MembershipsController < Admin::BaseController
     end
   end
 
+  # Deliberately leaves billing alone: pausing is a moderation measure —
+  # suspending access while something is looked into — not a decision about
+  # the fan's money. Ending the payment is what #cancel is for.
   def pause
     authorize @membership, :pause?
     @membership.update!(status: :paused)
-    redirect_to admin_memberships_path, notice: "Membership paused."
+    redirect_to admin_memberships_path, notice: "Membership paused. Subscription billing is unaffected."
   end
 
+  # Cancelling the membership without stopping the subscription behind it
+  # would keep Stripe billing a fan who no longer has access, so both end
+  # together (SubscriptionCanceller).
   def cancel
     authorize @membership, :cancel?
-    @membership.update!(status: :cancelled)
-    redirect_to admin_memberships_path, notice: "Membership cancelled."
+
+    SubscriptionCanceller.call(band: @membership.band, user: @membership.user)
+
+    redirect_to admin_memberships_path, notice: "Membership cancelled, and any subscription billing for it stopped."
+  rescue SubscriptionCanceller::Error => e
+    redirect_to admin_memberships_path, alert: e.message
   end
 
   def reactivate

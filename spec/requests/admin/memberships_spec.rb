@@ -92,6 +92,72 @@ RSpec.describe "Admin::Memberships", type: :request do
       expect(response).to redirect_to(admin_memberships_path)
       expect(membership.reload).to be_cancelled
     end
+
+    # Cancelling only the membership used to leave Stripe billing a fan who
+    # no longer had access — the admin memberships and subscriptions screens
+    # disagreed, and the charge kept recurring.
+    it "also cancels the subscription that granted it" do
+      admin = create(:user, :platform_admin)
+      membership = create(:membership, status: :active)
+      subscription = create(:subscription, :active, band: membership.band, user: membership.user,
+                                                    stripe_subscription_id: "sub_1")
+      stripe_subscriptions = instance_double(Stripe::SubscriptionService)
+      allow(StripeClient).to receive(:instance)
+        .and_return(instance_double(Stripe::StripeClient, v1: instance_double(Stripe::V1Services, subscriptions: stripe_subscriptions)))
+      allow(stripe_subscriptions).to receive(:cancel)
+      sign_in admin
+
+      patch cancel_admin_membership_path(membership)
+
+      expect(stripe_subscriptions).to have_received(:cancel).with("sub_1")
+      expect(subscription.reload).to be_cancelled
+      expect(membership.reload).to be_cancelled
+    end
+
+    it "leaves the membership active when Stripe refuses the cancellation" do
+      admin = create(:user, :platform_admin)
+      membership = create(:membership, status: :active)
+      create(:subscription, :active, band: membership.band, user: membership.user, stripe_subscription_id: "sub_1")
+      stripe_subscriptions = instance_double(Stripe::SubscriptionService)
+      allow(StripeClient).to receive(:instance)
+        .and_return(instance_double(Stripe::StripeClient, v1: instance_double(Stripe::V1Services, subscriptions: stripe_subscriptions)))
+      allow(stripe_subscriptions).to receive(:cancel).and_raise(Stripe::APIConnectionError.new("network down"))
+      sign_in admin
+
+      patch cancel_admin_membership_path(membership)
+
+      expect(membership.reload).to be_active
+      expect(flash[:alert]).to be_present
+    end
+
+    # A band can grant a membership directly, with no payment behind it.
+    it "cancels a membership that has no subscription without touching Stripe" do
+      admin = create(:user, :platform_admin)
+      membership = create(:membership, status: :active)
+      expect(StripeClient).not_to receive(:instance)
+      sign_in admin
+
+      patch cancel_admin_membership_path(membership)
+
+      expect(membership.reload).to be_cancelled
+    end
+  end
+
+  describe "PATCH /admin/memberships/:id/pause" do
+    # Pausing is a moderation measure, not a billing decision.
+    it "does not stop subscription billing" do
+      admin = create(:user, :platform_admin)
+      membership = create(:membership, status: :active)
+      subscription = create(:subscription, :active, band: membership.band, user: membership.user,
+                                                    stripe_subscription_id: "sub_1")
+      expect(StripeClient).not_to receive(:instance)
+      sign_in admin
+
+      patch pause_admin_membership_path(membership)
+
+      expect(membership.reload).to be_paused
+      expect(subscription.reload).to be_active
+    end
   end
 
   describe "PATCH /admin/memberships/:id/reactivate" do
