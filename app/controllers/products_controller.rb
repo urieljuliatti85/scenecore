@@ -17,6 +17,12 @@ class ProductsController < ApplicationController
     @product = @band.products.new(product_params)
     authorize @product
 
+    if @product.variants.empty?
+      @product.errors.add(:variants, "must include at least one variant")
+      @product.variants.build(name: "Default", stock_quantity: 0)
+      return render :new, status: :unprocessable_entity
+    end
+
     if @product.save
       redirect_to band_products_path(@band), notice: "Product created."
     else
