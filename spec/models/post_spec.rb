@@ -262,4 +262,98 @@ RSpec.describe Post, type: :model do
       expect(post.attachments.count).to eq(2)
     end
   end
+
+  describe "early access" do
+    it "requires an until date when a level is set" do
+      expect(build(:post, early_access_level: :supporter, early_access_until: nil)).not_to be_valid
+    end
+
+    it "requires a level when an until date is set" do
+      expect(build(:post, early_access_level: nil, early_access_until: 1.day.from_now)).not_to be_valid
+    end
+
+    it "is valid with neither set" do
+      expect(build(:post, early_access_level: nil, early_access_until: nil)).to be_valid
+    end
+
+    it "is valid with both set to a known level" do
+      expect(build(:post, early_access_level: :supporter, early_access_until: 1.day.from_now)).to be_valid
+    end
+  end
+
+  describe "#in_early_access?" do
+    it "is false when no early access is configured" do
+      expect(build(:post)).not_to be_in_early_access
+    end
+
+    it "is true while the until date is in the future" do
+      expect(build(:post, early_access_level: :supporter, early_access_until: 1.day.from_now)).to be_in_early_access
+    end
+
+    it "is false once the until date has passed" do
+      expect(build(:post, early_access_level: :supporter, early_access_until: 1.day.ago)).not_to be_in_early_access
+    end
+  end
+
+  describe "#visible_to? with early access" do
+    let(:band) { create(:band) }
+
+    it "is not visible to an anonymous visitor during early access, even on an otherwise public post" do
+      post = create(:post, band: band, visibility: :public, early_access_level: :supporter, early_access_until: 1.day.from_now)
+
+      expect(post.visible_to?(nil)).to be false
+    end
+
+    it "is not visible to a user below the required early access level" do
+      post = create(:post, band: band, visibility: :public, early_access_level: :supporter, early_access_until: 1.day.from_now)
+      fan = create(:user)
+      create(:membership, band: band, user: fan, level: :fan)
+
+      expect(post.visible_to?(fan)).to be false
+    end
+
+    it "is visible to a user who meets the required early access level" do
+      post = create(:post, band: band, visibility: :public, early_access_level: :supporter, early_access_until: 1.day.from_now)
+      supporter = create(:user)
+      create(:membership, band: band, user: supporter, level: :supporter)
+
+      expect(post.visible_to?(supporter)).to be true
+    end
+
+    it "grants early access to a Core Member on a post gated at a lower level" do
+      post = create(:post, band: band, visibility: :fan, early_access_level: :core_member, early_access_until: 1.day.from_now)
+      core_member = create(:user)
+      create(:membership, band: band, user: core_member, level: :core_member)
+
+      expect(post.visible_to?(core_member)).to be true
+    end
+
+    it "falls back to ordinary visibility once the early access window has passed" do
+      post = create(:post, band: band, visibility: :public, early_access_level: :supporter, early_access_until: 1.day.ago)
+
+      expect(post.visible_to?(nil)).to be true
+    end
+
+    it "still enforces ordinary visibility once the window has passed even if it's more restrictive" do
+      post = create(:post, band: band, visibility: :core_member, early_access_level: :supporter, early_access_until: 1.day.ago)
+      fan = create(:user)
+      create(:membership, band: band, user: fan, level: :fan)
+
+      expect(post.visible_to?(fan)).to be false
+    end
+  end
+
+  describe "#required_level with early access" do
+    it "returns the early access level while the window is open, even over a lower ordinary visibility" do
+      post = build(:post, visibility: :public, early_access_level: :supporter, early_access_until: 1.day.from_now)
+
+      expect(post.required_level).to eq("supporter")
+    end
+
+    it "falls back to ordinary required_level once the window has passed" do
+      post = build(:post, :supporter_only, early_access_level: :fan, early_access_until: 1.day.ago)
+
+      expect(post.required_level).to eq("supporter")
+    end
+  end
 end

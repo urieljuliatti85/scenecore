@@ -54,5 +54,16 @@
     <%= form.file_field :attachments, multiple: true, accept: "audio/wav,audio/mpeg,application/pdf", class: "w-full text-sm text-neutral-300 file:mr-4 file:rounded-full file:border-0 file:bg-yellow-400 file:text-black file:font-semibold file:px-4 file:py-2 file:cursor-pointer" %>
   </div>
 
+  <div class="pt-4 border-t border-neutral-800">
+    <h2 class="text-sm font-semibold text-neutral-300 mb-1">Early access</h2>
+    <p class="text-xs text-neutral-500 mb-3">Give a membership level early access to this post before it opens up to its normal visibility.</p>
+
+    <%= form.label :early_access_level, "Minimum membership", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.select :early_access_level, options_for_select(Post.early_access_levels.keys.map { |level| [ level.humanize, level ] }, post.early_access_level), { include_blank: "No early access" }, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400 mb-3" %>
+
+    <%= form.label :early_access_until, "Opens to normal visibility at", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.datetime_field :early_access_until, value: post.early_access_until&.strftime("%Y-%m-%dT%H:%M"), class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+  </div>
+
   <%= form.submit submit_label, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition cursor-pointer self-start" %>
 <% end %>

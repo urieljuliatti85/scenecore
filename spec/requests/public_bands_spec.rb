@@ -431,6 +431,29 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).not_to include("Draft News")
     end
 
+    it "locks a post still in early access for a visitor without the required level, showing its title but not its body" do
+      band = create(:band, :approved)
+      create(:post, :published, band: band, visibility: :public, title: "Early Post", body: "Secret body text", early_access_level: :supporter, early_access_until: 1.day.from_now)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Early Post")
+      expect(response.body).to include("Available to Supporters and above")
+      expect(response.body).not_to include("Secret body text")
+    end
+
+    it "shows a post still in early access to a member who meets the required level" do
+      band = create(:band, :approved)
+      create(:post, :published, band: band, visibility: :public, title: "Early Post", body: "Unlocked body text", early_access_level: :supporter, early_access_until: 1.day.from_now)
+      supporter = create(:user)
+      create(:membership, band: band, user: supporter, level: :supporter)
+      sign_in supporter
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Unlocked body text")
+    end
+
     it "locks a followers-only post for an anonymous visitor, showing its title but not its body" do
       band = create(:band, :approved)
       create(:post, :published, :followers_only, band: band, title: "Followers News", body: "Secret body text")
