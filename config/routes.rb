@@ -184,6 +184,13 @@ Rails.application.routes.draw do
 
   get "/search", to: "search#index", as: :search
 
+  resource :cart, only: [ :show, :destroy ] do
+    post :add
+    patch :update_item
+    delete :remove_item
+  end
+  resource :checkout, only: [ :new, :create ], controller: "checkouts"
+
   get "/about", to: "pages#about", as: :about
   get "/how-it-works", to: "pages#how_it_works", as: :how_it_works
   get "/contact", to: "contact_messages#new", as: :contact

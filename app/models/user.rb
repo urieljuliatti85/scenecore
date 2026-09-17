@@ -10,6 +10,8 @@ class User < ApplicationRecord
   has_many :followed_bands, through: :follows, source: :band
   has_many :memberships, dependent: :destroy
   has_many :subscriptions, dependent: :destroy
+  has_many :carts, dependent: :destroy
+  has_many :orders, dependent: :destroy
   has_many :ratings, dependent: :destroy
   has_many :poll_votes, dependent: :destroy
   has_many :comments, dependent: :destroy

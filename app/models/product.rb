@@ -8,6 +8,7 @@ class Product < ApplicationRecord
   enum :source, { manual: "manual", discogs: "discogs" }, default: :manual, validate: true
 
   validates :name, presence: true
+  validates :shipping_cents, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :discogs_release_id, uniqueness: { scope: :band_id }, allow_nil: true
   validates :discogs_release_id, presence: true, if: :discogs?
 

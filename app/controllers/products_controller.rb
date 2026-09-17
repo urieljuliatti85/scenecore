@@ -141,6 +141,7 @@ class ProductsController < ApplicationController
     params.require(:product).permit(
       :name,
       :description,
+      :shipping_cents,
       variants_attributes: [ :id, :sku, :name, :price_cents, :stock_quantity ]
     )
   end
