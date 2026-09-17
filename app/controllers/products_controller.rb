@@ -4,24 +4,23 @@ class ProductsController < ApplicationController
 
   def index
     authorize @band, policy_class: ProductPolicy
+
+    if request.format.json?
+      results = DiscogsClient.new.search_releases(params[:q])
+      return render json: results.map(&:to_h)
+    end
+
     @products = @band.products.includes(:variants).order(created_at: :desc)
+  rescue DiscogsClient::ConfigurationError
+    render json: { error: "Discogs integration is not configured." }, status: :service_unavailable
+  rescue DiscogsClient::Error
+    render json: { error: "Discogs search is unavailable right now." }, status: :bad_gateway
   end
 
   def new
     @product = @band.products.new
     @product.variants.build(name: "Default", stock_quantity: 0)
     authorize @product
-  end
-
-  def discogs_search
-    authorize @band, :create?, policy_class: ProductPolicy
-
-    results = DiscogsClient.new.search_releases(params[:q])
-    render json: results.map(&:to_h)
-  rescue DiscogsClient::ConfigurationError
-    render json: { error: "Discogs integration is not configured." }, status: :service_unavailable
-  rescue DiscogsClient::Error
-    render json: { error: "Discogs search is unavailable right now." }, status: :bad_gateway
   end
 
   def create
