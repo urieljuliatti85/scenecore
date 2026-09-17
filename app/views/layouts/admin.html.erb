@@ -28,17 +28,17 @@
         <nav class="px-3 py-6">
           <p class="px-3 text-xs uppercase tracking-wide text-neutral-600 mb-2">Management</p>
           <div class="flex flex-col gap-1">
-            <%= admin_nav_link "Dashboard", admin_root_path, current: request.path == admin_root_path %>
-            <%= admin_nav_link "Bands", admin_bands_path, current: request.path.start_with?(admin_bands_path) %>
-            <%= admin_nav_link "Users", admin_users_path, current: request.path.start_with?(admin_users_path) %>
-            <%= admin_nav_link "Memberships", admin_memberships_path, current: request.path.start_with?(admin_memberships_path) %>
-            <%= admin_nav_link "Subscriptions", admin_subscriptions_path, current: request.path.start_with?(admin_subscriptions_path) %>
-            <%= admin_nav_link "Moderation", admin_albums_path, current: request.path.start_with?(admin_albums_path) %>
-            <%= admin_nav_link "Categories", admin_categories_path, current: request.path.start_with?(admin_categories_path) %>
-            <%= admin_nav_link "Analytics", admin_analytics_path, current: request.path.start_with?(admin_analytics_path) %>
-            <%= admin_nav_link "Reports", admin_reports_path, current: request.path.start_with?(admin_reports_path) %>
-            <%= admin_nav_link "Audit Log", admin_audit_logs_path, current: request.path.start_with?(admin_audit_logs_path) %>
-            <%= admin_nav_link "Platform Settings", edit_admin_platform_settings_path, current: request.path.start_with?(admin_platform_settings_path) %>
+            <%= admin_nav_link "Dashboard", admin_root_path, current: request.path == admin_root_path, section: :dashboard %>
+            <%= admin_nav_link "Bands", admin_bands_path, current: request.path.start_with?(admin_bands_path), section: :bands %>
+            <%= admin_nav_link "Users", admin_users_path, current: request.path.start_with?(admin_users_path), section: :users %>
+            <%= admin_nav_link "Memberships", admin_memberships_path, current: request.path.start_with?(admin_memberships_path), section: :memberships %>
+            <%= admin_nav_link "Subscriptions", admin_subscriptions_path, current: request.path.start_with?(admin_subscriptions_path), section: :subscriptions %>
+            <%= admin_nav_link "Moderation", admin_albums_path, current: request.path.start_with?(admin_albums_path), section: :moderation %>
+            <%= admin_nav_link "Categories", admin_categories_path, current: request.path.start_with?(admin_categories_path), section: :categories %>
+            <%= admin_nav_link "Analytics", admin_analytics_path, current: request.path.start_with?(admin_analytics_path), section: :analytics %>
+            <%= admin_nav_link "Reports", admin_reports_path, current: request.path.start_with?(admin_reports_path), section: :reports %>
+            <%= admin_nav_link "Audit Log", admin_audit_logs_path, current: request.path.start_with?(admin_audit_logs_path), section: :audit_logs %>
+            <%= admin_nav_link "Platform Settings", edit_admin_platform_settings_path, current: request.path.start_with?(admin_platform_settings_path), section: :platform_settings %>
           </div>
         </nav>
       </div>

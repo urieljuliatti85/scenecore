@@ -16,6 +16,20 @@ RSpec.describe "Admin::Dashboard", type: :request do
       expect(response.body).to include(">3<")
     end
 
+    it "accents the band and user cards with their section colours" do
+      admin = create(:user, :platform_admin)
+      sign_in admin
+
+      get admin_root_path
+
+      cards = Nokogiri::HTML(response.body).css("main .grid > div")
+
+      expect(cards.size).to eq(3)
+      expect(cards[0].to_html).to include("text-emerald-400")
+      expect(cards[1].to_html).to include("text-emerald-400")
+      expect(cards[2].to_html).to include("text-sky-400")
+    end
+
     it "returns 404 for a regular authenticated user" do
       user = create(:user)
       sign_in user

@@ -1,0 +1,10 @@
+<div class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-6 py-5">
+  <span class="inline-flex items-center gap-2 rounded-full border <%= admin_section_accent(section, :border) %> px-3 py-1 mb-4">
+    <span class="h-1.5 w-1.5 rounded-full <%= admin_section_accent(section, :dot) %>" aria-hidden="true"></span>
+    <span class="text-xs font-semibold uppercase tracking-wide <%= admin_section_accent(section, :text) %>"><%= label %></span>
+  </span>
+
+  <p class="text-3xl font-extrabold"><%= count %></p>
+
+  <%= link_to link_label, link_path, class: "text-sm #{admin_section_accent(section, :text)} hover:text-white transition" %>
+</div>
