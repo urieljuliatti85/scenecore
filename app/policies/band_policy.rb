@@ -27,6 +27,14 @@ class BandPolicy < ApplicationPolicy
     user&.platform_admin?
   end
 
+  def feature?
+    user&.platform_admin?
+  end
+
+  def unfeature?
+    user&.platform_admin?
+  end
+
   class Scope < Scope
     def resolve
       return scope.none if user.nil?

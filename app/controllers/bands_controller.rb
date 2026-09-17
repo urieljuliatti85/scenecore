@@ -1,6 +1,6 @@
 class BandsController < ApplicationController
   before_action :set_band_for_member_actions, only: [ :show, :edit, :update ]
-  before_action :set_band_for_admin_actions, only: [ :approve, :reject, :suspend, :reactivate ]
+  before_action :set_band_for_admin_actions, only: [ :approve, :reject, :suspend, :reactivate, :feature, :unfeature ]
 
   def index
     @bands = policy_scope(Band)
@@ -102,6 +102,18 @@ class BandsController < ApplicationController
     @band.update!(status: :approved)
     log_admin_action("reactivate_band")
     redirect_to @band, notice: "Band reactivated."
+  end
+
+  def feature
+    @band.feature!
+    log_admin_action("feature_band")
+    redirect_to @band, notice: "Band featured on the home page."
+  end
+
+  def unfeature
+    @band.unfeature!
+    log_admin_action("unfeature_band")
+    redirect_to @band, notice: "Band removed from the home page."
   end
 
   private
