@@ -4,7 +4,7 @@ class Post < ApplicationRecord
   include MembershipGatedVisibility
 
   belongs_to :band
-  has_many :comments, dependent: :destroy
+  has_many :comments, -> { order(created_at: :asc) }, dependent: :destroy
   has_many :reports, as: :reportable, dependent: :destroy
 
   has_image :image

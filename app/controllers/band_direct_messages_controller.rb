@@ -1,4 +1,9 @@
 class BandDirectMessagesController < ApplicationController
+  # Own store rather than Rails.cache, same reasoning as
+  # ContactMessagesController: Rails.cache is :null_store in test, which
+  # would make this limit silently do nothing there. Counters are per
+  # process, so they reset on deploy and a second web replica halves the
+  # effective limit — an accepted tradeoff, not a bug.
   RATE_LIMIT_STORE = ActiveSupport::Cache::MemoryStore.new(size: 2.megabytes)
 
   rate_limit to: 1, within: 2.minutes, only: :create,
