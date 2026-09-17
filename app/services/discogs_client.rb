@@ -53,6 +53,7 @@ class DiscogsClient
     :barcode,
     :country,
     :discogs_url,
+    :image_url,
     :metadata,
     keyword_init: true
   )
@@ -103,6 +104,7 @@ class DiscogsClient
       barcode: barcode_from(identifiers),
       country: response["country"],
       discogs_url: response["uri"].presence || "https://www.discogs.com/release/#{response.fetch('id')}",
+      image_url: cover_image_url(response),
       metadata: metadata_from(response, identifiers)
     )
   rescue KeyError
@@ -168,6 +170,19 @@ class DiscogsClient
     return name if descriptions.empty?
 
     [ name, descriptions.join(" / ") ].compact.join(" · ")
+  end
+
+  # Discogs returns several images per release, flagged "primary" (the
+  # front cover) or "secondary" (back, inner sleeve, label scans). The
+  # primary is the one that belongs on a product; the first image is the
+  # fallback for releases that flag none.
+  def cover_image_url(response)
+    images = Array(response["images"])
+    return if images.empty?
+
+    primary = images.find { |image| image["type"] == "primary" }
+
+    (primary || images.first)["uri"].presence
   end
 
   def barcode_from(identifiers)

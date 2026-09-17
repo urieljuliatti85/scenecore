@@ -49,7 +49,7 @@ RSpec.describe DiscogsClient do
   end
 
   describe "#fetch_release" do
-    it "maps release metadata without importing images or marketplace data" do
+    it "maps release metadata and the cover, without marketplace data" do
       stub_http_response(body: {
         id: 123,
         title: "Record Name",
@@ -63,7 +63,10 @@ RSpec.describe DiscogsClient do
         identifiers: [ { type: "Barcode", value: "7891234567890" } ],
         genres: [ "Rock" ],
         styles: [ "Crust" ],
-        images: [ { uri: "https://example.com/restricted-cover.jpg" } ],
+        images: [
+          { type: "secondary", uri: "https://example.com/back-cover.jpg" },
+          { type: "primary", uri: "https://example.com/front-cover.jpg" }
+        ],
         lowest_price: 25.0
       })
 
@@ -80,8 +83,46 @@ RSpec.describe DiscogsClient do
         barcode: "7891234567890"
       )
       expect(release.metadata).to include("genres" => [ "Rock" ], "styles" => [ "Crust" ])
+
+      # The cover is surfaced as its own field so the importer can attach
+      # it. The raw images array still stays out of the stored metadata —
+      # only the one URL that gets used is carried.
+      expect(release.image_url).to eq("https://example.com/front-cover.jpg")
       expect(release.metadata).not_to have_key("images")
+
+      # Marketplace data remains excluded: SceneCore owns its own price
+      # and stock (ADR-007), so Discogs' figures are never imported.
       expect(release.metadata).not_to have_key("lowest_price")
+    end
+
+    # Discogs flags the front cover "primary" and everything else
+    # "secondary" — back covers, inner sleeves, label scans. Only the
+    # front belongs on a product.
+    it "prefers the primary image over the others" do
+      stub_http_response(body: {
+        id: 123, title: "Record Name",
+        images: [
+          { type: "secondary", uri: "https://example.com/label-scan.jpg" },
+          { type: "primary", uri: "https://example.com/front.jpg" }
+        ]
+      })
+
+      expect(client.fetch_release(123).image_url).to eq("https://example.com/front.jpg")
+    end
+
+    it "falls back to the first image when none is flagged primary" do
+      stub_http_response(body: {
+        id: 123, title: "Record Name",
+        images: [ { type: "secondary", uri: "https://example.com/only.jpg" } ]
+      })
+
+      expect(client.fetch_release(123).image_url).to eq("https://example.com/only.jpg")
+    end
+
+    it "has no image url for a release with no images" do
+      stub_http_response(body: { id: 123, title: "Record Name" })
+
+      expect(client.fetch_release(123).image_url).to be_nil
     end
 
     it "rejects an invalid release id before making a request" do

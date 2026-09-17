@@ -1,4 +1,8 @@
 class Product < ApplicationRecord
+  include HasImage
+
+  has_image :image
+
   belongs_to :band
   has_many :variants, class_name: "ProductVariant", dependent: :destroy
 

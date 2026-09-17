@@ -1080,7 +1080,7 @@ tracks.
   test coverage rather than treating it as still blocked.
 - A band administrator can manage only their own band's posts.
 
-### Store (not yet built)
+### Store
 
 - At most one active cart per user platform-wide, and that cart holds
   products from exactly one band (ADR-003, clarified 2026-09-17).
@@ -1095,6 +1095,17 @@ tracks.
   same transaction, not a separate transfer.
 - A band without an active Stripe Connect account cannot open Store
   checkout.
+- A product carries one photo. A Discogs import attaches the release's
+  front cover (the image Discogs flags `primary`); a band can replace it
+  by uploading its own, and a product created by hand has none until it
+  does.
+
+  Decided 2026-09-17, reversing the earlier choice to import metadata
+  only. Discogs' database is CC0 but its images are not, and the images
+  are user-submitted, so this is a deliberate acceptance of that risk in
+  exchange for a store that looks like a record shop. Attribution already
+  shown on Discogs-sourced products stays. Marketplace price and stock
+  remain excluded — SceneCore owns its own commerce fields (ADR-007).
 
 ### Payments
 
