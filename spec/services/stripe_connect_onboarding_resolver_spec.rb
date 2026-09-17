@@ -13,8 +13,13 @@ RSpec.describe StripeConnectOnboardingResolver do
     allow(account_links_service).to receive(:create).and_return(link)
   end
 
-  def resolve(band)
-    described_class.resolve(band, return_url: "https://app.test/return", refresh_url: "https://app.test/refresh")
+  def resolve(band, contact_email: "admin@example.com")
+    described_class.resolve(
+      band,
+      contact_email: contact_email,
+      return_url: "https://app.test/return",
+      refresh_url: "https://app.test/refresh"
+    )
   end
 
   describe ".resolve" do
@@ -37,6 +42,7 @@ RSpec.describe StripeConnectOnboardingResolver do
 
       expect(accounts_service).to have_received(:create).with(
         hash_including(
+          contact_email: "admin@example.com",
           dashboard: "express",
           defaults: {
             responsibilities: {

@@ -38,12 +38,18 @@ class StripeConnectOnboardingResolver
     }
   }.freeze
 
-  def self.resolve(band, return_url:, refresh_url:)
-    new(band, return_url: return_url, refresh_url: refresh_url).resolve
+  def self.resolve(band, contact_email:, return_url:, refresh_url:)
+    new(
+      band,
+      contact_email: contact_email,
+      return_url: return_url,
+      refresh_url: refresh_url
+    ).resolve
   end
 
-  def initialize(band, return_url:, refresh_url:)
+  def initialize(band, contact_email:, return_url:, refresh_url:)
     @band = band
+    @contact_email = contact_email
     @return_url = return_url
     @refresh_url = refresh_url
   end
@@ -75,6 +81,7 @@ class StripeConnectOnboardingResolver
 
     account = StripeClient.instance.v2.core.accounts.create(
       **ACCOUNT_CONFIGURATION,
+      contact_email: @contact_email,
       configuration: RECIPIENT_CONFIGURATION,
       metadata: { band_id: @band.id.to_s }
     )
