@@ -1,0 +1,28 @@
+<%# Shared by /subscriptions and the profile's Subscriptions tab, so the two
+    can never drift apart on what a subscription row shows or offers. %>
+<% if subscriptions.empty? %>
+  <p class="text-neutral-500">You haven't subscribed to any bands yet.</p>
+  <%= link_to "Discover bands", discover_bands_path, class: "inline-block mt-4 rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-6 py-3 hover:bg-yellow-400/20 hover:text-yellow-200 transition" %>
+<% else %>
+  <ul class="space-y-3">
+    <% subscriptions.each do |subscription| %>
+      <li class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-center justify-between gap-4">
+        <div>
+          <%= link_to subscription.band.name, public_band_path(subscription.band.slug), class: "font-semibold text-white hover:text-yellow-400 transition" %>
+          <p class="text-sm text-neutral-500 mt-1">
+            <%= subscription.level.humanize %> · $<%= number_with_precision(Membership::PRICES_IN_CENTS.fetch(subscription.level) / 100.0, precision: 0) %>/mo
+          </p>
+        </div>
+        <div class="flex items-center gap-3 shrink-0">
+          <span class="text-xs uppercase tracking-wide rounded-full px-3 py-1 border
+            <%= subscription.active? ? "border-green-900 text-green-400" : "border-neutral-700 text-neutral-500" %>">
+            <%= subscription.status.humanize %>
+          </span>
+          <% if subscription.active? %>
+            <%= button_to "Cancel", band_subscription_path(subscription.band), method: :delete, class: "text-sm font-medium text-red-500 hover:text-red-400 transition cursor-pointer", form: { data: { turbo_confirm: "Cancel your #{subscription.level.humanize} subscription with #{subscription.band.name}? This stops future billing." } } %>
+          <% end %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

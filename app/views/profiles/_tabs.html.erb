@@ -1,0 +1,16 @@
+<%# The tab bar from the reference: monospace uppercase pills inside a
+    bordered container, the active one filled and tinted in the platform's
+    amber rather than the reference's cyan. Each tab is a plain link
+    carrying ?tab=, so the two panels stay bookmarkable and work without
+    JavaScript. %>
+<div class="inline-flex items-center gap-1 rounded-xl border border-neutral-800 bg-neutral-950 p-1.5">
+  <% tabs.each do |slug, label| %>
+    <% active = slug == current_tab %>
+    <%= link_to profile_path(tab: slug),
+          aria: { current: ("page" if active) },
+          class: "flex items-center gap-2 rounded-lg px-3.5 py-2 font-mono text-xs uppercase tracking-wider transition #{active ? "bg-yellow-400/10 text-yellow-300 border border-yellow-500/30" : "border border-transparent text-neutral-400 hover:text-white"}" do %>
+      <%= render "profiles/tab_icon", slug: slug %>
+      <span><%= label %></span>
+    <% end %>
+  <% end %>
+</div>

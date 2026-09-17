@@ -60,7 +60,7 @@
 
   <div class="flex flex-wrap items-center gap-3">
     <% if policy(@band).show? %>
-      <%= link_to "Add Album", new_band_album_path(@band), class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition" %>
+      <%= link_to "Add Album", new_band_album_path(@band), class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-5 py-2.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition" %>
       <%= link_to "New Post", new_band_post_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
       <%= link_to "Add Event", new_band_event_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
       <%= link_to "New Poll", new_band_poll_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
@@ -76,7 +76,7 @@
     <% end %>
 
     <% if policy(@band).approve? && @band.pending? %>
-      <%= button_to "Approve", approve_band_path(@band), method: :patch, class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition cursor-pointer" %>
+      <%= button_to "Approve", approve_band_path(@band), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-5 py-2.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
       <%= button_to "Reject", reject_band_path(@band), method: :patch, class: "rounded-full border border-red-900 text-red-400 font-semibold px-5 py-2.5 hover:border-red-700 transition cursor-pointer" %>
     <% end %>
 
@@ -85,7 +85,7 @@
     <% end %>
 
     <% if policy(@band).reactivate? && @band.suspended? %>
-      <%= button_to "Reactivate", reactivate_band_path(@band), method: :patch, class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition cursor-pointer" %>
+      <%= button_to "Reactivate", reactivate_band_path(@band), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-5 py-2.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
     <% end %>
 
     <% if policy(@band).feature? && @band.approved? %>
@@ -123,7 +123,7 @@
 
             <div class="px-4 pb-4 flex flex-wrap items-center gap-2">
               <% if policy(album).publish? && album.draft? %>
-                <%= button_to "Publish", publish_band_album_path(@band, album), method: :patch, class: "rounded-full bg-yellow-400 text-black text-xs font-semibold px-3 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+                <%= button_to "Publish", publish_band_album_path(@band, album), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-xs font-semibold px-3 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
               <% end %>
 
               <% if policy(album).unpublish? && album.published? %>
@@ -154,7 +154,7 @@
 
             <div class="px-5 pb-4 flex flex-wrap items-center gap-2">
               <% if policy(event).publish? && event.draft? %>
-                <%= button_to "Publish", publish_band_event_path(@band, event), method: :patch, class: "rounded-full bg-yellow-400 text-black text-xs font-semibold px-3 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+                <%= button_to "Publish", publish_band_event_path(@band, event), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-xs font-semibold px-3 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
               <% end %>
 
               <% if policy(event).unpublish? && event.published? %>
@@ -185,7 +185,7 @@
 
             <div class="px-5 pb-4 flex flex-wrap items-center gap-2">
               <% if policy(post).publish? && post.draft? %>
-                <%= button_to "Publish", publish_band_post_path(@band, post), method: :patch, class: "rounded-full bg-yellow-400 text-black text-xs font-semibold px-3 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+                <%= button_to "Publish", publish_band_post_path(@band, post), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-xs font-semibold px-3 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
               <% end %>
 
               <% if policy(post).unpublish? && post.published? %>
@@ -216,7 +216,7 @@
 
             <div class="px-5 pb-4 flex flex-wrap items-center gap-2">
               <% if policy(poll).publish? && poll.draft? %>
-                <%= button_to "Publish", publish_band_poll_path(@band, poll), method: :patch, class: "rounded-full bg-yellow-400 text-black text-xs font-semibold px-3 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+                <%= button_to "Publish", publish_band_poll_path(@band, poll), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-xs font-semibold px-3 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
               <% end %>
 
               <% if policy(poll).unpublish? && poll.published? %>
@@ -248,7 +248,7 @@
 
             <div class="px-5 pb-4 flex flex-wrap items-center gap-2">
               <% if policy(core_session).publish? && core_session.draft? %>
-                <%= button_to "Publish", publish_band_core_session_path(@band, core_session), method: :patch, class: "rounded-full bg-yellow-400 text-black text-xs font-semibold px-3 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+                <%= button_to "Publish", publish_band_core_session_path(@band, core_session), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-xs font-semibold px-3 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
               <% end %>
 
               <% if policy(core_session).unpublish? && core_session.published? %>

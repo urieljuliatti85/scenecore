@@ -3,8 +3,8 @@
     <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Bands</h1>
 
     <div class="flex items-center gap-2">
-      <%= link_to "Recently added", discover_bands_path(sort: "recent", category_id: @category&.id), class: "rounded-full px-4 py-2 text-sm font-semibold transition #{@sort == "recent" ? "bg-yellow-400 text-black" : "border border-neutral-700 text-neutral-300 hover:border-neutral-500"}" %>
-      <%= link_to "Most followed", discover_bands_path(sort: "followers", category_id: @category&.id), class: "rounded-full px-4 py-2 text-sm font-semibold transition #{@sort == "followers" ? "bg-yellow-400 text-black" : "border border-neutral-700 text-neutral-300 hover:border-neutral-500"}" %>
+      <%= link_to "Recently added", discover_bands_path(sort: "recent", category_id: @category&.id), class: "rounded-full px-4 py-2 text-sm font-semibold transition #{@sort == "recent" ? "bg-yellow-400/10 text-yellow-300 border border-yellow-500/30" : "border border-neutral-700 text-neutral-300 hover:border-neutral-500"}" %>
+      <%= link_to "Most followed", discover_bands_path(sort: "followers", category_id: @category&.id), class: "rounded-full px-4 py-2 text-sm font-semibold transition #{@sort == "followers" ? "bg-yellow-400/10 text-yellow-300 border border-yellow-500/30" : "border border-neutral-700 text-neutral-300 hover:border-neutral-500"}" %>
     </div>
   </div>
 

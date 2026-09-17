@@ -33,7 +33,7 @@
     one and a Core Member of another.
   </p>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+  <div id="membership-plans" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
     <% [
          [ "fan", "Get closer to the band.", [
            "Exclusive band feed",
@@ -142,7 +142,7 @@
 
   <% unless user_signed_in? %>
     <div class="flex flex-wrap items-center gap-3">
-      <%= link_to "Join Now", new_user_registration_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
+      <%= link_to "Join Now", new_user_registration_path, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-6 py-3 hover:bg-yellow-400/20 hover:text-yellow-200 transition" %>
       <%= link_to "Browse bands", discover_bands_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
     </div>
   <% end %>

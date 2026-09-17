@@ -22,7 +22,7 @@
   <% else %>
     <%= form_with model: DirectMessage.new, url: my_band_direct_messages_path(@band.slug), method: :post, class: "mt-8 flex flex-col gap-3" do |form| %>
       <%= form.text_area :body, rows: 3, maxlength: 2000, placeholder: "Write a message...", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
-      <%= form.submit "Send", class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-2.5 hover:bg-yellow-300 transition cursor-pointer self-start" %>
+      <%= form.submit "Send", class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-6 py-2.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer self-start" %>
     <% end %>
   <% end %>
 </section>

@@ -19,7 +19,7 @@
             <%= option.label %>
           </label>
         <% end %>
-        <%= form.submit voted ? "Update vote" : "Vote", class: "mt-2 rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-1.5 hover:bg-yellow-300 transition cursor-pointer self-start" %>
+        <%= form.submit voted ? "Update vote" : "Vote", class: "mt-2 rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-sm font-semibold px-4 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer self-start" %>
       <% end %>
     <% else %>
       <% total_votes = poll.poll_options.sum(&:votes_count) %>

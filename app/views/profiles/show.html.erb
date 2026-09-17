@@ -1,19 +1,26 @@
-<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-xl mx-auto">
-  <h1 class="text-3xl font-extrabold tracking-tight mb-8">Your profile</h1>
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-2xl mx-auto">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-6">Your profile</h1>
 
-  <dl class="space-y-4 mb-8">
-    <div>
-      <dt class="text-xs uppercase tracking-wide text-neutral-500">Name</dt>
-      <dd class="text-white"><%= @user.name %></dd>
-    </div>
-    <div>
-      <dt class="text-xs uppercase tracking-wide text-neutral-500">Email</dt>
-      <dd class="text-white"><%= @user.email %></dd>
-    </div>
-  </dl>
+  <%= render "tabs",
+        current_tab: @tab,
+        tabs: [ [ "details", "Details" ], [ "subscriptions", "Your Subscriptions" ] ] %>
 
-  <div class="flex flex-wrap items-center gap-4">
-    <%= link_to "Edit profile", edit_profile_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition inline-block" %>
-    <%= link_to "Your subscriptions", subscriptions_path, class: "text-sm text-neutral-400 hover:text-white transition" %>
+  <div class="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 sm:p-8">
+    <% if @tab == "subscriptions" %>
+      <%= render "subscriptions/list", subscriptions: @subscriptions %>
+    <% else %>
+      <dl class="space-y-4 mb-8">
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-neutral-500">Name</dt>
+          <dd class="text-white"><%= @user.name %></dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-neutral-500">Email</dt>
+          <dd class="text-white"><%= @user.email %></dd>
+        </div>
+      </dl>
+
+      <%= link_to "Edit profile", edit_profile_path, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-6 py-3 hover:bg-yellow-400/20 hover:text-yellow-200 transition inline-block" %>
+    <% end %>
   </div>
 </section>
