@@ -88,6 +88,12 @@ Rails.application.routes.draw do
     end
     resources :categories, only: [ :index, :new, :create, :edit, :update, :destroy ]
     resources :audit_logs, only: [ :index ]
+    resources :reports, only: [ :index ] do
+      member do
+        patch :resolve
+        patch :dismiss
+      end
+    end
   end
 
   resources :bands, only: [ :index, :new, :create, :show, :edit, :update ] do
@@ -177,5 +183,7 @@ Rails.application.routes.draw do
     delete "/:slug/posts/:post_id/comments/:id", to: "comments#destroy", as: :post_comment
     post "/:slug/core_sessions/:core_session_id/rsvp", to: "core_session_rsvps#create", as: :core_session_rsvp
     delete "/:slug/core_sessions/:core_session_id/rsvp", to: "core_session_rsvps#destroy", as: :cancel_core_session_rsvp
+    post "/:slug/posts/:post_id/report", to: "reports#create_for_post", as: :report_post
+    post "/:slug/posts/:post_id/comments/:comment_id/report", to: "reports#create_for_comment", as: :report_comment
   end
 end

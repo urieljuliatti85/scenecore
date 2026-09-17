@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_014910) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_022031) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -321,6 +321,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_014910) do
     t.check_constraint "score >= 1 AND score <= 5", name: "ratings_score_check"
   end
 
+  create_table "reports", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "reason", null: false
+    t.bigint "reportable_id", null: false
+    t.string "reportable_type", null: false
+    t.bigint "reporter_id", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["reportable_type", "reportable_id"], name: "index_reports_on_reportable"
+    t.index ["reporter_id"], name: "index_reports_on_reporter_id"
+    t.check_constraint "char_length(reason) > 0", name: "reports_reason_not_blank"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'resolved'::character varying, 'dismissed'::character varying]::text[])", name: "reports_status_check"
+  end
+
   create_table "stripe_webhook_events", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "event_type", null: false
@@ -409,6 +423,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_014910) do
   add_foreign_key "posts", "bands"
   add_foreign_key "ratings", "albums"
   add_foreign_key "ratings", "users"
+  add_foreign_key "reports", "users", column: "reporter_id"
   add_foreign_key "subscriptions", "bands"
   add_foreign_key "subscriptions", "users"
   add_foreign_key "tracks", "albums"

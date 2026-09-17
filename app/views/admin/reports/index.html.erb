@@ -1,0 +1,41 @@
+<% content_for :title, "Reports — Admin — SceneCore" %>
+
+<div class="max-w-3xl">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-2">Reports</h1>
+  <p class="text-neutral-500 mb-8">Content reported by fans and members, across all bands.</p>
+
+  <% if @reports.empty? %>
+    <p class="text-neutral-500">No reports.</p>
+  <% else %>
+    <ul class="space-y-3">
+      <% @reports.each do |report| %>
+        <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4">
+          <div class="flex items-center justify-between gap-4">
+            <p class="font-semibold text-white"><%= report.reportable_type %> #<%= report.reportable_id %></p>
+            <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-2 py-0.5"><%= report.status %></span>
+          </div>
+          <p class="text-sm text-neutral-400 mt-1">Reported by <%= report.reporter.name %>: "<%= report.reason %>"</p>
+
+          <% if report.reportable.present? %>
+            <p class="text-sm text-neutral-500 mt-2 rounded-lg bg-black/30 px-3 py-2">
+              <% if report.reportable.is_a?(Comment) %>
+                <%= report.reportable.body %>
+              <% else %>
+                <%= report.reportable.title %>
+              <% end %>
+            </p>
+          <% else %>
+            <p class="text-sm text-neutral-600 mt-2 italic">Content no longer exists.</p>
+          <% end %>
+
+          <% if report.pending? %>
+            <div class="mt-3 flex items-center gap-2">
+              <%= button_to "Resolve", resolve_admin_report_path(report), method: :patch, class: "rounded-full bg-yellow-400 text-black text-xs font-semibold px-3 py-1.5 hover:bg-yellow-300 transition cursor-pointer" %>
+              <%= button_to "Dismiss", dismiss_admin_report_path(report), method: :patch, class: "rounded-full border border-neutral-700 text-white text-xs font-semibold px-3 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
+            </div>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>
