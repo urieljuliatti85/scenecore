@@ -134,18 +134,18 @@ RSpec.describe "Band payments", type: :request do
 
     # A band that sells no merch has no reason to open Products, which is
     # where the only Connect prompt used to live.
-    it "is linked from the band panel" do
+    it "is reachable from the band panel" do
       get band_path(band)
 
-      expect(response.body).to include(band_payments_path(band))
+      expect(response.body).to include("tab=payments")
     end
 
-    it "flags the panel link while payments are not set up" do
+    it "flags the panel tab while payments are not set up" do
       get band_path(band)
 
-      link = Nokogiri::HTML(response.body).css("a[href='#{band_payments_path(band)}']").first
+      tab = Nokogiri::HTML(response.body).css("a[href*='tab=payments']").first
 
-      expect(link["class"]).to include("yellow")
+      expect(tab["class"]).to include("yellow")
     end
 
     it "stops flagging it once the account is active" do
@@ -153,9 +153,17 @@ RSpec.describe "Band payments", type: :request do
 
       get band_path(band)
 
-      link = Nokogiri::HTML(response.body).css("a[href='#{band_payments_path(band)}']").first
+      tab = Nokogiri::HTML(response.body).css("a[href*='tab=payments']").first
 
-      expect(link["class"]).not_to include("yellow")
+      expect(tab["class"]).not_to include("yellow")
+    end
+
+    # The dedicated page stays for deep links and for anyone landing on it
+    # directly, so the panel tab is an additional way in, not a replacement.
+    it "still serves its own page" do
+      get band_payments_path(band)
+
+      expect(response).to have_http_status(:ok)
     end
   end
 end

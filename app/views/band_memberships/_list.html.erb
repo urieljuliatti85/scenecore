@@ -1,0 +1,17 @@
+<%# Shared by /bands/:id/members and the panel's Members tab, so the two
+    cannot drift apart on what a row shows or offers. %>
+<% if memberships.empty? %>
+  <p class="text-sm text-neutral-500">No members yet.</p>
+<% else %>
+  <ul class="space-y-3">
+    <% memberships.each do |membership| %>
+      <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-center justify-between gap-4">
+        <div>
+          <p class="font-semibold text-white"><%= membership.user.name %></p>
+          <p class="text-xs uppercase tracking-wide text-neutral-500"><%= membership.role %></p>
+        </div>
+        <%= button_to "Remove", band_band_membership_path(band, membership), method: :delete, class: "rounded-full border border-red-900 text-red-400 text-sm font-semibold px-4 py-2 hover:border-red-700 transition cursor-pointer" %>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

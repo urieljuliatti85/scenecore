@@ -1,0 +1,22 @@
+<%# One bar for the whole panel: content on the left, managing the band on
+    the right, split by a rule rather than by a second container. Every tab
+    is a plain link carrying ?tab=, so each panel is bookmarkable and the
+    page needs no JavaScript.
+
+    Counts sit beside the content labels because a band opening the panel
+    wants to know where its material is, not just which sections exist. %>
+<div class="flex flex-wrap items-center gap-1 rounded-xl border border-neutral-800 bg-neutral-950 p-1.5">
+  <% tabs.each do |slug, label, count| %>
+    <%= render "bands/tab_link", band: band, slug: slug, label: label, count: count, current_tab: current_tab %>
+  <% end %>
+
+  <% if manage.any? %>
+    <span class="hidden sm:block w-px self-stretch bg-neutral-800 mx-1.5" aria-hidden="true"></span>
+
+    <% manage.each do |slug, label, count| %>
+      <%= render "bands/tab_link", band: band, slug: slug, label: label, count: count,
+            current_tab: current_tab,
+            flagged: (slug == "payments" && !band.payouts_ready?) %>
+    <% end %>
+  <% end %>
+</div>

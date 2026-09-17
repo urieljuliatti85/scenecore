@@ -192,6 +192,227 @@ RSpec.describe "Bands", type: :request do
       expect(response).to have_http_status(:ok)
     end
 
+    describe "tabs" do
+      def sign_in_as_member(band)
+        user = create(:user)
+        create(:band_membership, band: band, user: user)
+        sign_in user
+        user
+      end
+
+      it "opens on the overview" do
+        band = create(:band)
+        sign_in_as_member(band)
+
+        get band_path(band)
+
+        expect(Nokogiri::HTML(response.body).css("a[aria-current='page']").text).to include("Overview")
+      end
+
+      # The tab comes from the query string, so an unknown value falls back
+      # rather than reaching a render call with whatever was passed.
+      it "falls back to the overview for an unknown tab" do
+        band = create(:band)
+        sign_in_as_member(band)
+
+        get band_path(band, tab: "nope")
+
+        expect(response).to have_http_status(:ok)
+        expect(Nokogiri::HTML(response.body).css("a[aria-current='page']").text).to include("Overview")
+      end
+
+      it "shows albums on the music tab and not on the others" do
+        band = create(:band)
+        create(:album, band: band, title: "Only Album")
+        sign_in_as_member(band)
+
+        get band_path(band, tab: "music")
+        expect(response.body).to include("Only Album")
+
+        get band_path(band, tab: "posts")
+        expect(response.body).not_to include("Only Album")
+      end
+
+      it "shows posts on the posts tab" do
+        band = create(:band)
+        create(:post, band: band, title: "Only Post")
+        sign_in_as_member(band)
+
+        get band_path(band, tab: "posts")
+
+        expect(response.body).to include("Only Post")
+      end
+
+      it "shows events on the shows tab" do
+        band = create(:band)
+        create(:event, band: band, title: "Only Show")
+        sign_in_as_member(band)
+
+        get band_path(band, tab: "shows")
+
+        expect(response.body).to include("Only Show")
+      end
+
+      it "groups polls and core sessions under community" do
+        band = create(:band)
+        create(:poll, band: band, question: "Only Poll")
+        create(:core_session, band: band, title: "Only Session")
+        sign_in_as_member(band)
+
+        get band_path(band, tab: "community")
+
+        expect(response.body).to include("Only Poll")
+        expect(response.body).to include("Only Session")
+      end
+
+      it "counts each tab's records beside its label" do
+        band = create(:band)
+        2.times { create(:album, band: band) }
+        sign_in_as_member(band)
+
+        get band_path(band)
+
+        music_tab = Nokogiri::HTML(response.body).css("a[href*='tab=music']").text
+
+        expect(music_tab).to include("2")
+      end
+
+      # An empty tab explains what the section is for; the action to fill it
+      # is already above.
+      it "explains an empty tab rather than rendering nothing" do
+        band = create(:band)
+        sign_in_as_member(band)
+
+        get band_path(band, tab: "music")
+
+        expect(response.body).to include("No albums yet")
+      end
+
+      # The manage tabs open in the same panel rather than navigating away,
+      # so the band stays in one place.
+      describe "manage tabs" do
+        def sign_in_as_administrator(band)
+          admin = create(:user)
+          create(:band_membership, :administrator, band: band, user: admin)
+          sign_in admin
+          admin
+        end
+
+        it "shows the band profile in the panel" do
+          band = create(:band, description: "A description")
+          sign_in_as_administrator(band)
+
+          get band_path(band, tab: "profile")
+
+          expect(response.body).to include("A description")
+        end
+
+        it "shows band members in the panel" do
+          band = create(:band)
+          admin = sign_in_as_administrator(band)
+
+          get band_path(band, tab: "members")
+
+          expect(response.body).to include(admin.name)
+        end
+
+        it "shows supporters in the panel" do
+          band = create(:band)
+          supporter = create(:user, name: "Supporting Fan")
+          create(:membership, band: band, user: supporter, level: :supporter)
+          sign_in_as_administrator(band)
+
+          get band_path(band, tab: "supporters")
+
+          expect(response.body).to include("Supporting Fan")
+        end
+
+        it "shows products in the panel" do
+          band = create(:band)
+          create(:product, band: band, name: "Only Product")
+          sign_in_as_administrator(band)
+
+          get band_path(band, tab: "products")
+
+          expect(response.body).to include("Only Product")
+        end
+
+        it "shows the payments status in the panel" do
+          band = create(:band)
+          sign_in_as_administrator(band)
+
+          get band_path(band, tab: "payments")
+
+          expect(response.body).to include("haven&#39;t connected Stripe yet")
+        end
+
+        # These tabs carry the band's own money and membership records, so a
+        # plain member must not reach them by editing the query string.
+        it "refuses a plain member on every manage tab" do
+          band = create(:band)
+          member = create(:user)
+          create(:band_membership, band: band, user: member, role: :member)
+          sign_in member
+
+          BandsController::MANAGE_TABS.each do |tab|
+            get band_path(band, tab: tab)
+
+            expect(response).to have_http_status(:found), "#{tab} was reachable"
+          end
+        end
+
+        it "does not offer the manage tabs to a plain member" do
+          band = create(:band)
+          member = create(:user)
+          create(:band_membership, band: band, user: member, role: :member)
+          sign_in member
+
+          get band_path(band)
+
+          labels = Nokogiri::HTML(response.body).css("a[href*='tab=']").map(&:text)
+
+          expect(labels.join).not_to include("Payments")
+        end
+
+        # Payments is the one tab that needs attention before it is opened,
+        # since nothing else on the panel says the band cannot take money.
+        it "flags payments while the band cannot take money" do
+          band = create(:band)
+          sign_in_as_administrator(band)
+
+          get band_path(band)
+
+          payments_tab = Nokogiri::HTML(response.body).css("a[href*='tab=payments']").first
+
+          expect(payments_tab["class"]).to include("yellow")
+        end
+
+        it "stops flagging payments once the account is active" do
+          band = create(:band, stripe_connect_status: :active, stripe_connect_account_id: "acct_1")
+          sign_in_as_administrator(band)
+
+          get band_path(band)
+
+          payments_tab = Nokogiri::HTML(response.body).css("a[href*='tab=payments']").first
+
+          expect(payments_tab["class"]).not_to include("yellow")
+        end
+      end
+
+      # Each tab carries the action for its own content, so a band does not
+      # meet eleven buttons before finding what it came for.
+      it "offers the add action on the tab it belongs to" do
+        band = create(:band)
+        sign_in_as_member(band)
+
+        get band_path(band, tab: "music")
+        expect(response.body).to include(new_band_album_path(band))
+
+        get band_path(band, tab: "shows")
+        expect(response.body).not_to include(new_band_album_path(band))
+      end
+    end
+
     # The panel used to count tracks per album. Albums link out to Spotify
     # now, so the page has no reason to touch that table at all.
     it "does not query tracks" do

@@ -6,29 +6,5 @@
     <% end %>
   </div>
 
-  <% if @memberships.empty? %>
-    <p class="text-neutral-500">No supporters yet.</p>
-  <% else %>
-    <ul class="space-y-3">
-      <% @memberships.each do |membership| %>
-        <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-center justify-between gap-4">
-          <div>
-            <p class="font-semibold text-white"><%= membership.user.name %></p>
-            <p class="text-xs uppercase tracking-wide text-neutral-500">
-              <%= membership.level.humanize %> · <%= membership.status.humanize %>
-            </p>
-          </div>
-          <div class="flex items-center gap-3">
-            <p class="text-xs text-neutral-500">Since <%= membership.created_at.to_date %></p>
-            <% if policy(membership).update? %>
-              <%= link_to "Edit", edit_band_membership_path(@band, membership), class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-2 hover:border-neutral-500 transition" %>
-            <% end %>
-            <% if policy(membership).destroy? %>
-              <%= button_to "Remove", band_membership_path(@band, membership), method: :delete, class: "rounded-full border border-red-900 text-red-400 text-sm font-semibold px-4 py-2 hover:border-red-700 transition cursor-pointer" %>
-            <% end %>
-          </div>
-        </li>
-      <% end %>
-    </ul>
-  <% end %>
+  <%= render "list", band: @band, memberships: @memberships %>
 </section>

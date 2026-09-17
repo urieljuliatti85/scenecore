@@ -4,15 +4,5 @@
     <%= link_to "Add member", new_band_band_membership_path(@band), class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-5 py-2.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition" %>
   </div>
 
-  <ul class="space-y-3">
-    <% @memberships.each do |membership| %>
-      <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-center justify-between gap-4">
-        <div>
-          <p class="font-semibold text-white"><%= membership.user.name %></p>
-          <p class="text-xs uppercase tracking-wide text-neutral-500"><%= membership.role %></p>
-        </div>
-        <%= button_to "Remove", band_band_membership_path(@band, membership), method: :delete, class: "rounded-full border border-red-900 text-red-400 text-sm font-semibold px-4 py-2 hover:border-red-700 transition cursor-pointer" %>
-      </li>
-    <% end %>
-  </ul>
+  <%= render "list", band: @band, memberships: @memberships %>
 </section>
