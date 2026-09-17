@@ -142,6 +142,37 @@ RSpec.describe "Bands", type: :request do
 
       expect(response).to redirect_to(new_user_session_path)
     end
+
+    it "shows the plan distribution percentage and estimated monthly revenue" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      create(:membership, band: band, level: :fan)
+      create(:membership, band: band, level: :fan)
+      create(:membership, band: band, level: :fan)
+      create(:membership, band: band, level: :supporter)
+      sign_in user
+
+      get band_path(band)
+
+      # 3 fans + 1 supporter = 4 total; fans are 75%
+      expect(response.body).to include("75%")
+      # (3 * $3.00) + (1 * $5.00) = $14.00
+      expect(response.body).to include("$14.00")
+    end
+
+    it "shows how many new members joined in each of the last 6 months" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      create(:membership, band: band, level: :fan, created_at: 2.months.ago.beginning_of_month + 1.day)
+      sign_in user
+
+      get band_path(band)
+
+      expect(response.body).to include("New members, last 6 months")
+      expect(response.body).to include(2.months.ago.strftime("%b"))
+    end
   end
 
   describe "band isolation" do

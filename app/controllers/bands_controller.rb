@@ -36,6 +36,12 @@ class BandsController < ApplicationController
       active_memberships = @band.memberships.active
       @membership_counts = Membership::LEVELS.index_with { |level| active_memberships.where(level: level).count }
       @new_members_this_month = @band.memberships.where(created_at: Time.current.beginning_of_month..).count
+      @total_active_members = @membership_counts.values.sum
+      @monthly_recurring_revenue_cents = @membership_counts.sum { |level, count| Membership::PRICES_IN_CENTS[level] * count }
+      @new_members_by_month = 5.downto(0).to_h do |months_ago|
+        month = months_ago.months.ago.beginning_of_month
+        [ month, @band.memberships.where(created_at: month..month.end_of_month).count ]
+      end
     end
   end
 
