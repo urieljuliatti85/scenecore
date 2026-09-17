@@ -27,7 +27,7 @@ class StoreCheckoutSessionCreator
 
   def call
     band = @order.band
-    raise Error, "#{band.name} can't take payments yet." unless band.store_checkout_ready?
+    raise Error, "#{band.name} can't take payments yet." unless band.payouts_ready?
 
     session = StripeClient.instance.v1.checkout.sessions.create(
       mode: "payment",

@@ -84,15 +84,16 @@ All payment webhooks must:
   auditable independent of Stripe's own records. Memberships carry 15%
   (ADR-008) — higher than the Store's 10%, since the platform hosts and
   serves that relationship every month rather than settling a one-off
-  sale. The membership split is decided but **not yet implemented** —
-  subscriptions still charge SceneCore's own Stripe account, so no band
-  payout happens today.
+  sale. Applied as `application_fee_percent` on the Stripe subscription,
+  so every monthly charge splits at source.
 - Band revenue is explicit: for Store, the 90% remainder of a Connect
   destination charge, deposited directly to the band's connected Stripe
   account — SceneCore never custodies or manually redistributes it.
-  Memberships are 85% to the band on the same basis, though today the
-  full charge still lands in SceneCore's account; closing that gap is
-  outstanding work.
+  Memberships are 85% to the band on the same basis. Subscriptions
+  created before that split was implemented still charge the full amount
+  to SceneCore — `rake subscriptions:unsplit` lists them and
+  `rake subscriptions:apply_split` routes them to their band from the
+  next invoice.
 - `PlatformSetting#platform_fee_percentage` exists as an admin-editable
   override and currently reads 0. Nothing consumes it yet — no checkout
   computes a fee from it — so the rates above are documented figures, not

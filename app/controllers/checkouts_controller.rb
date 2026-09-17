@@ -11,7 +11,7 @@ class CheckoutsController < ApplicationController
   def create
     @shipping_address = ShippingAddress.new(shipping_address_params)
 
-    unless @cart.band.store_checkout_ready?
+    unless @cart.band.payouts_ready?
       return redirect_to cart_path, alert: "#{@cart.band.name} can't take payments yet."
     end
 
