@@ -10,7 +10,7 @@ RSpec.describe "Polls", type: :request do
       create(:poll, :published, band: band, question: "Published poll question")
       sign_in user
 
-      get band_path(band)
+      get band_path(band, tab: "community")
 
       expect(response.body).to include("Draft poll question")
       expect(response.body).to include("Published poll question")
@@ -23,7 +23,7 @@ RSpec.describe "Polls", type: :request do
       create(:poll, band: create(:band), question: "Other band's poll question")
       sign_in user
 
-      get band_path(band)
+      get band_path(band, tab: "community")
 
       expect(response.body).not_to include("Other band's poll question")
     end

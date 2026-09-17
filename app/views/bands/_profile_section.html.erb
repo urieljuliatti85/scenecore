@@ -1,0 +1,52 @@
+<%# The panel shows the profile as it stands; editing it stays on its own
+    page, where the form and the photo upload already live. %>
+<dl class="flex flex-col gap-5">
+  <div>
+    <dt class="text-xs uppercase tracking-wide text-neutral-500 mb-1">Name</dt>
+    <dd class="text-white"><%= band.name %></dd>
+  </div>
+
+  <div>
+    <dt class="text-xs uppercase tracking-wide text-neutral-500 mb-1">Category</dt>
+    <dd class="text-white"><%= band.category&.name || "—" %></dd>
+  </div>
+
+  <div>
+    <dt class="text-xs uppercase tracking-wide text-neutral-500 mb-1">Description</dt>
+    <dd class="text-neutral-300 whitespace-pre-line"><%= band.description.presence || "—" %></dd>
+  </div>
+
+  <% links = {
+       "Spotify" => band.spotify_url,
+       "Bandcamp" => band.bandcamp_url,
+       "Instagram" => band.instagram_url,
+       "YouTube" => band.youtube_url,
+       "Website" => band.website_url
+     }.compact_blank %>
+
+  <div>
+    <dt class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Links</dt>
+    <dd>
+      <% if links.any? %>
+        <ul class="flex flex-wrap gap-2">
+          <% links.each do |label, url| %>
+            <li>
+              <%= link_to label, url, target: "_blank", rel: "noopener noreferrer",
+                    class: "inline-block rounded-full border border-neutral-800 text-sm text-neutral-300 px-3.5 py-1.5 hover:border-neutral-600 hover:text-white transition" %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <span class="text-neutral-500">None added yet.</span>
+      <% end %>
+    </dd>
+  </div>
+
+  <div>
+    <dt class="text-xs uppercase tracking-wide text-neutral-500 mb-1">Public page</dt>
+    <dd>
+      <%= link_to public_band_url(band.slug), public_band_path(band.slug),
+            class: "text-sm text-yellow-300 hover:text-yellow-200 transition break-all" %>
+    </dd>
+  </div>
+</dl>
