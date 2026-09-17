@@ -26,6 +26,23 @@ RSpec.describe ProductVariant do
     end
   end
 
+  describe "destroying" do
+    it "does not allow deleting a product's last variant" do
+      variant = create(:product_variant)
+
+      expect { variant.destroy }.not_to change(described_class, :count)
+      expect(variant.errors[:base]).to include("A product must keep at least one variant")
+    end
+
+    it "allows deleting a variant when the product has another one" do
+      product = create(:product)
+      variant = create(:product_variant, product: product)
+      create(:product_variant, product: product)
+
+      expect { variant.destroy! }.to change(described_class, :count).by(-1)
+    end
+  end
+
   describe "#decrement_stock!" do
     it "reduces the stock quantity" do
       variant = create(:product_variant, stock_quantity: 10)

@@ -16,6 +16,7 @@ RSpec.describe OrderItem do
 
     it "survives deletion of the variant it referenced" do
       variant = create(:product_variant)
+      create(:product_variant, product: variant.product)
       item = create(:order_item, product_variant: variant)
 
       variant.destroy!
