@@ -192,6 +192,145 @@ RSpec.describe "Bands", type: :request do
       expect(response).to have_http_status(:ok)
     end
 
+    # The overview used to open with four zeros and nothing to act on. It
+    # now leads with whatever the band most needs to do next, in the order
+    # the work has to happen: music, then payments, then an audience.
+    describe "the overview's next step" do
+      def administrator_of(band)
+        admin = create(:user)
+        create(:band_membership, :administrator, band: band, user: admin)
+        sign_in admin
+        admin
+      end
+
+      def heading
+        Nokogiri::HTML(response.body).css("h3").first.text.strip
+      end
+
+      it "asks a new band for a release first" do
+        band = create(:band)
+        administrator_of(band)
+
+        get band_path(band)
+
+        expect(heading).to eq("Add your first release")
+      end
+
+      # Without Stripe the band cannot be paid at all, so it outranks
+      # anything to do with audience.
+      it "asks for Stripe once there is music" do
+        band = create(:band)
+        create(:album, band: band)
+        administrator_of(band)
+
+        get band_path(band)
+
+        expect(heading).to eq("Connect Stripe to get paid")
+      end
+
+      it "asks for a post once music and payments are in place" do
+        band = create(:band, :payouts_ready)
+        create(:album, band: band)
+        administrator_of(band)
+
+        get band_path(band)
+
+        expect(heading).to eq("Write to your followers")
+      end
+
+      # An order that has been paid for outranks the rest: someone is
+      # waiting on a parcel.
+      it "surfaces orders waiting to be sent" do
+        band = create(:band, :payouts_ready)
+        create(:album, band: band)
+        create(:post, band: band)
+        create(:order, :paid, band: band)
+        administrator_of(band)
+
+        get band_path(band)
+
+        expect(heading).to eq("You have orders to send")
+      end
+
+      it "says so when nothing is outstanding" do
+        band = create(:band, :payouts_ready)
+        create(:album, band: band)
+        create(:post, band: band)
+        administrator_of(band)
+
+        get band_path(band)
+
+        expect(heading).to eq("Everything's set up")
+      end
+
+      # A plain member cannot act on any of these, so telling them
+      # everything is set up would assert something this panel never
+      # checked on their behalf.
+      it "does not claim the band is set up to a plain member" do
+        band = create(:band)
+        member = create(:user)
+        create(:band_membership, band: band, user: member, role: :member)
+        sign_in member
+
+        get band_path(band)
+
+        expect(response.body).not_to include("Everything's set up")
+        expect(response.body).to include("administrator's job")
+      end
+    end
+
+    describe "the overview's figures" do
+      it "shows shares of the membership only once there are members" do
+        band = create(:band)
+        admin = create(:user)
+        create(:band_membership, :administrator, band: band, user: admin)
+        create(:membership, band: band, level: :fan)
+        sign_in admin
+
+        get band_path(band)
+
+        expect(response.body).to include("of members")
+      end
+
+      # Four "0%" readings say nothing, so a band with no members sees
+      # plain counts instead.
+      it "omits the shares while the band has no members" do
+        band = create(:band)
+        admin = create(:user)
+        create(:band_membership, :administrator, band: band, user: admin)
+        sign_in admin
+
+        get band_path(band)
+
+        expect(response.body).not_to include("of members")
+      end
+
+      # The previous hand-rolled bars were sized as a percentage of the
+      # tallest, so an empty history rendered six invisible bars under a
+      # row of stray labels.
+      it "explains an empty membership history rather than drawing nothing" do
+        band = create(:band)
+        admin = create(:user)
+        create(:band_membership, :administrator, band: band, user: admin)
+        sign_in admin
+
+        get band_path(band)
+
+        expect(response.body).to include("No members yet")
+      end
+
+      it "quotes the commission from the platform setting" do
+        band = create(:band)
+        admin = create(:user)
+        create(:band_membership, :administrator, band: band, user: admin)
+        sign_in admin
+
+        get band_path(band)
+
+        expect(response.body).to include("#{PlatformSetting.current.membership_fee_percentage}%")
+      end
+    end
+
     describe "tabs" do
       def sign_in_as_member(band)
         user = create(:user)
@@ -459,7 +598,10 @@ RSpec.describe "Bands", type: :request do
 
       get band_path(band)
 
-      expect(response.body).to match(/Fans.*?<span[^>]*>1<\/span>/m)
+      fans_card = Nokogiri::HTML(response.body).css("[data-metric='fans']").first
+
+      expect(fans_card.text).to include("1")
+      expect(fans_card.text).not_to include("2")
     end
 
     it "does not show membership counts to an anonymous or unrelated visitor" do
@@ -498,7 +640,8 @@ RSpec.describe "Bands", type: :request do
 
       get band_path(band)
 
-      expect(response.body).to include("New members, last 6 months")
+      expect(response.body).to include("New members")
+      expect(response.body).to include("Last 6 months")
       expect(response.body).to include(2.months.ago.strftime("%b"))
     end
   end

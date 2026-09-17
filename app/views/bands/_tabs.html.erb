@@ -1,17 +1,20 @@
-<%# One bar for the whole panel: content on the left, managing the band on
-    the right, split by a rule rather than by a second container. Every tab
-    is a plain link carrying ?tab=, so each panel is bookmarkable and the
-    page needs no JavaScript.
+<%# The panel's navigation, as a sidebar: content sections first, then
+    managing the band, split by a rule. Every tab is a plain link carrying
+    ?tab=, so each panel is bookmarkable and the page needs no JavaScript.
 
     Counts sit beside the content labels because a band opening the panel
-    wants to know where its material is, not just which sections exist. %>
-<div class="flex flex-wrap items-center gap-1 rounded-xl border border-neutral-800 bg-neutral-950 p-1.5">
+    wants to know where its material is, not just which sections exist.
+
+    Below lg this becomes a horizontal scrolling row above the content: a
+    fixed 14rem column on a phone would leave the panel unreadably narrow. %>
+<nav aria-label="Band panel sections"
+     class="lg:w-56 lg:shrink-0 flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible rounded-xl border border-neutral-800 bg-neutral-950 p-1.5">
   <% tabs.each do |slug, label, count| %>
     <%= render "bands/tab_link", band: band, slug: slug, label: label, count: count, current_tab: current_tab %>
   <% end %>
 
   <% if manage.any? %>
-    <span class="hidden sm:block w-px self-stretch bg-neutral-800 mx-1.5" aria-hidden="true"></span>
+    <span class="w-px lg:w-auto lg:h-px self-stretch lg:self-auto bg-neutral-800 mx-1.5 lg:mx-2 lg:my-2 shrink-0" aria-hidden="true"></span>
 
     <% manage.each do |slug, label, count| %>
       <%= render "bands/tab_link", band: band, slug: slug, label: label, count: count,
@@ -19,4 +22,4 @@
             flagged: (slug == "payments" && !band.payouts_ready?) %>
     <% end %>
   <% end %>
-</div>
+</nav>

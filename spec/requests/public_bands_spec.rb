@@ -394,6 +394,73 @@ RSpec.describe "Public band pages", type: :request do
       expect(hero.css("a[href='#albums']")).to be_present
     end
 
+    # A band member landing on their own public page had no way back into
+    # the panel except the header's "Your bands". The link uses the same
+    # BandPolicy#show? the panel enforces, so it is never offered to
+    # someone the panel would 404 for.
+    describe "the band panel link" do
+      it "is shown to a band administrator" do
+        band = create(:band, :approved)
+        admin = create(:user)
+        create(:band_membership, :administrator, band: band, user: admin)
+        sign_in admin
+
+        get public_band_path(band.slug)
+
+        expect(response.body).to include("Painel da Banda")
+        expect(response.body).to include(band_path(band))
+      end
+
+      it "is shown to a plain band member, who can read the panel too" do
+        band = create(:band, :approved)
+        member = create(:user)
+        create(:band_membership, band: band, user: member, role: :member)
+        sign_in member
+
+        get public_band_path(band.slug)
+
+        expect(response.body).to include("Painel da Banda")
+      end
+
+      it "is shown to a platform administrator" do
+        band = create(:band, :approved)
+        sign_in create(:user, :platform_admin)
+
+        get public_band_path(band.slug)
+
+        expect(response.body).to include("Painel da Banda")
+      end
+
+      it "is not shown to a signed-in fan with no membership" do
+        band = create(:band, :approved)
+        sign_in create(:user)
+
+        get public_band_path(band.slug)
+
+        expect(response.body).not_to include("Painel da Banda")
+      end
+
+      it "is not shown to a visitor" do
+        band = create(:band, :approved)
+
+        get public_band_path(band.slug)
+
+        expect(response.body).not_to include("Painel da Banda")
+      end
+
+      # A membership in one band must not unlock another band's panel.
+      it "is not shown to a member of a different band" do
+        band = create(:band, :approved)
+        outsider = create(:user)
+        create(:band_membership, :administrator, band: create(:band), user: outsider)
+        sign_in outsider
+
+        get public_band_path(band.slug)
+
+        expect(response.body).not_to include("Painel da Banda")
+      end
+    end
+
     it "shows the follower count" do
       band = create(:band, :approved)
       create_list(:follow, 2, band: band)
