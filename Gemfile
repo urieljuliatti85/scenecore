@@ -65,6 +65,9 @@ gem "sentry-rails"
 # Payment processing (subscriptions/Checkout/webhooks) [https://github.com/stripe/stripe-ruby]
 gem "stripe", "~> 19.6"
 
+# Reads traffic reports from the Google Analytics Data API for the admin dashboard
+gem "google-analytics-data", "~> 0.9"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"

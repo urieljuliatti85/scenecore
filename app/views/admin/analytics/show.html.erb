@@ -1,0 +1,48 @@
+<% content_for :title, "Analytics — Admin — SceneCore" %>
+
+<div class="max-w-3xl">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-2">Analytics</h1>
+  <p class="text-neutral-500 mb-8">Site traffic across all bands, last 30 days, from Google Analytics.</p>
+
+  <% unless GoogleAnalyticsClient.configured? %>
+    <p class="text-neutral-500">
+      Google Analytics isn't configured yet — set <code>GOOGLE_ANALYTICS_PROPERTY_ID</code> and add a
+      service account credentials file at <code>config/google_analytics_credentials.json</code>.
+    </p>
+  <% end %>
+
+  <% if @error %>
+    <p class="rounded-xl border border-red-900 bg-red-950/40 text-red-400 text-sm p-4"><%= @error %></p>
+  <% end %>
+
+  <% if @summary %>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-6 py-5">
+        <p class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Active users</p>
+        <p class="text-3xl font-extrabold"><%= @summary.active_users %></p>
+      </div>
+      <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-6 py-5">
+        <p class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Sessions</p>
+        <p class="text-3xl font-extrabold"><%= @summary.sessions %></p>
+      </div>
+      <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-6 py-5">
+        <p class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Page views</p>
+        <p class="text-3xl font-extrabold"><%= @summary.page_views %></p>
+      </div>
+    </div>
+
+    <h2 class="text-sm font-semibold text-neutral-300 mb-3">Top pages</h2>
+    <% if @summary.top_pages.empty? %>
+      <p class="text-neutral-500">No page view data for this period.</p>
+    <% else %>
+      <ul class="space-y-2">
+        <% @summary.top_pages.each do |page| %>
+          <li class="flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900/60 px-4 py-2.5">
+            <span class="text-sm text-neutral-300 font-mono"><%= page.path %></span>
+            <span class="text-sm text-white font-semibold"><%= page.views %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+</div>

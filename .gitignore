@@ -62,3 +62,6 @@ yarn-debug.log*
 # Local tooling
 .envrc
 .rtk/
+
+# Google Cloud service account credentials — never commit these
+/config/google_analytics_credentials.json
