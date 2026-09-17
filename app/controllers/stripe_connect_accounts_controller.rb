@@ -22,6 +22,7 @@ class StripeConnectAccountsController < ApplicationController
 
     url = StripeConnectOnboardingResolver.resolve(
       @band,
+      contact_email: current_user.email,
       return_url: edit_band_url(@band),
       refresh_url: new_band_stripe_connect_account_url(@band)
     )
