@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_031926) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_061951) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -257,6 +257,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_031926) do
     t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'paused'::character varying, 'cancelled'::character varying, 'expired'::character varying]::text[])", name: "memberships_status_check"
   end
 
+  create_table "merch_discounts", force: :cascade do |t|
+    t.bigint "band_id", null: false
+    t.datetime "created_at", null: false
+    t.string "level", null: false
+    t.integer "percentage", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["band_id", "level"], name: "index_merch_discounts_on_band_id_and_level", unique: true
+    t.index ["band_id"], name: "index_merch_discounts_on_band_id"
+    t.check_constraint "level::text = ANY (ARRAY['fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[])", name: "merch_discounts_level_check"
+    t.check_constraint "percentage >= 0 AND percentage <= 100", name: "merch_discounts_percentage_range_check"
+  end
+
   create_table "poll_options", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "label", null: false
@@ -417,6 +429,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_031926) do
   add_foreign_key "follows", "users"
   add_foreign_key "memberships", "bands"
   add_foreign_key "memberships", "users"
+  add_foreign_key "merch_discounts", "bands"
   add_foreign_key "poll_options", "polls"
   add_foreign_key "poll_votes", "poll_options"
   add_foreign_key "poll_votes", "users"
