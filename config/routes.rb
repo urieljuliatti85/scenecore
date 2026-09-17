@@ -176,6 +176,7 @@ Rails.application.routes.draw do
   constraints(slug: /[a-z0-9\-]+/) do
     get "/:slug", to: "public_bands#show", as: :public_band
     get "/:slug/subscriptions", to: "public_bands#subscriptions", as: :public_band_subscriptions
+    get "/:slug/credits", to: "public_bands#credits", as: :public_band_credits
     get "/:slug/messages", to: "band_direct_messages#show", as: :my_band_direct_messages
     post "/:slug/messages", to: "band_direct_messages#create"
     get "/:slug/albums/:id", to: "public_albums#show", as: :public_album

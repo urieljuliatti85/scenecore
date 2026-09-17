@@ -39,6 +39,10 @@
           <%= link_to "Message the band", my_band_direct_messages_path(@band.slug), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
         <% end %>
 
+        <% if @core_members_count.positive? %>
+          <%= link_to "Core Members", public_band_credits_path(@band.slug), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
+        <% end %>
+
         <%= render "shared/social_links", band: @band %>
       </div>
 

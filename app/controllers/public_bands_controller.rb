@@ -32,6 +32,7 @@ class PublicBandsController < ApplicationController
     @events = @band.events.published.upcoming
     @polls = @band.polls.published.order(created_at: :desc)
     @core_sessions = @band.core_sessions.published.order(:starts_at)
+    @core_members_count = @band.memberships.active.core_member.count
   rescue ActiveRecord::RecordNotFound
     render "not_found", status: :not_found
   end
@@ -39,6 +40,18 @@ class PublicBandsController < ApplicationController
   def subscriptions
     @band = Band.approved.with_attached_photo.find_by!(slug: params[:slug])
     @membership = current_user.present? ? @band.memberships.find_by(user: current_user) : nil
+  rescue ActiveRecord::RecordNotFound
+    render "not_found", status: :not_found
+  end
+
+  # docs/band-admin.md §17 — Core Members' "permanent supporter page"
+  # benefit. Lists active Core Members only: no membership history, and
+  # nothing here grants content access on its own (docs/band-admin.md
+  # §31's "no permanent access from payment history alone" is about
+  # content gating, not this listing).
+  def credits
+    @band = Band.approved.find_by!(slug: params[:slug])
+    @core_members = @band.memberships.active.core_member.includes(:user).order(:created_at)
   rescue ActiveRecord::RecordNotFound
     render "not_found", status: :not_found
   end
