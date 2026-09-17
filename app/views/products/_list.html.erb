@@ -1,0 +1,74 @@
+<%# Shared by /bands/:id/products and the panel's Products tab. %>
+<% if products.any? %>
+  <div class="space-y-4">
+    <% products.each do |product| %>
+      <article class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5">
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-3">
+              <h2 class="text-xl font-bold text-white"><%= product.name %></h2>
+              <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1"><%= product.status %></span>
+              <% if product.discogs? %>
+                <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-3 py-1">Discogs</span>
+              <% end %>
+            </div>
+
+            <% if product.description.present? %>
+              <p class="text-neutral-400 mt-2"><%= product.description %></p>
+            <% end %>
+
+            <% if product.discogs? %>
+              <p class="text-sm text-neutral-500 mt-3">
+                <%= [product.artist_name, product.release_year, product.release_format, product.label_name, product.catalog_number].compact_blank.join(" · ") %>
+              </p>
+              <p class="text-xs text-neutral-600 mt-1">
+                <%= link_to "Data provided by Discogs", product.discogs_url, target: "_blank", rel: "noopener", class: "hover:text-neutral-400 underline underline-offset-2" %>
+              </p>
+            <% end %>
+
+            <div class="mt-4 overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="text-left text-neutral-500 border-b border-neutral-800">
+                  <tr>
+                    <th class="py-2 pr-4 font-medium">Variant</th>
+                    <th class="py-2 pr-4 font-medium">SKU</th>
+                    <th class="py-2 pr-4 font-medium">Price</th>
+                    <th class="py-2 font-medium">Stock</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% product.variants.each do |variant| %>
+                    <tr class="border-b border-neutral-900 last:border-0">
+                      <td class="py-2 pr-4 text-neutral-200"><%= variant.name %></td>
+                      <td class="py-2 pr-4 text-neutral-400"><%= variant.sku %></td>
+                      <td class="py-2 pr-4 text-neutral-200"><%= number_to_currency(variant.price_cents / 100.0) %></td>
+                      <td class="py-2 <%= variant.sold_out? ? "text-red-400" : "text-neutral-200" %>"><%= variant.stock_quantity %></td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 lg:justify-end lg:max-w-56">
+            <%= link_to "Edit", edit_band_product_path(band, product), class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-2 hover:border-neutral-500 transition" %>
+
+            <% if product.draft? %>
+              <%= button_to "Publish", publish_band_product_path(band, product), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-sm font-semibold px-4 py-2 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
+            <% else %>
+              <%= button_to "Unpublish", unpublish_band_product_path(band, product), method: :patch, class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-2 hover:border-neutral-500 transition cursor-pointer" %>
+            <% end %>
+
+            <%= button_to "Delete", band_product_path(band, product), method: :delete, class: "text-sm text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this product and its variants?" } } %>
+          </div>
+        </div>
+      </article>
+    <% end %>
+  </div>
+<% else %>
+  <div class="rounded-2xl border border-dashed border-neutral-800 px-6 py-12 text-center">
+    <p class="text-lg font-semibold text-white">No products yet</p>
+    <p class="text-neutral-500 mt-2">Create the first item for <%= band.name %>'s Store.</p>
+    <%= link_to "Create product", new_band_product_path(band), class: "inline-block mt-5 rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-5 py-2.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition" %>
+  </div>
+<% end %>

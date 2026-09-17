@@ -8,268 +8,128 @@
     <p class="text-neutral-300 mb-8"><%= @band.description %></p>
   <% end %>
 
-  <% if @membership_counts %>
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
-      <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex flex-col gap-1">
-        <span class="text-xs uppercase tracking-wide text-neutral-500">Fans</span>
-        <span class="text-xl font-bold text-white"><%= @membership_counts["fan"] %></span>
-        <% if @total_active_members.positive? %>
-          <span class="text-xs text-neutral-500"><%= number_to_percentage(100.0 * @membership_counts["fan"] / @total_active_members, precision: 0) %></span>
-        <% end %>
-      </div>
-      <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex flex-col gap-1">
-        <span class="text-xs uppercase tracking-wide text-neutral-500">Supporters</span>
-        <span class="text-xl font-bold text-white"><%= @membership_counts["supporter"] %></span>
-        <% if @total_active_members.positive? %>
-          <span class="text-xs text-neutral-500"><%= number_to_percentage(100.0 * @membership_counts["supporter"] / @total_active_members, precision: 0) %></span>
-        <% end %>
-      </div>
-      <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex flex-col gap-1">
-        <span class="text-xs uppercase tracking-wide text-neutral-500">Core Members</span>
-        <span class="text-xl font-bold text-white"><%= @membership_counts["core_member"] %></span>
-        <% if @total_active_members.positive? %>
-          <span class="text-xs text-neutral-500"><%= number_to_percentage(100.0 * @membership_counts["core_member"] / @total_active_members, precision: 0) %></span>
-        <% end %>
-      </div>
-      <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex flex-col gap-1">
-        <span class="text-xs uppercase tracking-wide text-neutral-500">New this month</span>
-        <span class="text-xl font-bold text-white"><%= @new_members_this_month %></span>
-      </div>
-    </div>
+  <%= render "tabs", band: @band, current_tab: @tab, tabs: [
+        [ "overview", "Overview", nil ],
+        [ "music", "Music", @albums.size ],
+        [ "posts", "Posts", @posts.size ],
+        [ "shows", "Shows", @events.size ],
+        [ "community", "Community", @polls.size + @core_sessions.size ]
+      ], manage: (policy(@band).update? ? [
+        [ "profile", "Profile", nil ],
+        [ "members", "Members", nil ],
+        [ "supporters", "Supporters", nil ],
+        [ "products", "Products", nil ],
+        [ "payments", "Payments", nil ]
+      ] : []) %>
 
-    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex flex-col gap-1 mb-4 max-w-xs">
-      <span class="text-xs uppercase tracking-wide text-neutral-500">Estimated monthly revenue</span>
-      <span class="text-xl font-bold text-white"><%= number_to_currency(@monthly_recurring_revenue_cents / 100.0) %></span>
-      <span class="text-xs text-neutral-600">Based on current plan prices — not reconciled with Stripe</span>
-    </div>
-
-    <div class="mb-8">
-      <h3 class="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">New members, last 6 months</h3>
-      <div class="flex items-end gap-2 h-20">
-        <% max_count = [ @new_members_by_month.values.max, 1 ].max %>
-        <% @new_members_by_month.each do |month, count| %>
-          <div class="flex-1 flex flex-col items-center gap-1">
-            <div class="w-full bg-yellow-400/70 rounded-t" style="height: <%= (count.to_f / max_count * 100).round %>%"></div>
-            <span class="text-[10px] text-neutral-500"><%= month.strftime("%b") %></span>
-            <span class="text-[10px] text-neutral-600"><%= count %></span>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
-
-  <div class="flex flex-wrap items-center gap-3">
-    <% if policy(@band).show? %>
-      <%= link_to "Add Album", new_band_album_path(@band), class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-5 py-2.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition" %>
-      <%= link_to "New Post", new_band_post_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
-      <%= link_to "Add Event", new_band_event_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
-      <%= link_to "New Poll", new_band_poll_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
-      <%= link_to "New Core Session", new_band_core_session_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
-    <% end %>
-
-    <% if policy(@band).update? %>
-      <%= link_to "Products", band_products_path(@band), class: "rounded-full border border-yellow-700 text-yellow-300 font-semibold px-5 py-2.5 hover:border-yellow-500 transition" %>
-      <%# Payments needs its own way in: a band that sells no merch has no
-          reason to open Products, and would never find out that taking
-          memberships needs Stripe too. %>
-      <%= link_to band_payments_path(@band), class: "flex items-center gap-2 rounded-full border #{@band.payouts_ready? ? "border-neutral-700 text-white hover:border-neutral-500" : "border-yellow-500/40 text-yellow-300 hover:border-yellow-400"} font-semibold px-5 py-2.5 transition" do %>
-        <% unless @band.payouts_ready? %>
-          <span class="h-1.5 w-1.5 rounded-full bg-yellow-400 shrink-0" aria-hidden="true"></span>
-        <% end %>
-        Payments
+  <div class="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 sm:p-8">
+    <% case @tab %>
+    <% when "music" %>
+      <%= render "tab_actions", actions: [
+            [ "Add album", new_band_album_path(@band), true ]
+          ] %>
+      <% if @albums.any? %>
+        <%= render "albums_section" %>
+      <% else %>
+        <%= render "tab_empty", message: "No albums yet. Bring them over from Spotify or add one by hand." %>
       <% end %>
-      <%= link_to "Edit", edit_band_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
-      <%= link_to "Members", band_band_memberships_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
-      <%= link_to "Supporters", band_memberships_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
-      <%= link_to "Messages", band_direct_message_threads_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
-    <% end %>
 
-    <% if policy(@band).approve? && @band.pending? %>
-      <%= button_to "Approve", approve_band_path(@band), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-5 py-2.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
-      <%= button_to "Reject", reject_band_path(@band), method: :patch, class: "rounded-full border border-red-900 text-red-400 font-semibold px-5 py-2.5 hover:border-red-700 transition cursor-pointer" %>
-    <% end %>
+    <% when "posts" %>
+      <%= render "tab_actions", actions: [
+            [ "New post", new_band_post_path(@band), true ]
+          ] %>
+      <% if @posts.any? %>
+        <%= render "posts_section" %>
+      <% else %>
+        <%= render "tab_empty", message: "No posts yet. This is where you write to the people following you." %>
+      <% end %>
 
-    <% if policy(@band).suspend? && @band.approved? %>
-      <%= button_to "Suspend", suspend_band_path(@band), method: :patch, class: "rounded-full border border-red-900 text-red-400 font-semibold px-5 py-2.5 hover:border-red-700 transition cursor-pointer" %>
-    <% end %>
+    <% when "shows" %>
+      <%= render "tab_actions", actions: [
+            [ "Add show", new_band_event_path(@band), true ]
+          ] %>
+      <% if @events.any? %>
+        <%= render "shows_section" %>
+      <% else %>
+        <%= render "tab_empty", message: "No shows announced yet." %>
+      <% end %>
 
-    <% if policy(@band).reactivate? && @band.suspended? %>
-      <%= button_to "Reactivate", reactivate_band_path(@band), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-5 py-2.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
-    <% end %>
+    <% when "community" %>
+      <%= render "tab_actions", actions: [
+            [ "New poll", new_band_poll_path(@band), true ],
+            [ "New core session", new_band_core_session_path(@band), false ],
+            [ "Messages", band_direct_message_threads_path(@band), false ]
+          ] %>
+      <% if @polls.any? %>
+        <%= render "polls_section" %>
+      <% end %>
+      <% if @core_sessions.any? %>
+        <%= render "core_sessions_section" %>
+      <% end %>
+      <% if @polls.none? && @core_sessions.none? %>
+        <%= render "tab_empty", message: "No polls or core sessions yet. Both are ways to bring members into what the band is doing." %>
+      <% end %>
 
-    <% if policy(@band).feature? && @band.approved? %>
+    <% when "profile" %>
+      <%= render "tab_actions", actions: [
+            [ "Edit band profile", edit_band_path(@band), true ]
+          ] %>
+      <%= render "profile_section", band: @band %>
+
+    <% when "members" %>
+      <%= render "tab_actions", actions: [
+            [ "Add member", new_band_band_membership_path(@band), true ]
+          ] %>
+      <%= render "band_memberships/list", band: @band, memberships: @band_memberships %>
+
+    <% when "supporters" %>
+      <%= render "memberships/list", band: @band, memberships: @supporter_memberships %>
+
+    <% when "products" %>
+      <%= render "tab_actions", actions: [
+            [ "New product", new_band_product_path(@band), true ]
+          ] %>
+      <%= render "products/list", band: @band, products: @products %>
+
+    <% when "payments" %>
+      <%= render "band_payments/panel", band: @band,
+            active_subscribers: @active_subscribers, published_products: @published_products %>
+
+    <% else %>
+      <%= render "overview_section" %>
+
+    <% end %>
+  </div>
+
+  <%# Moderation belongs to a platform administrator, not to the band's own
+      work, so it sits outside the tabs, in a row of its own rather than
+      loose under the panel. %>
+  <% if policy(@band).approve? || policy(@band).suspend? || policy(@band).feature? %>
+    <div class="mt-6">
+      <p class="text-xs uppercase tracking-wide text-neutral-600 mb-3">Platform moderation</p>
+      <div class="flex flex-wrap items-center gap-3">
+      <% if policy(@band).approve? && @band.pending? %>
+        <%= button_to "Approve", approve_band_path(@band), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-5 py-2.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
+        <%= button_to "Reject", reject_band_path(@band), method: :patch, class: "rounded-full border border-red-900 text-red-400 font-semibold px-5 py-2.5 hover:border-red-700 transition cursor-pointer" %>
+      <% end %>
+
+      <% if policy(@band).suspend? && @band.approved? %>
+        <%= button_to "Suspend", suspend_band_path(@band), method: :patch, class: "rounded-full border border-red-900 text-red-400 font-semibold px-5 py-2.5 hover:border-red-700 transition cursor-pointer" %>
+      <% end %>
+
+      <% if policy(@band).reactivate? && @band.suspended? %>
+        <%= button_to "Reactivate", reactivate_band_path(@band), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-5 py-2.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
+      <% end %>
+
+      <% if policy(@band).feature? && @band.approved? %>
       <% if @band.featured? %>
         <%= button_to "Unfeature", unfeature_band_path(@band), method: :patch, class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition cursor-pointer" %>
       <% else %>
         <%= button_to "Feature on home", feature_band_path(@band), method: :patch, class: "rounded-full border border-yellow-700 text-yellow-400 font-semibold px-5 py-2.5 hover:border-yellow-500 transition cursor-pointer" %>
       <% end %>
-    <% end %>
-  </div>
-
-  <% if policy(@band).show? && (@albums.any? || @events.any? || @posts.any? || @polls.any? || @core_sessions.any?) %>
-    <h2 class="text-xs font-semibold uppercase tracking-wide text-neutral-500 mt-10 mb-2">Content</h2>
-  <% end %>
-
-  <% if policy(@band).show? && @albums.any? %>
-    <div class="mt-4">
-      <h3 class="text-lg font-semibold text-neutral-300 mb-4">Albums</h3>
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        <% @albums.each do |album| %>
-          <div class="group rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden hover:border-neutral-600 transition">
-            <%= link_to band_album_path(@band, album), class: "block" do %>
-              <div class="aspect-square bg-neutral-800 flex items-center justify-center">
-                <% if album.cover_url.present? %>
-                  <%= image_tag album.cover_url, class: "w-full h-full object-cover group-hover:scale-105 transition duration-300" %>
-                <% else %>
-                  <span class="text-neutral-600 text-sm">No cover</span>
-                <% end %>
-              </div>
-              <div class="p-4">
-                <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= album.title %></p>
-                <p class="text-sm text-neutral-500 uppercase tracking-wide"><%= album.status %></p>
-              </div>
-            <% end %>
-
-            <div class="px-4 pb-4 flex flex-wrap items-center gap-2">
-              <% if policy(album).publish? && album.draft? %>
-                <%= button_to "Publish", publish_band_album_path(@band, album), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-xs font-semibold px-3 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
-              <% end %>
-
-              <% if policy(album).unpublish? && album.published? %>
-                <%= button_to "Unpublish", unpublish_band_album_path(@band, album), method: :patch, class: "rounded-full border border-neutral-700 text-white text-xs font-semibold px-3 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
-              <% end %>
-
-              <% if policy(album).update? %>
-                <%= link_to "Edit", edit_band_album_path(@band, album), class: "text-xs text-neutral-400 hover:text-white transition" %>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
+      <% end %>
       </div>
     </div>
   <% end %>
 
-  <% if policy(@band).show? && @events.any? %>
-    <div class="mt-6">
-      <h3 class="text-lg font-semibold text-neutral-300 mb-4">Shows</h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <% @events.each do |event| %>
-          <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden hover:border-neutral-600 transition">
-            <%= link_to band_event_path(@band, event), class: "block px-5 py-4" do %>
-              <p class="font-semibold text-white"><%= event.title %></p>
-              <p class="text-sm text-neutral-400 mt-1"><%= event.starts_at.strftime("%d %b %Y · %H:%M") %> · <%= event.location %></p>
-              <p class="text-xs uppercase tracking-wide text-neutral-500 mt-1"><%= event.status %></p>
-            <% end %>
-
-            <div class="px-5 pb-4 flex flex-wrap items-center gap-2">
-              <% if policy(event).publish? && event.draft? %>
-                <%= button_to "Publish", publish_band_event_path(@band, event), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-xs font-semibold px-3 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
-              <% end %>
-
-              <% if policy(event).unpublish? && event.published? %>
-                <%= button_to "Unpublish", unpublish_band_event_path(@band, event), method: :patch, class: "rounded-full border border-neutral-700 text-white text-xs font-semibold px-3 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
-              <% end %>
-
-              <%= link_to "Edit", edit_band_event_path(@band, event), class: "text-xs text-neutral-400 hover:text-white transition" %>
-              <%= button_to "Delete", band_event_path(@band, event), method: :delete, class: "text-xs text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this event?" } } %>
-            </div>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
-
-  <% if policy(@band).show? && @posts.any? %>
-    <div class="mt-6">
-      <h3 class="text-lg font-semibold text-neutral-300 mb-4">Posts</h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <% @posts.each do |post| %>
-          <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden hover:border-neutral-600 transition">
-            <%= link_to band_post_path(@band, post), class: "block px-5 py-4" do %>
-              <p class="font-semibold text-white"><%= post.title %></p>
-              <p class="text-xs uppercase tracking-wide text-neutral-500 mt-1">
-                <%= post.status %> &middot; <%= post.visibility %>
-              </p>
-            <% end %>
-
-            <div class="px-5 pb-4 flex flex-wrap items-center gap-2">
-              <% if policy(post).publish? && post.draft? %>
-                <%= button_to "Publish", publish_band_post_path(@band, post), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-xs font-semibold px-3 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
-              <% end %>
-
-              <% if policy(post).unpublish? && post.published? %>
-                <%= button_to "Unpublish", unpublish_band_post_path(@band, post), method: :patch, class: "rounded-full border border-neutral-700 text-white text-xs font-semibold px-3 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
-              <% end %>
-
-              <%= link_to "Edit", edit_band_post_path(@band, post), class: "text-xs text-neutral-400 hover:text-white transition" %>
-              <%= button_to "Delete", band_post_path(@band, post), method: :delete, class: "text-xs text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this post?" } } %>
-            </div>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
-
-  <% if policy(@band).show? && @polls.any? %>
-    <div class="mt-6">
-      <h3 class="text-lg font-semibold text-neutral-300 mb-4">Polls</h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <% @polls.each do |poll| %>
-          <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden hover:border-neutral-600 transition">
-            <%= link_to band_poll_path(@band, poll), class: "block px-5 py-4" do %>
-              <p class="font-semibold text-white"><%= poll.question %></p>
-              <p class="text-xs uppercase tracking-wide text-neutral-500 mt-1">
-                <%= poll.status %> &middot; <%= poll.visibility %>
-              </p>
-            <% end %>
-
-            <div class="px-5 pb-4 flex flex-wrap items-center gap-2">
-              <% if policy(poll).publish? && poll.draft? %>
-                <%= button_to "Publish", publish_band_poll_path(@band, poll), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-xs font-semibold px-3 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
-              <% end %>
-
-              <% if policy(poll).unpublish? && poll.published? %>
-                <%= button_to "Unpublish", unpublish_band_poll_path(@band, poll), method: :patch, class: "rounded-full border border-neutral-700 text-white text-xs font-semibold px-3 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
-              <% end %>
-
-              <%= link_to "Edit", edit_band_poll_path(@band, poll), class: "text-xs text-neutral-400 hover:text-white transition" %>
-              <%= button_to "Delete", band_poll_path(@band, poll), method: :delete, class: "text-xs text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this poll?" } } %>
-            </div>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
-
-  <% if policy(@band).show? && @core_sessions.any? %>
-    <div class="mt-6">
-      <h3 class="text-lg font-semibold text-neutral-300 mb-4">Core Sessions</h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <% @core_sessions.each do |core_session| %>
-          <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 overflow-hidden hover:border-neutral-600 transition">
-            <%= link_to band_core_session_path(@band, core_session), class: "block px-5 py-4" do %>
-              <p class="font-semibold text-white"><%= core_session.title %></p>
-              <p class="text-sm text-neutral-400 mt-1"><%= core_session.starts_at.strftime("%d %b %Y · %H:%M") %></p>
-              <p class="text-xs uppercase tracking-wide text-neutral-500 mt-1">
-                <%= core_session.status %> &middot; <%= core_session.session_type.humanize %>
-              </p>
-            <% end %>
-
-            <div class="px-5 pb-4 flex flex-wrap items-center gap-2">
-              <% if policy(core_session).publish? && core_session.draft? %>
-                <%= button_to "Publish", publish_band_core_session_path(@band, core_session), method: :patch, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-xs font-semibold px-3 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
-              <% end %>
-
-              <% if policy(core_session).unpublish? && core_session.published? %>
-                <%= button_to "Unpublish", unpublish_band_core_session_path(@band, core_session), method: :patch, class: "rounded-full border border-neutral-700 text-white text-xs font-semibold px-3 py-1.5 hover:border-neutral-500 transition cursor-pointer" %>
-              <% end %>
-
-              <%= link_to "Edit", edit_band_core_session_path(@band, core_session), class: "text-xs text-neutral-400 hover:text-white transition" %>
-              <%= button_to "Delete", band_core_session_path(@band, core_session), method: :delete, class: "text-xs text-red-400 hover:text-red-300 transition cursor-pointer", form: { data: { turbo_confirm: "Delete this core session?" } } %>
-            </div>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
 </section>
