@@ -1,0 +1,8 @@
+<% tone = case order.status
+   when "paid", "completed" then "border-green-900 text-green-400"
+   when "cancelled", "refunded" then "border-red-900 text-red-400"
+   else "border-neutral-700 text-neutral-400"
+   end %>
+<span class="text-xs uppercase tracking-wide rounded-full px-3 py-1 border <%= tone %>">
+  <%= order.status.humanize %>
+</span>

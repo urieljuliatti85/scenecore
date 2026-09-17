@@ -35,7 +35,7 @@ class StripeWebhooksController < ActionController::Base
 
     case event.type
     when "checkout.session.completed"
-      StripeCheckoutCompletedHandler.call(event.data.object)
+      handle_checkout_completed(event.data.object)
     when "customer.subscription.updated"
       StripeSubscriptionUpdatedHandler.call(event.data.object)
     when "customer.subscription.deleted"
@@ -46,6 +46,19 @@ class StripeWebhooksController < ActionController::Base
       # account.updated events, so no `event.account` check is needed to
       # tell this apart from Subscriptions' platform-level events above.
       StripeConnectAccountUpdatedHandler.call(event.data.object)
+    end
+  end
+
+  # Store checkout (ADR-007) and Subscription checkout both complete as
+  # checkout.session.completed on this same endpoint. The Store's sessions
+  # are destination charges on the platform account, so the event does not
+  # identify itself as belonging to a connected account — the order's own
+  # session id is what distinguishes it.
+  def handle_checkout_completed(session)
+    if Order.exists?(stripe_checkout_session_id: session.id)
+      StripeStorePaymentHandler.call(session)
+    else
+      StripeCheckoutCompletedHandler.call(session)
     end
   end
 end

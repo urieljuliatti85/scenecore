@@ -45,7 +45,18 @@ RSpec.describe "Checkouts", type: :request do
   end
 
   describe "POST /checkout" do
+    let(:sessions_service) { instance_double(Stripe::Checkout::SessionService) }
+    let(:checkout) { instance_double(Stripe::CheckoutService, sessions: sessions_service) }
+    let(:v1) { instance_double(Stripe::V1Services, checkout: checkout) }
+    let(:stripe_client) { instance_double(Stripe::StripeClient, v1: v1) }
+    let(:stripe_session) do
+      instance_double(Stripe::Checkout::Session, id: "cs_store_1", url: "https://checkout.stripe.com/pay/cs_store_1")
+    end
+
     before do
+      band.update!(stripe_connect_status: :active, stripe_connect_account_id: "acct_1")
+      allow(StripeClient).to receive(:instance).and_return(stripe_client)
+      allow(sessions_service).to receive(:create).and_return(stripe_session)
       sign_in user
       add_to_cart
     end
@@ -106,12 +117,70 @@ RSpec.describe "Checkouts", type: :request do
       expect(user.carts.sole).to be_active
     end
 
-    # Payment is not wired yet (roadmap 8.1 step 6). Stock must not be
-    # consumed before a charge succeeds, or a failed payment would leave
-    # inventory sold that nobody paid for.
-    it "does not decrement stock yet" do
+    # Stock moves when the webhook confirms payment, not when the fan is
+    # handed to Stripe — an abandoned checkout must not consume inventory.
+    it "does not decrement stock before payment is confirmed" do
       expect { post checkout_path, params: { shipping_address: address_params } }
         .not_to change { variant.reload.stock_quantity }
+    end
+
+    it "hands the fan to Stripe" do
+      post checkout_path, params: { shipping_address: address_params }
+
+      expect(response).to redirect_to("https://checkout.stripe.com/pay/cs_store_1")
+    end
+
+    it "records the session id so the webhook can find the order" do
+      post checkout_path, params: { shipping_address: address_params }
+
+      expect(Order.last.stripe_checkout_session_id).to eq("cs_store_1")
+    end
+  end
+
+  describe "POST /checkout when the band cannot take payments" do
+    before do
+      sign_in user
+      add_to_cart
+    end
+
+    # A band still onboarding can hold a Connect id without Stripe having
+    # cleared it, so the fan is stopped before an order exists rather than
+    # being sent to a session that cannot be paid.
+    it "refuses and creates no order" do
+      band.update!(stripe_connect_status: :onboarding, stripe_connect_account_id: "acct_1")
+
+      expect { post checkout_path, params: { shipping_address: address_params } }
+        .not_to change(Order, :count)
+
+      expect(response).to redirect_to(cart_path)
+      expect(flash[:alert]).to include("can't take payments")
+    end
+
+    it "leaves the cart intact so the fan does not lose it" do
+      band.update!(stripe_connect_status: :not_started)
+
+      post checkout_path, params: { shipping_address: address_params }
+
+      expect(user.carts.sole).to be_active
+    end
+
+    # If Stripe rejects the session the order would otherwise be stranded:
+    # unpayable, with no cart left to retry from.
+    it "discards the order and keeps the cart when Stripe fails" do
+      band.update!(stripe_connect_status: :active, stripe_connect_account_id: "acct_1")
+      allow(StripeClient).to receive(:instance).and_return(
+        instance_double(Stripe::StripeClient, v1: instance_double(Stripe::V1Services,
+          checkout: instance_double(Stripe::CheckoutService,
+            sessions: instance_double(Stripe::Checkout::SessionService))))
+      )
+      allow(StripeClient.instance.v1.checkout.sessions).to receive(:create)
+        .and_raise(Stripe::InvalidRequestError.new("no such account", "account"))
+
+      expect { post checkout_path, params: { shipping_address: address_params } }
+        .not_to change(Order, :count)
+
+      expect(user.carts.sole).to be_active
+      expect(flash[:alert]).to include("Could not start checkout")
     end
   end
 end

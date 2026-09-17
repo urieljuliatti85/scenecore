@@ -3,11 +3,13 @@
 
   <%= render "tabs",
         current_tab: @tab,
-        tabs: [ [ "details", "Details" ], [ "subscriptions", "Your Subscriptions" ] ] %>
+        tabs: [ [ "details", "Details" ], [ "subscriptions", "Your Subscriptions" ], [ "orders", "Your Orders" ] ] %>
 
   <div class="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 sm:p-8">
     <% if @tab == "subscriptions" %>
       <%= render "subscriptions/list", subscriptions: @subscriptions %>
+    <% elsif @tab == "orders" %>
+      <%= render "orders/list", orders: @orders %>
     <% else %>
       <dl class="space-y-4 mb-8">
         <div>

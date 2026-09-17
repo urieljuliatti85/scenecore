@@ -49,6 +49,44 @@ RSpec.describe "Stripe webhooks", type: :request do
       expect(StripeWebhookEvent.where(stripe_event_id: "evt_1").count).to eq(1)
     end
 
+    # A Store session and a Subscription session arrive as the same event
+    # type on the same endpoint. The order's own session id is what tells
+    # them apart, so a Store payment must not fall through to the
+    # subscription handler and be silently ignored.
+    it "marks a Store order paid for checkout.session.completed" do
+      band = create(:band, :approved, stripe_connect_status: :active, stripe_connect_account_id: "acct_1")
+      product = create(:product, :published, band: band)
+      variant = product.variants.create!(name: "Standard", sku: "V-9", price_cents: 12_000, stock_quantity: 4)
+      order = create(:user).orders.create!(
+        band: band, subtotal_cents: 12_000, shipping_cents: 0, total_cents: 12_000,
+        platform_fee_cents: 1_200, stripe_checkout_session_id: "cs_store_9"
+      )
+      order.order_items.create!(product_variant: variant, product_name: product.name,
+                                variant_name: "Standard", unit_price_cents: 12_000, quantity: 1)
+
+      session = instance_double(Stripe::Checkout::Session, id: "cs_store_9", payment_status: "paid")
+      event = instance_double(Stripe::Event, id: "evt_store_1", type: "checkout.session.completed",
+        data: instance_double(Stripe::Event::Data, object: session))
+
+      post_webhook(event)
+
+      expect(response).to have_http_status(:ok)
+      expect(order.reload).to be_paid
+      expect(variant.reload.stock_quantity).to eq(3)
+    end
+
+    it "does not touch a Store order when the session belongs to a subscription" do
+      subscription = create(:subscription, level: :fan, stripe_checkout_session_id: "cs_sub_9")
+      session = instance_double(Stripe::Checkout::Session, id: "cs_sub_9", payment_status: "paid", subscription: "sub_9")
+      event = instance_double(Stripe::Event, id: "evt_sub_9", type: "checkout.session.completed",
+        data: instance_double(Stripe::Event::Data, object: session))
+
+      post_webhook(event)
+
+      expect(subscription.reload.status).to eq("active")
+      expect(Order.count).to be_zero
+    end
+
     it "updates the subscription for customer.subscription.updated" do
       subscription = create(:subscription, :active, stripe_subscription_id: "sub_1")
       stripe_subscription = instance_double(Stripe::Subscription, id: "sub_1", status: "past_due")

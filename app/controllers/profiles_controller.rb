@@ -1,10 +1,11 @@
 class ProfilesController < ApplicationController
-  TABS = %w[details subscriptions].freeze
+  TABS = %w[details subscriptions orders].freeze
 
   def show
     @user = current_user
     @tab = TABS.include?(params[:tab]) ? params[:tab] : TABS.first
     @subscriptions = current_user.subscriptions.includes(:band).order(created_at: :desc) if @tab == "subscriptions"
+    @orders = current_user.orders.includes(:band, :order_items).order(created_at: :desc) if @tab == "orders"
   end
 
   def edit

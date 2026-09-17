@@ -1,0 +1,24 @@
+<%# Shared by /orders and the profile's Orders tab, so the two cannot
+    drift apart on what an order row shows. %>
+<% if orders.empty? %>
+  <p class="text-neutral-500">You haven't ordered anything yet.</p>
+  <%= link_to "Discover bands", discover_bands_path, class: "inline-block mt-4 rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-6 py-3 hover:bg-yellow-400/20 hover:text-yellow-200 transition" %>
+<% else %>
+  <ul class="flex flex-col gap-3">
+    <% orders.each do |order| %>
+      <li class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 flex items-center justify-between gap-4">
+        <div class="min-w-0">
+          <%= link_to "Order ##{order.id}", order_path(order), class: "font-semibold text-white hover:text-yellow-300 transition" %>
+          <p class="text-sm text-neutral-500 mt-1 truncate">
+            <%= order.band.name %> · <%= pluralize(order.order_items.sum(&:quantity), "item") %>
+            · <%= order.created_at.strftime("%d %b %Y") %>
+          </p>
+        </div>
+        <div class="flex items-center gap-3 shrink-0">
+          <span class="text-white font-bold"><%= number_to_currency(order.total_cents / 100.0) %></span>
+          <%= render "orders/status_badge", order: order %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% end %>
