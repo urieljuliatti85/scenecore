@@ -9,11 +9,19 @@ class BandsController < ApplicationController
   def new
     @band = Band.new
     authorize @band
+
+    unless PlatformSetting.current.band_signups_enabled?
+      redirect_to bands_path, alert: "Band sign-ups are currently closed."
+    end
   end
 
   def create
     @band = Band.new(band_params)
     authorize @band
+
+    unless PlatformSetting.current.band_signups_enabled?
+      return redirect_to bands_path, alert: "Band sign-ups are currently closed."
+    end
 
     ActiveRecord::Base.transaction do
       @band.save!
