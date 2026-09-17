@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_16_233711) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_001923) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -61,6 +61,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_233711) do
     t.datetime "updated_at", null: false
     t.index ["actor_id"], name: "index_admin_action_logs_on_actor_id"
     t.index ["subject_type", "subject_id"], name: "index_admin_action_logs_on_subject"
+  end
+
+  create_table "album_credits", force: :cascade do |t|
+    t.bigint "album_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["album_id", "user_id"], name: "index_album_credits_on_album_id_and_user_id", unique: true
+    t.index ["album_id"], name: "index_album_credits_on_album_id"
+    t.index ["user_id"], name: "index_album_credits_on_user_id"
   end
 
   create_table "albums", force: :cascade do |t|
@@ -320,6 +330,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_233711) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "admin_action_logs", "users", column: "actor_id"
+  add_foreign_key "album_credits", "albums"
+  add_foreign_key "album_credits", "users"
   add_foreign_key "albums", "bands"
   add_foreign_key "band_membership_prices", "bands"
   add_foreign_key "band_memberships", "bands"

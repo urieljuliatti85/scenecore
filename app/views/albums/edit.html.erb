@@ -61,4 +61,27 @@
       <% end %>
     </div>
   </div>
+
+  <div class="mt-10 pt-8 border-t border-neutral-800">
+    <h2 class="text-sm font-semibold text-neutral-300">Credits</h2>
+    <p class="text-xs text-neutral-500 mt-1 mb-4">
+      Credit Supporters or Core Members on this album. Only members with an active Supporter or Core Member membership with this band can be credited.
+    </p>
+
+    <% if @album.album_credits.any? %>
+      <ul class="flex flex-col gap-2 mb-4">
+        <% @album.album_credits.includes(:user).each do |credit| %>
+          <li class="flex items-center justify-between rounded-lg bg-neutral-900 border border-neutral-800 px-4 py-2.5">
+            <span class="text-sm text-white"><%= credit.user.name %></span>
+            <%= button_to "Remove", band_album_credit_path(@band, @album, credit), method: :delete, class: "text-xs text-red-400 hover:text-red-300 transition cursor-pointer" %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <%= form_with url: band_album_credits_path(@band, @album), method: :post, class: "flex gap-2" do %>
+      <%= text_field_tag :email, nil, placeholder: "Supporter's email", class: "flex-1 rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+      <%= submit_tag "Credit", class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-2.5 hover:bg-yellow-300 transition cursor-pointer" %>
+    <% end %>
+  </div>
 </section>

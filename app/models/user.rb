@@ -13,6 +13,7 @@ class User < ApplicationRecord
   has_many :ratings, dependent: :destroy
   has_many :poll_votes, dependent: :destroy
   has_many :comments, dependent: :destroy
+  has_many :album_credits, dependent: :destroy
 
   validates :name, presence: true
 

@@ -23,6 +23,27 @@ RSpec.describe "Public album pages", type: :request do
       expect(response.body).to include("3.0")
     end
 
+    it "shows credited supporters" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band)
+      supporter = create(:user, name: "Alex Supporter")
+      create(:membership, :supporter, band: band, user: supporter)
+      create(:album_credit, album: album, user: supporter)
+
+      get public_album_path(band.slug, album)
+
+      expect(response.body).to include("Alex Supporter")
+    end
+
+    it "does not show a credits line when the album has no credits" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band)
+
+      get public_album_path(band.slug, album)
+
+      expect(response.body).not_to include("Supported by")
+    end
+
     it "returns 404 for a draft album" do
       band = create(:band, :approved)
       album = create(:album, band: band)
