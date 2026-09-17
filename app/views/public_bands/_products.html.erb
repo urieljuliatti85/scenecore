@@ -1,0 +1,80 @@
+<% if products.any? %>
+  <div id="merch" class="mt-10 scroll-mt-24">
+    <div class="flex items-end justify-between gap-4 mb-4">
+      <div>
+        <p class="text-xs uppercase tracking-[0.2em] text-neutral-500 mb-1">Support the band</p>
+        <h2 class="text-lg font-semibold text-neutral-300">Merch</h2>
+      </div>
+      <span class="text-xs text-neutral-600"><%= pluralize(products.size, "product") %></span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <% products.each do |product| %>
+        <% variants = product.variants.to_a %>
+        <% available_variants = variants.reject(&:sold_out?) %>
+        <% lowest_price = variants.map(&:price_cents).min %>
+        <% highest_price = variants.map(&:price_cents).max %>
+
+        <article class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5 flex flex-col gap-4">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h3 class="font-semibold text-white"><%= product.name %></h3>
+              <% if product.discogs? && product.artist_name.present? %>
+                <p class="text-xs text-neutral-500 mt-1"><%= product.artist_name %></p>
+              <% end %>
+            </div>
+
+            <% if available_variants.any? %>
+              <span class="shrink-0 text-[10px] uppercase tracking-wide text-emerald-400 border border-emerald-900 rounded-full px-2 py-1">In stock</span>
+            <% else %>
+              <span class="shrink-0 text-[10px] uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-2 py-1">Sold out</span>
+            <% end %>
+          </div>
+
+          <% if product.description.present? %>
+            <p class="text-sm text-neutral-400 line-clamp-3"><%= product.description %></p>
+          <% end %>
+
+          <% if product.discogs? %>
+            <div class="flex flex-wrap gap-2 text-xs text-neutral-500">
+              <% [product.release_format, product.release_year, product.label_name].compact_blank.each do |detail| %>
+                <span class="rounded-full border border-neutral-800 px-2.5 py-1"><%= detail %></span>
+              <% end %>
+            </div>
+          <% end %>
+
+          <% if variants.any? %>
+            <div class="flex flex-wrap gap-2">
+              <% variants.each do |variant| %>
+                <span class="rounded-full border border-neutral-800 px-2.5 py-1 text-xs <%= variant.sold_out? ? 'text-neutral-600 line-through' : 'text-neutral-400' %>">
+                  <%= variant.name %>
+                </span>
+              <% end %>
+            </div>
+          <% end %>
+
+          <div class="mt-auto flex items-end justify-between gap-3 pt-2 border-t border-neutral-800">
+            <div>
+              <p class="text-xs uppercase tracking-wide text-neutral-600">Price</p>
+              <p class="text-lg font-bold text-white">
+                <% if lowest_price.present? %>
+                  <% if lowest_price == highest_price %>
+                    <%= number_to_currency(lowest_price / 100.0, unit: "R$", separator: ",", delimiter: ".") %>
+                  <% else %>
+                    From <%= number_to_currency(lowest_price / 100.0, unit: "R$", separator: ",", delimiter: ".") %>
+                  <% end %>
+                <% else %>
+                  —
+                <% end %>
+              </p>
+            </div>
+
+            <% if product.discogs? %>
+              <%= link_to "Release details", product.discogs_url, target: "_blank", rel: "noopener noreferrer", class: "text-xs text-neutral-500 underline hover:text-neutral-300 transition" %>
+            <% end %>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  </div>
+<% end %>

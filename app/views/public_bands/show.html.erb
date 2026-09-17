@@ -92,6 +92,8 @@
     </div>
   <% end %>
 
+  <%= render "products", products: @products %>
+
   <% if @albums.any? %>
     <div id="albums" class="mt-10 scroll-mt-24">
       <h2 class="text-lg font-semibold text-neutral-300 mb-4">Albums</h2>
@@ -229,9 +231,9 @@
     </div>
   <% end %>
 
-  <% if @albums.none? && @posts.none? && @events.none? && @polls.none? %>
+  <% if @albums.none? && @posts.none? && @events.none? && @polls.none? && @products.none? %>
     <div class="mt-10 rounded-3xl border border-dashed border-neutral-800 px-5 py-10 text-center">
-      <p class="text-neutral-400">No music, posts or shows published yet. Check back soon.</p>
+      <p class="text-neutral-400">No music, merch, posts or shows published yet. Check back soon.</p>
     </div>
   <% end %>
 </section>
