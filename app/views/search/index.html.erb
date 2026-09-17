@@ -1,6 +1,14 @@
 <section class="px-4 sm:px-6 py-12 sm:py-16 max-w-5xl mx-auto">
   <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">Search</h1>
 
+  <%# The header no longer carries a search field, so the form lives here —
+      otherwise reaching this page would leave nowhere to type. %>
+  <%= form_with url: search_path, method: :get, class: "flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-6" do |form| %>
+    <%= form.select :type, [ [ "Band", "band" ], [ "Album", "album" ] ], { selected: @type }, class: "rounded-full bg-neutral-900 border border-neutral-800 text-white text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    <%= form.text_field :q, value: @query, placeholder: "Search for a band or an album...", autofocus: @query.blank?, class: "flex-1 rounded-full bg-neutral-900 border border-neutral-800 text-white text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    <%= form.submit "Search", class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-6 py-2.5 hover:bg-yellow-300 transition cursor-pointer" %>
+  <% end %>
+
   <% if @query.present? %>
     <p class="text-neutral-500 mb-8">
       <%= @results.size %> <%= @type %> result<%= "s" unless @results.size == 1 %> for "<%= @query %>"
