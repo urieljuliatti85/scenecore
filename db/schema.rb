@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_090204) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -412,13 +412,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_090204) do
   end
 
   create_table "products", force: :cascade do |t|
+    t.string "artist_name"
     t.bigint "band_id", null: false
+    t.string "barcode"
+    t.string "catalog_number"
     t.datetime "created_at", null: false
     t.text "description"
+    t.jsonb "discogs_metadata", default: {}, null: false
+    t.bigint "discogs_release_id"
+    t.datetime "discogs_synced_at"
+    t.string "label_name"
     t.string "name", null: false
+    t.string "release_format"
+    t.integer "release_year"
+    t.string "source", default: "manual", null: false
     t.string "status", default: "draft", null: false
     t.datetime "updated_at", null: false
+    t.index ["band_id", "discogs_release_id"], name: "index_products_on_band_and_discogs_release", unique: true, where: "(discogs_release_id IS NOT NULL)"
     t.index ["band_id"], name: "index_products_on_band_id"
+    t.check_constraint "source::text = ANY (ARRAY['manual'::character varying, 'discogs'::character varying]::text[])", name: "products_source_check"
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "products_status_check"
   end
 
