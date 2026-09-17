@@ -1,0 +1,68 @@
+<%# Countries are submitted as a flat list of codes rather than nested
+    attributes — see ShippingZonesController#save_with_countries for why.
+    On a failed save the checked set has to come from the params, not from
+    the unsaved record, or the band loses its selection. %>
+<% selected = params[:shipping_zone] ? Array(params[:shipping_zone][:country_codes]).map { |c| Country.normalize(c) } : zone.country_codes %>
+
+<%= form_with model: [ band, zone ], class: "flex flex-col gap-6" do |form| %>
+  <% if zone.errors.any? %>
+    <ul class="rounded-xl border border-red-900 bg-red-950/40 text-red-400 text-sm p-4 space-y-1">
+      <% zone.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div>
+    <%= form.label :name, "Destination name", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <p class="text-xs text-neutral-500 mb-1">What you call this group — fans never see it. For example "Brazil" or "Rest of world".</p>
+    <%= form.text_field :name, required: true, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+  </div>
+
+  <div>
+    <%= form.label :shipping_cents, "Shipping (cents)", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <p class="text-xs text-neutral-500 mb-1">Charged once per product in the order, not per copy. Enter 0 for free shipping.</p>
+    <%= form.number_field :shipping_cents, min: 0, step: 1, required: true, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+  </div>
+
+  <div data-controller="country-picker" class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
+      <div>
+        <p class="text-sm font-medium text-neutral-300">Countries</p>
+        <p data-country-picker-target="count" class="text-xs text-neutral-500 mt-1"></p>
+      </div>
+
+      <div class="sm:w-64">
+        <%= label_tag :country_filter, "Find a country", class: "sr-only" %>
+        <input type="search"
+               id="country_filter"
+               data-country-picker-target="query"
+               data-action="input->country-picker#filter"
+               placeholder="Find a country…"
+               autocomplete="off"
+               class="w-full rounded-lg bg-neutral-950 border border-neutral-800 text-white text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+      </div>
+    </div>
+
+    <div class="max-h-96 overflow-y-auto rounded-lg border border-neutral-800 bg-neutral-950 divide-y divide-neutral-900">
+      <% Country.options.each do |country_name, code| %>
+        <label data-country-picker-target="option"
+               data-country-name="<%= country_name %>"
+               data-country-code="<%= code %>"
+               class="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-neutral-900 transition">
+          <%= check_box_tag "shipping_zone[country_codes][]", code, selected.include?(code),
+                id: "shipping_zone_country_#{code}",
+                data: { action: "change->country-picker#updateCount" },
+                class: "rounded border-neutral-700 bg-neutral-900 text-yellow-400 focus:ring-yellow-400" %>
+          <span class="text-sm text-neutral-200"><%= country_name %></span>
+          <span class="ml-auto font-mono text-xs text-neutral-600"><%= code %></span>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap items-center gap-4">
+    <%= form.submit zone.new_record? ? "Add destination" : "Save destination", class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-6 py-3 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
+    <%= link_to "Cancel", band_shipping_zones_path(band), class: "text-sm text-neutral-400 hover:text-white transition" %>
+  </div>
+<% end %>

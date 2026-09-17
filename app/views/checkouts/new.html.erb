@@ -30,15 +30,35 @@
         <dt class="text-neutral-400">Subtotal</dt>
         <dd class="text-white"><%= number_to_currency(@cart.subtotal_cents / 100.0) %></dd>
       </div>
+      <%# Shipping depends on the destination, which is chosen below, so the
+          summary shows what the country currently selected costs and the
+          range otherwise. %>
+      <% selected_shipping = @cart.shipping_cents_for(@shipping_address.country) %>
+      <% range = @cart.shipping_cents_range %>
       <div class="flex items-center justify-between">
         <dt class="text-neutral-400">Shipping</dt>
         <dd class="text-white">
-          <%= @cart.shipping_cents.zero? ? "Free" : number_to_currency(@cart.shipping_cents / 100.0) %>
+          <% if selected_shipping %>
+            <%= selected_shipping.zero? ? "Free" : number_to_currency(selected_shipping / 100.0) %>
+          <% elsif range && range.first != range.last %>
+            <%= number_to_currency(range.first / 100.0) %>–<%= number_to_currency(range.last / 100.0) %>
+          <% elsif range %>
+            <%= range.first.zero? ? "Free" : number_to_currency(range.first / 100.0) %>
+          <% else %>
+            <span class="text-neutral-500">Depends on destination</span>
+          <% end %>
         </dd>
       </div>
       <div class="flex items-center justify-between pt-3 mt-1 border-t border-neutral-800">
         <dt class="font-semibold text-white">Total</dt>
-        <dd class="text-xl font-extrabold text-white"><%= number_to_currency(@cart.total_cents / 100.0) %></dd>
+        <dd class="text-xl font-extrabold text-white">
+          <% if selected_shipping %>
+            <%= number_to_currency((@cart.subtotal_cents + selected_shipping) / 100.0) %>
+          <% else %>
+            <%= number_to_currency(@cart.subtotal_cents / 100.0) %>
+            <span class="text-sm font-normal text-neutral-500">+ shipping</span>
+          <% end %>
+        </dd>
       </div>
     </dl>
   </div>
@@ -84,7 +104,14 @@
       </div>
       <div>
         <%= form.label :country, "Country", class: "block text-sm font-medium text-neutral-300 mb-1" %>
-        <%= form.text_field :country, required: true, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5" %>
+        <%# Only the destinations this band ships to: an unserved country
+            cannot be ordered, so offering it would only produce an error
+            after the fan filled the whole form. The server checks the
+            choice again in CheckoutsController#create. %>
+        <%= form.select :country, shipping_country_options,
+              { include_blank: "Select a country" },
+              required: true,
+              class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5" %>
       </div>
     </div>
 

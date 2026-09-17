@@ -93,7 +93,8 @@
 
     <% when "products" %>
       <%= render "tab_actions", actions: [
-            [ "New product", new_band_product_path(@band), true ]
+            [ "New product", new_band_product_path(@band), true ],
+            [ "Shipping", band_shipping_zones_path(@band), false ]
           ] %>
       <%= render "products/list", band: @band, products: @products %>
 

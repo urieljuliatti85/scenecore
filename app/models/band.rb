@@ -23,6 +23,8 @@ class Band < ApplicationRecord
   has_many :products, dependent: :destroy
   has_many :carts, dependent: :destroy
   has_many :orders, dependent: :destroy
+  has_many :shipping_zones, dependent: :destroy
+  has_many :shipping_zone_countries, dependent: :destroy
   belongs_to :category, optional: true
   has_image :photo
 

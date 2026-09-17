@@ -280,9 +280,11 @@ ShippingAddresses), `docs/payments.md`, and ADR-007
   commission is applied as `application_fee_amount` in the same
   transaction (ADR-007) — this is separate infrastructure from the plain
   Stripe Checkout Sessions Subscriptions (§7) already uses.
-- Shipping address captured per order; shipping cost calculation method
-  is an open product question (`docs/product.md` §7) — do not invent one
-  without confirming first.
+- Shipping address captured per order. Shipping cost is band-defined
+  destinations, decided 2026-09-17 (`docs/product.md` Store → Shipping):
+  a country no destination covers cannot be checked out at all. Weight-
+  based rates and carrier-rate APIs were considered and rejected there —
+  do not reintroduce either without confirming first.
 - Order snapshots product name, variant name, and price at purchase time
   independent of later edits.
 - Inventory (per variant) never goes negative under concurrent purchases.

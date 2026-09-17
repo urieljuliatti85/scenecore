@@ -67,15 +67,32 @@
           <dt class="text-neutral-400">Subtotal</dt>
           <dd class="text-white"><%= number_to_currency(@cart.subtotal_cents / 100.0) %></dd>
         </div>
+        <%# No address yet, so the exact rate is unknown: the cart shows the
+            span of what the band charges across the destinations it serves
+            and the checkout resolves it once a country is chosen. %>
+        <% range = @cart.shipping_cents_range %>
         <div class="flex items-center justify-between">
           <dt class="text-neutral-400">Shipping</dt>
           <dd class="text-white">
-            <%= @cart.shipping_cents.zero? ? "Free" : number_to_currency(@cart.shipping_cents / 100.0) %>
+            <% if range.nil? %>
+              <span class="text-neutral-500">Calculated at checkout</span>
+            <% elsif range.first != range.last %>
+              <%= number_to_currency(range.first / 100.0) %>–<%= number_to_currency(range.last / 100.0) %>
+            <% else %>
+              <%= range.first.zero? ? "Free" : number_to_currency(range.first / 100.0) %>
+            <% end %>
           </dd>
         </div>
         <div class="flex items-center justify-between pt-3 mt-1 border-t border-neutral-800">
           <dt class="font-semibold text-white">Total</dt>
-          <dd class="text-xl font-extrabold text-white"><%= number_to_currency(@cart.total_cents / 100.0) %></dd>
+          <dd class="text-xl font-extrabold text-white">
+            <% if range && range.first == range.last %>
+              <%= number_to_currency((@cart.subtotal_cents + range.first) / 100.0) %>
+            <% else %>
+              <%= number_to_currency(@cart.subtotal_cents / 100.0) %>
+              <span class="text-sm font-normal text-neutral-500">+ shipping</span>
+            <% end %>
+          </dd>
         </div>
       </dl>
     </div>

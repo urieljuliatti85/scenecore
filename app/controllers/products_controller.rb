@@ -154,12 +154,34 @@ class ProductsController < ApplicationController
   end
 
   def product_params
-    params.require(:product).permit(
+    permitted = params.require(:product).permit(
       :name,
       :description,
       :image,
       :shipping_cents,
-      variants_attributes: [ :id, :sku, :name, :price_cents, :stock_quantity ]
+      variants_attributes: [ :id, :sku, :name, :price_cents, :stock_quantity ],
+      shipping_rates_attributes: [ :id, :shipping_zone_id, :shipping_cents ]
     )
+
+    strip_blank_shipping_rates(permitted)
+  end
+
+  # A blank per-destination field means "charge the zone's rate", which is
+  # the absence of an override rather than a rate of zero. So a blank on an
+  # existing override deletes it, and a blank on a destination that never
+  # had one is dropped before it reaches the model.
+  def strip_blank_shipping_rates(permitted)
+    rates = permitted[:shipping_rates_attributes]
+    return permitted if rates.blank?
+
+    permitted[:shipping_rates_attributes] = rates.to_h.filter_map do |key, attributes|
+      blank = attributes[:shipping_cents].blank?
+
+      next if blank && attributes[:id].blank?
+
+      [ key, blank ? attributes.merge("_destroy" => "1") : attributes ]
+    end.to_h
+
+    permitted
   end
 end

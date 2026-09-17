@@ -285,4 +285,86 @@ RSpec.describe "Band Admin products", type: :request do
       expect(response).to redirect_to(edit_band_product_path(band, product))
     end
   end
+
+  describe "per-destination shipping rates" do
+    let(:band) { create(:band, :approved) }
+    let(:admin) { create(:user) }
+    let(:product) { create(:product, band: band, shipping_cents: 900) }
+    let!(:variant) { create(:product_variant, product: product) }
+    let!(:zone) { create(:shipping_zone, band: band, name: "Brazil", shipping_cents: 1_500, country_codes: [ "BR" ]) }
+
+    before do
+      create(:band_membership, :administrator, band: band, user: admin)
+      sign_in admin
+    end
+
+    it "saves an override for a destination" do
+      patch band_product_path(band, product), params: {
+        product: {
+          name: product.name,
+          shipping_rates_attributes: { "0" => { shipping_zone_id: zone.id, shipping_cents: 300 } }
+        }
+      }
+
+      expect(product.reload.shipping_cents_for("BR")).to eq(300)
+    end
+
+    # A blank field means "charge the usual rate", which is the absence of
+    # an override — not a rate of zero.
+    it "creates no override for a destination left blank" do
+      expect {
+        patch band_product_path(band, product), params: {
+          product: {
+            name: product.name,
+            shipping_rates_attributes: { "0" => { shipping_zone_id: zone.id, shipping_cents: "" } }
+          }
+        }
+      }.not_to change(ProductShippingRate, :count)
+
+      expect(product.reload.shipping_cents_for("BR")).to eq(1_500)
+    end
+
+    it "removes an existing override when the field is cleared" do
+      rate = create(:product_shipping_rate, product: product, shipping_zone: zone, shipping_cents: 300)
+
+      expect {
+        patch band_product_path(band, product), params: {
+          product: {
+            name: product.name,
+            shipping_rates_attributes: { "0" => { id: rate.id, shipping_zone_id: zone.id, shipping_cents: "" } }
+          }
+        }
+      }.to change(ProductShippingRate, :count).by(-1)
+
+      expect(product.reload.shipping_cents_for("BR")).to eq(1_500)
+    end
+
+    it "keeps an override of zero as deliberate free shipping" do
+      patch band_product_path(band, product), params: {
+        product: {
+          name: product.name,
+          shipping_rates_attributes: { "0" => { shipping_zone_id: zone.id, shipping_cents: 0 } }
+        }
+      }
+
+      expect(product.reload.shipping_cents_for("BR")).to eq(0)
+    end
+
+    # Otherwise one band could price its products against another band's
+    # zones, letting a stranger's rates decide its shipping.
+    it "refuses a destination belonging to another band" do
+      foreign = create(:shipping_zone, band: create(:band, :approved), country_codes: [ "JP" ])
+
+      expect {
+        patch band_product_path(band, product), params: {
+          product: {
+            name: product.name,
+            shipping_rates_attributes: { "0" => { shipping_zone_id: foreign.id, shipping_cents: 1 } }
+          }
+        }
+      }.not_to change(ProductShippingRate, :count)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+  end
 end

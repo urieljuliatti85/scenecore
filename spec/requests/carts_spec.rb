@@ -158,8 +158,8 @@ RSpec.describe "Carts", type: :request do
       cart = user.carts.sole
 
       expect(cart.subtotal_cents).to eq(36_000)
-      expect(cart.shipping_cents).to eq(1_500)
-      expect(cart.total_cents).to eq(37_500)
+      expect(cart.shipping_cents_for("BR")).to eq(1_500)
+      expect(cart.total_cents_for("BR")).to eq(37_500)
     end
 
     it "sums shipping across distinct products" do
@@ -169,7 +169,7 @@ RSpec.describe "Carts", type: :request do
       post add_cart_path, params: { product_variant_id: variant.id }
       post add_cart_path, params: { product_variant_id: second_variant.id }
 
-      expect(user.carts.sole.shipping_cents).to eq(2_000)
+      expect(user.carts.sole.shipping_cents_for("BR")).to eq(2_000)
     end
 
     it "shows free shipping when no product charges for it" do
