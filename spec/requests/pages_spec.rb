@@ -266,4 +266,48 @@ RSpec.describe "Pages", type: :request do
       expect(response.body).not_to include(">Subscribe</a>")
     end
   end
+
+  describe "GET /how-it-works" do
+    it "is reachable without signing in" do
+      get how_it_works_path
+
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "lists every membership level with its promise" do
+      get how_it_works_path
+
+      expect(response.body).to include("Fan")
+      expect(response.body).to include("Supporter")
+      expect(response.body).to include("Core Member")
+      expect(response.body).to include("Become part of the band&#39;s core group.")
+    end
+
+    # Prices render from the same constant Stripe charges against, so the
+    # page can never quote a figure the platform does not actually bill.
+    it "quotes the prices that memberships actually cost" do
+      get how_it_works_path
+
+      Membership::PRICES_IN_CENTS.each_value do |cents|
+        expect(response.body).to include("$#{cents / 100}")
+      end
+    end
+
+    it "states both revenue splits and that bands pay nothing to join" do
+      get how_it_works_path
+
+      expect(response.body).to include("75% of memberships")
+      expect(response.body).to include("90% of store sales")
+      expect(response.body).to include("Creating a band page is free")
+    end
+
+    # The two splits differ, so quoting one figure for both would misstate
+    # what a band actually earns.
+    it "keeps the membership and store splits distinct" do
+      get how_it_works_path
+
+      expect(response.body).to include("25% to SceneCore")
+      expect(response.body).to include("10% to SceneCore")
+    end
+  end
 end

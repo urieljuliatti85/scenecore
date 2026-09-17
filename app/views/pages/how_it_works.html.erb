@@ -1,11 +1,13 @@
-<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+<% content_for :title, "How it works — SceneCore" %>
+
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-4xl mx-auto">
   <h1 class="text-3xl font-extrabold tracking-tight mb-4">How it works</h1>
-  <p class="text-neutral-400 mb-10">
+  <p class="text-neutral-400 mb-12">
     Use Spotify to get discovered. Use SceneCore to build your fan base.
   </p>
 
-  <div class="flex flex-col gap-8">
-    <div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-16">
+    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
       <h2 class="text-lg font-semibold text-white mb-2">For bands</h2>
       <p class="text-neutral-300">
         Create your band's page, bring your albums over from Spotify, publish
@@ -14,7 +16,7 @@
       </p>
     </div>
 
-    <div>
+    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
       <h2 class="text-lg font-semibold text-white mb-2">For fans</h2>
       <p class="text-neutral-300">
         Discover bands, listen to their music, follow the ones you care about,
@@ -23,8 +25,123 @@
     </div>
   </div>
 
+  <h2 class="text-2xl font-extrabold tracking-tight mb-2">Membership plans</h2>
+  <p class="text-neutral-400 mb-8">
+    Following a band is free. Membership is how a fan supports one band
+    directly, month to month, and unlocks what that band shares with its
+    members. Each membership belongs to a single band — you can be a Fan of
+    one and a Core Member of another.
+  </p>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <% [
+         [ "fan", "Get closer to the band.", [
+           "Exclusive band feed",
+           "News before the general public",
+           "Behind-the-scenes photos and short videos",
+           "Selected demos and alternative versions",
+           "Poll participation",
+           "Fan badge and subscriber community access"
+         ], false ],
+         [ "supporter", "Support the music and follow its creation.", [
+           "Early access to releases",
+           "Complete demos and rehearsal recordings",
+           "Composition and production journals",
+           "Exclusive videos and streams",
+           "Digital supporter credits",
+           "Merchandise discounts"
+         ], true ],
+         [ "core_member", "Become part of the band's core group.", [
+           "Private livestreams and Q&A sessions",
+           "Rare archives and unreleased versions",
+           "Priority access to tickets and limited products",
+           "Higher discounts and a permanent supporter page",
+           "Direct messages to the band",
+           "A say in decisions the band opens up"
+         ], false ]
+       ].each do |level, promise, benefits, highlighted| %>
+      <div class="rounded-2xl border <%= highlighted ? "border-yellow-500/60" : "border-neutral-800" %> bg-neutral-900/60 p-6 flex flex-col gap-4">
+        <div>
+          <h3 class="text-lg font-semibold text-white"><%= level.humanize.titleize %></h3>
+          <p class="mt-1">
+            <span class="text-3xl font-extrabold text-white">$<%= Membership::PRICES_IN_CENTS.fetch(level) / 100 %></span>
+            <span class="text-sm text-neutral-500">/month per band</span>
+          </p>
+        </div>
+
+        <p class="text-sm text-neutral-400 italic">&ldquo;<%= promise %>&rdquo;</p>
+
+        <ul class="flex flex-col gap-2 text-sm text-neutral-300">
+          <% unless level == "fan" %>
+            <li class="text-neutral-500">Everything in <%= level == "supporter" ? "Fan" : "Supporter" %>, plus:</li>
+          <% end %>
+          <% benefits.each do |benefit| %>
+            <li class="flex gap-2">
+              <span class="text-yellow-400" aria-hidden="true">&bull;</span><%= benefit %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
+
+  <p class="text-sm text-neutral-500 mb-16">
+    What each band actually publishes at every level is up to that band.
+    Memberships renew monthly and can be cancelled at any time.
+  </p>
+
+  <h2 class="text-2xl font-extrabold tracking-tight mb-2">The money side</h2>
+  <p class="text-neutral-400 mb-8">
+    We would rather be plain about this than make you guess.
+  </p>
+
+  <div class="flex flex-col gap-4 mb-12">
+    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
+      <h3 class="font-semibold text-white mb-2">Creating a band page is free</h3>
+      <p class="text-neutral-300 text-sm">
+        There is no monthly fee for bands. You create your page, publish your
+        music and content, and build your fan base without paying to be here.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
+      <h3 class="font-semibold text-white mb-2">Following is free for fans</h3>
+      <p class="text-neutral-300 text-sm">
+        You only pay if you choose to become a member of a band, and you pay
+        that band — one membership at a time, for as long as you want it.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
+      <h3 class="font-semibold text-white mb-2">Bands keep 75% of memberships</h3>
+      <p class="text-neutral-300 text-sm">
+        Of every membership payment, 75% goes to the band and 25% to SceneCore.
+        That share covers running the platform: hosting the music and content,
+        handling payments, and keeping the band's home online.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
+      <h3 class="font-semibold text-white mb-2">Bands keep 90% of store sales</h3>
+      <p class="text-neutral-300 text-sm">
+        When a band sells merchandise through its store, 90% goes to the band
+        and 10% to SceneCore. The split happens automatically when the payment
+        is made, so there is nothing to reconcile afterwards.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
+      <h3 class="font-semibold text-white mb-2">Payments run through Stripe</h3>
+      <p class="text-neutral-300 text-sm">
+        Card details are handled by Stripe and never touch SceneCore's servers.
+        Bands selling products connect their own Stripe account, so store
+        earnings go straight to them.
+      </p>
+    </div>
+  </div>
+
   <% unless user_signed_in? %>
-    <div class="mt-12 flex flex-wrap items-center gap-3">
+    <div class="flex flex-wrap items-center gap-3">
       <%= link_to "Join Now", new_user_registration_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
       <%= link_to "Browse bands", discover_bands_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
     </div>

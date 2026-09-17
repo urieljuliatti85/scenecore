@@ -158,9 +158,45 @@ Stripe's own dashboard/reports already provide the band.
   account; no commission split exists on subscription revenue today and
   this decision does not introduce one retroactively. A future decision
   to also split subscription revenue would need its own ADR.
+  *(Superseded on 2026-09-17: ADR-008 sets that split at 75/25. The
+  implementation note above still holds — subscriptions have not moved to
+  Connect yet.)*
 - Store's Stripe webhooks must handle events under the connected account
   (Stripe sends these with an `account` field identifying which connected
   account they belong to) in addition to the platform-account events
   Subscriptions already handles — `StripeWebhooksController` must
   distinguish the two rather than assuming every webhook is
   platform-level.
+
+---
+
+## ADR-008 — Membership Revenue Split
+
+Status: Accepted (2026-09-17)
+
+### Decision
+
+Membership revenue is split 75% to the band, 25% to SceneCore. This is the
+decision ADR-007 anticipated when it recorded that splitting subscription
+revenue would require its own ADR.
+
+The rate differs deliberately from the Store's 10%: a membership is an
+ongoing relationship the platform hosts and serves every month — the
+exclusive feed, content, community and messaging all run on SceneCore —
+whereas a store sale is a one-off transaction where the band supplies and
+ships the goods itself.
+
+### Consequence
+
+- `docs/payments.md`'s rule that platform commission must be explicit now
+  has a figure for memberships as well as for the Store.
+- The public "How it works" page states both splits. It is the
+  band-facing promise, so the page and this ADR must not drift apart.
+- Not yet implemented. Subscriptions still run through plain Stripe
+  Checkout Sessions against SceneCore's own account (ADR-007), which
+  means 100% currently lands with the platform and no band payout
+  happens. Implementing this split — whether by moving subscriptions onto
+  Connect with an `application_fee_amount`, or by paying bands out
+  separately — is outstanding work, and the gap between the published
+  promise and the code should be closed before bands are onboarded onto
+  paid memberships.
