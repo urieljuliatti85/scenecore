@@ -7,22 +7,22 @@
   </p>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-16">
-    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
-      <h2 class="text-lg font-semibold text-white mb-2">For bands</h2>
+    <%= render layout: "info_card" do %>
+      <h2 class="text-lg font-semibold text-white">For bands</h2>
       <p class="text-neutral-300">
         Create your band's page, bring your albums over from Spotify, publish
         posts for your followers, and keep everything about your relationship
         with your fans in one place.
       </p>
-    </div>
+    <% end %>
 
-    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
-      <h2 class="text-lg font-semibold text-white mb-2">For fans</h2>
+    <%= render layout: "info_card" do %>
+      <h2 class="text-lg font-semibold text-white">For fans</h2>
       <p class="text-neutral-300">
         Discover bands, listen to their music, follow the ones you care about,
         and keep up with what they publish.
       </p>
-    </div>
+    <% end %>
   </div>
 
   <h2 class="text-2xl font-extrabold tracking-tight mb-2">Membership plans</h2>
@@ -60,28 +60,27 @@
            "A say in decisions the band opens up"
          ], false ]
        ].each do |level, promise, benefits, highlighted| %>
-      <div class="rounded-2xl border <%= highlighted ? "border-yellow-500/60" : "border-neutral-800" %> bg-neutral-900/60 p-6 flex flex-col gap-4">
-        <div>
+      <%= render layout: "info_card", locals: { highlighted: highlighted } do %>
+        <div class="text-center">
           <h3 class="text-lg font-semibold text-white"><%= level.humanize.titleize %></h3>
-          <p class="mt-1">
-            <span class="text-3xl font-extrabold text-white">$<%= Membership::PRICES_IN_CENTS.fetch(level) / 100 %></span>
-            <span class="text-sm text-neutral-500">/month per band</span>
+          <p class="mt-3">
+            <span class="text-5xl font-extrabold tracking-tight text-white">$<%= Membership::PRICES_IN_CENTS.fetch(level) / 100 %></span><span class="text-sm text-neutral-500">/mo</span>
           </p>
+          <p class="mt-2 text-sm text-neutral-500"><%= promise %></p>
         </div>
 
-        <p class="text-sm text-neutral-400 italic">&ldquo;<%= promise %>&rdquo;</p>
-
-        <ul class="flex flex-col gap-2 text-sm text-neutral-300">
+        <ul class="flex flex-col gap-2.5 text-sm text-neutral-300">
           <% unless level == "fan" %>
             <li class="text-neutral-500">Everything in <%= level == "supporter" ? "Fan" : "Supporter" %>, plus:</li>
           <% end %>
           <% benefits.each do |benefit| %>
-            <li class="flex gap-2">
-              <span class="text-yellow-400" aria-hidden="true">&bull;</span><%= benefit %>
+            <li class="flex items-start gap-2.5">
+              <%= render "check_icon", highlighted: highlighted %>
+              <span><%= benefit %></span>
             </li>
           <% end %>
         </ul>
-      </div>
+      <% end %>
     <% end %>
   </div>
 
@@ -96,49 +95,49 @@
   </p>
 
   <div class="flex flex-col gap-4 mb-12">
-    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
-      <h3 class="font-semibold text-white mb-2">Creating a band page is free</h3>
+    <%= render layout: "info_card" do %>
+      <h3 class="font-semibold text-white">Creating a band page is free</h3>
       <p class="text-neutral-300 text-sm">
         There is no monthly fee for bands. You create your page, publish your
         music and content, and build your fan base without paying to be here.
       </p>
-    </div>
+    <% end %>
 
-    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
-      <h3 class="font-semibold text-white mb-2">Following is free for fans</h3>
+    <%= render layout: "info_card" do %>
+      <h3 class="font-semibold text-white">Following is free for fans</h3>
       <p class="text-neutral-300 text-sm">
         You only pay if you choose to become a member of a band, and you pay
         that band — one membership at a time, for as long as you want it.
       </p>
-    </div>
+    <% end %>
 
-    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
-      <h3 class="font-semibold text-white mb-2">Bands keep 85% of memberships</h3>
+    <%= render layout: "info_card" do %>
+      <h3 class="font-semibold text-white">Bands keep 85% of memberships</h3>
       <p class="text-neutral-300 text-sm">
         Of every membership payment, 85% goes to the band and 15% to SceneCore.
         That share covers running the platform: hosting the music and content,
         handling payments, and keeping the band's home online.
       </p>
-    </div>
+    <% end %>
 
-    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
-      <h3 class="font-semibold text-white mb-2">Bands keep 90% of store sales</h3>
+    <%= render layout: "info_card" do %>
+      <h3 class="font-semibold text-white">Bands keep 90% of store sales</h3>
       <p class="text-neutral-300 text-sm">
         When a band sells merchandise through its store, 90% goes to the band and
         10% to SceneCore — the band supplies and ships the goods, so the platform
         takes less. The split happens automatically when the payment is made, so
         there is nothing to reconcile afterwards.
       </p>
-    </div>
+    <% end %>
 
-    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
-      <h3 class="font-semibold text-white mb-2">Payments run through Stripe</h3>
+    <%= render layout: "info_card" do %>
+      <h3 class="font-semibold text-white">Payments run through Stripe</h3>
       <p class="text-neutral-300 text-sm">
         Card details are handled by Stripe and never touch SceneCore's servers.
         Bands selling products connect their own Stripe account, so store
         earnings go straight to them.
       </p>
-    </div>
+    <% end %>
   </div>
 
   <% unless user_signed_in? %>

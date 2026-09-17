@@ -1,0 +1,15 @@
+<%# The shared card shell for How it works, rendered as a partial layout:
+    `render layout: "info_card" do ... end`. `highlighted` adds the amber
+    glow that marks the recommended plan — the accent stays amber rather
+    than adopting the reference's violet, since amber is already the
+    platform's action colour. %>
+<% highlighted = local_assigns.fetch(:highlighted, false) %>
+<div class="relative h-full">
+  <% if highlighted %>
+    <div class="absolute -inset-3 rounded-[2rem] bg-yellow-400/10 blur-2xl pointer-events-none" aria-hidden="true"></div>
+  <% end %>
+
+  <div class="relative h-full rounded-3xl border <%= highlighted ? "border-yellow-500/40 bg-neutral-950 shadow-lg shadow-yellow-500/5" : "border-neutral-800 bg-neutral-900/40" %> p-6 sm:p-7 flex flex-col gap-4">
+    <%= yield %>
+  </div>
+</div>
