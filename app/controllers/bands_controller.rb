@@ -49,7 +49,17 @@ class BandsController < ApplicationController
     render :new, status: :unprocessable_entity
   end
 
+  # The panel is split into tabs so a band is not handed every album, post,
+  # show and poll at once. The manage tabs open in the same panel rather
+  # than navigating away, though each still has its own page for deep links
+  # and for the forms that live there.
+  CONTENT_TABS = %w[overview music posts shows community].freeze
+  MANAGE_TABS = %w[profile members supporters products payments].freeze
+  TABS = (CONTENT_TABS + MANAGE_TABS).freeze
+
   def show
+    @tab = TABS.include?(params[:tab]) ? params[:tab] : TABS.first
+    load_manage_tab if MANAGE_TABS.include?(@tab)
     @albums = @band.albums.with_attached_cover
     @posts = @band.posts.order(created_at: :desc)
     @events = @band.events.chronological
@@ -117,6 +127,29 @@ class BandsController < ApplicationController
   end
 
   private
+
+  # Each manage tab needs what its own controller loads. Authorization is
+  # the same policy those controllers check, applied here too so opening a
+  # tab can never show more than visiting the page would.
+  def load_manage_tab
+    case @tab
+    when "members"
+      authorize BandMembership.new(band: @band), :index?, policy_class: BandMembershipPolicy
+      @band_memberships = @band.band_memberships.includes(:user)
+    when "supporters"
+      authorize Membership.new(band: @band), :index?, policy_class: MembershipPolicy
+      @supporter_memberships = @band.memberships.includes(:user).order(created_at: :desc)
+    when "products"
+      authorize @band, :index?, policy_class: ProductPolicy
+      @products = @band.products.includes(:variants).order(created_at: :desc)
+    when "payments"
+      authorize @band, :update?, policy_class: BandPolicy
+      @active_subscribers = @band.subscriptions.where(status: Subscription::BILLING_STATUSES).count
+      @published_products = @band.products.published.count
+    when "profile"
+      authorize @band, :update?, policy_class: BandPolicy
+    end
+  end
 
   def log_admin_action(action)
     AdminActionLog.create!(actor: current_user, action: action, subject: @band)

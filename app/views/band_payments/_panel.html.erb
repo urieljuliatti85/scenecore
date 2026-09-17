@@ -1,0 +1,79 @@
+<%# Shared by /bands/:id/payments and the panel's Payments tab, so the two
+    cannot disagree about what the band's account can do. %>
+<%= render "band_payments/status_card", band: band %>
+
+<%# What is actually blocked right now, counted rather than described in
+    general terms: a band with subscribers waiting is in a different
+    situation from one with nothing set up yet. %>
+<% unless band.payouts_ready? %>
+  <div class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 mb-6">
+    <h2 class="text-sm font-semibold text-white mb-3">What this blocks</h2>
+    <ul class="flex flex-col gap-2.5 text-sm text-neutral-300">
+      <li class="flex items-start gap-2.5">
+        <span class="text-red-400 mt-0.5" aria-hidden="true">&times;</span>
+        <span>
+          Fans can't start a membership with you.
+          <% if active_subscribers.positive? %>
+            <span class="text-neutral-500">
+              Your <%= pluralize(active_subscribers, "existing subscriber") %>
+              <%= active_subscribers == 1 ? "keeps" : "keep" %> their access.
+            </span>
+          <% end %>
+        </span>
+      </li>
+      <li class="flex items-start gap-2.5">
+        <span class="text-red-400 mt-0.5" aria-hidden="true">&times;</span>
+        <span>
+          Fans can't buy from your Store.
+          <% if published_products.positive? %>
+            <span class="text-neutral-500">
+              <%= pluralize(published_products, "published product") %>
+              <%= published_products == 1 ? "is" : "are" %> visible but can't be bought.
+            </span>
+          <% end %>
+        </span>
+      </li>
+    </ul>
+  </div>
+<% end %>
+
+<div class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 mb-6">
+  <h2 class="text-sm font-semibold text-white mb-3">What you keep</h2>
+  <dl class="flex flex-col gap-3 text-sm">
+    <div class="flex items-start justify-between gap-4">
+      <dt class="text-neutral-300">
+        Memberships
+        <span class="block text-neutral-500 text-xs mt-0.5">Split on every monthly charge</span>
+      </dt>
+      <dd class="text-white font-bold shrink-0"><%= 100 - Subscription::PLATFORM_FEE_PERCENT %>%</dd>
+    </div>
+    <div class="flex items-start justify-between gap-4 pt-3 border-t border-neutral-800">
+      <dt class="text-neutral-300">
+        Store sales
+        <span class="block text-neutral-500 text-xs mt-0.5">You supply and ship the goods, so the platform takes less</span>
+      </dt>
+      <dd class="text-white font-bold shrink-0"><%= 100 - (Order::PLATFORM_FEE_RATE * 100).round %>%</dd>
+    </div>
+  </dl>
+  <p class="text-xs text-neutral-600 mt-4">
+    Your share reaches your Stripe account at the moment of each charge, not
+    as a later payout from SceneCore.
+    <%= link_to "How it works", how_it_works_path, class: "text-yellow-300 hover:text-yellow-200 transition" %>
+    explains the rest.
+  </p>
+</div>
+
+<% if band.payouts_ready? %>
+  <%# Balance, payout schedule and bank details live in Stripe's own
+      dashboard — SceneCore does not hold this money and so cannot
+      report on it. %>
+  <div class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
+    <h2 class="text-sm font-semibold text-white mb-2">Your balance and payouts</h2>
+    <p class="text-sm text-neutral-400 mb-4">
+      Stripe holds your balance and pays it to your bank on its own schedule,
+      which you set. SceneCore can't see or change it.
+    </p>
+    <%= link_to "Open your Stripe dashboard", "https://dashboard.stripe.com/", target: "_blank", rel: "noopener noreferrer",
+          class: "inline-block rounded-full border border-neutral-700 text-white text-sm font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
+  </div>
+<% end %>
