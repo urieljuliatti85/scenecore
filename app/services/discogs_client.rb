@@ -4,6 +4,15 @@ class DiscogsClient
   Error = Class.new(StandardError)
   ConfigurationError = Class.new(Error)
 
+  class ApiError < Error
+    attr_reader :status
+
+    def initialize(status)
+      @status = status.to_i
+      super("Discogs API request failed: #{@status}")
+    end
+  end
+
   API_BASE_URL = "https://api.discogs.com"
   USER_AGENT = "SceneCore/1.0 +https://github.com/urieljuliatti85/scenecore"
   OPEN_TIMEOUT = 3
@@ -111,7 +120,7 @@ class DiscogsClient
     request["Authorization"] = authorization_header
 
     response = perform(uri, request)
-    raise Error, "Discogs API request failed: #{response.code}" unless response.is_a?(Net::HTTPSuccess)
+    raise ApiError, response.code unless response.is_a?(Net::HTTPSuccess)
 
     parse(response)
   end
