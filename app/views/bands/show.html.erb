@@ -19,6 +19,7 @@
         [ "members", "Members", nil ],
         [ "supporters", "Supporters", nil ],
         [ "products", "Products", nil ],
+        [ "orders", "Orders", @band.orders.awaiting_band.size ],
         [ "payments", "Payments", nil ]
       ] : []) %>
 
@@ -90,6 +91,10 @@
             [ "New product", new_band_product_path(@band), true ]
           ] %>
       <%= render "products/list", band: @band, products: @products %>
+
+    <% when "orders" %>
+      <%= render "orders_section", band: @band,
+            orders_awaiting: @orders_awaiting, orders_settled: @orders_settled %>
 
     <% when "payments" %>
       <%= render "band_payments/panel", band: @band,
