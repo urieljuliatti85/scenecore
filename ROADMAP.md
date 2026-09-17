@@ -236,7 +236,7 @@ Read:
 
 ---
 
-# 8. Commerce
+# 8. Commerce (membership benefits)
 
 Implement membership-related commerce capabilities:
 
@@ -249,11 +249,69 @@ Reuse the existing payment/commerce infrastructure whenever possible.
 
 Do not create a second payment system.
 
+Note: this section is about benefits tied to a Fan/Supporter/Core Member
+level (discounts, early access), not a general-purpose store any fan can
+buy from. That is a separate, larger piece of work — see §8.1 Store below.
+
 ### Detailed specification
 
 Read:
 
 `docs/band-admin.md`
+
+---
+
+# 8.1 Store (general product sales — approved 2026-09-17)
+
+Implement product sales open to any fan (not membership-gated), per
+`docs/product.md` §4.1 Store, `docs/database.md` (Products,
+ProductVariants, Carts, CartItems, Orders, OrderItems,
+ShippingAddresses), `docs/payments.md`, and ADR-007
+(`docs/decisions.md`).
+
+### Requirements
+
+- Product with one or more variants (SKU); price and stock live on the
+  variant.
+- At most one active cart per user, scoped to one band at a time
+  (ADR-003, clarified 2026-09-17).
+- Checkout via Stripe Connect: each band needs an onboarded connected
+  Stripe account before its Store can accept checkout; SceneCore's 10%
+  commission is applied as `application_fee_amount` in the same
+  transaction (ADR-007) — this is separate infrastructure from the plain
+  Stripe Checkout Sessions Subscriptions (§7) already uses.
+- Shipping address captured per order; shipping cost calculation method
+  is an open product question (`docs/product.md` §7) — do not invent one
+  without confirming first.
+- Order snapshots product name, variant name, and price at purchase time
+  independent of later edits.
+- Inventory (per variant) never goes negative under concurrent purchases.
+
+### Implementation order
+
+1. Inspect existing Stripe integration (`StripeClient`,
+   `docs/architecture.md` §5) and Subscription flow as the pattern to
+   extend, not replace.
+2. Design and confirm the Stripe Connect band-onboarding flow (where in
+   Band Admin a band starts/completes onboarding, and how an
+   incomplete/restricted account blocks Store checkout).
+3. Implement migrations/models: `Product`, `ProductVariant`, `Cart`,
+   `CartItem`, `Order`, `OrderItem`, `ShippingAddress`.
+4. Implement Band Admin product/variant management.
+5. Implement the public Store (browse, add to cart, checkout).
+6. Implement Stripe Connect checkout session creation with
+   `application_fee_amount`.
+7. Implement Store-specific webhook handling, distinguishing connected-
+   account events from the platform-account events Subscriptions already
+   handles (ADR-007).
+8. Add tests: model, policy, request/system, concurrency (stock
+   decrement), webhook idempotency and authenticity.
+9. Update documentation if the implementation reveals a gap against
+   `docs/database.md`/`docs/payments.md`.
+
+Discogs Marketplace integration (`docs/product.md` §4.2) depends on this
+section existing first, plus its own separate scoping pass — do not fold
+Discogs-specific work into this implementation.
 
 ---
 

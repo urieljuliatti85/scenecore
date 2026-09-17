@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_072412) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_090204) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -126,13 +126,41 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_072412) do
     t.string "slug", null: false
     t.string "spotify_url"
     t.string "status", default: "pending", null: false
+    t.string "stripe_connect_account_id"
+    t.string "stripe_connect_status", default: "not_started", null: false
     t.datetime "updated_at", null: false
     t.string "website_url"
     t.string "youtube_url"
     t.index ["category_id"], name: "index_bands_on_category_id"
     t.index ["slug"], name: "index_bands_on_slug", unique: true
     t.index ["status"], name: "index_bands_on_status"
+    t.index ["stripe_connect_account_id"], name: "index_bands_on_stripe_connect_account_id", unique: true
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'approved'::character varying, 'rejected'::character varying, 'suspended'::character varying]::text[])", name: "bands_status_check"
+    t.check_constraint "stripe_connect_status::text = ANY (ARRAY['not_started'::character varying, 'onboarding'::character varying, 'active'::character varying, 'restricted'::character varying]::text[])", name: "bands_stripe_connect_status_check"
+  end
+
+  create_table "cart_items", force: :cascade do |t|
+    t.bigint "cart_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "product_variant_id", null: false
+    t.integer "quantity", default: 1, null: false
+    t.datetime "updated_at", null: false
+    t.index ["cart_id", "product_variant_id"], name: "index_cart_items_on_cart_id_and_product_variant_id", unique: true
+    t.index ["cart_id"], name: "index_cart_items_on_cart_id"
+    t.index ["product_variant_id"], name: "index_cart_items_on_product_variant_id"
+    t.check_constraint "quantity > 0", name: "cart_items_quantity_check"
+  end
+
+  create_table "carts", force: :cascade do |t|
+    t.bigint "band_id", null: false
+    t.datetime "created_at", null: false
+    t.string "status", default: "active", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["band_id"], name: "index_carts_on_band_id"
+    t.index ["user_id"], name: "index_carts_on_user_id"
+    t.index ["user_id"], name: "index_carts_on_user_id_when_active", unique: true, where: "((status)::text = 'active'::text)"
+    t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'converted'::character varying, 'abandoned'::character varying]::text[])", name: "carts_status_check"
   end
 
   create_table "categories", force: :cascade do |t|
@@ -269,6 +297,39 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_072412) do
     t.check_constraint "percentage >= 0 AND percentage <= 100", name: "merch_discounts_percentage_range_check"
   end
 
+  create_table "order_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "order_id", null: false
+    t.string "product_name", null: false
+    t.bigint "product_variant_id"
+    t.integer "quantity", null: false
+    t.integer "unit_price_cents", null: false
+    t.datetime "updated_at", null: false
+    t.string "variant_name", null: false
+    t.index ["order_id"], name: "index_order_items_on_order_id"
+    t.index ["product_variant_id"], name: "index_order_items_on_product_variant_id"
+    t.check_constraint "quantity > 0", name: "order_items_quantity_check"
+    t.check_constraint "unit_price_cents >= 0", name: "order_items_unit_price_cents_check"
+  end
+
+  create_table "orders", force: :cascade do |t|
+    t.bigint "band_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "platform_fee_cents", null: false
+    t.integer "shipping_cents", default: 0, null: false
+    t.string "status", default: "pending", null: false
+    t.string "stripe_checkout_session_id"
+    t.integer "subtotal_cents", null: false
+    t.integer "total_cents", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["band_id"], name: "index_orders_on_band_id"
+    t.index ["stripe_checkout_session_id"], name: "index_orders_on_stripe_checkout_session_id", unique: true
+    t.index ["user_id"], name: "index_orders_on_user_id"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'paid'::character varying, 'processing'::character varying, 'completed'::character varying, 'cancelled'::character varying, 'refunded'::character varying]::text[])", name: "orders_status_check"
+    t.check_constraint "subtotal_cents >= 0 AND shipping_cents >= 0 AND total_cents >= 0 AND platform_fee_cents >= 0", name: "orders_amounts_non_negative_check"
+  end
+
   create_table "platform_settings", force: :cascade do |t|
     t.boolean "band_signups_enabled", default: true, null: false
     t.datetime "created_at", null: false
@@ -336,6 +397,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_072412) do
     t.check_constraint "visibility::text = ANY (ARRAY['public'::character varying, 'followers'::character varying, 'fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[])", name: "posts_visibility_check"
   end
 
+  create_table "product_variants", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "price_cents", null: false
+    t.bigint "product_id", null: false
+    t.string "sku", null: false
+    t.integer "stock_quantity", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_id"], name: "index_product_variants_on_product_id"
+    t.index ["sku"], name: "index_product_variants_on_sku", unique: true
+    t.check_constraint "price_cents >= 0", name: "product_variants_price_cents_check"
+    t.check_constraint "stock_quantity >= 0", name: "product_variants_stock_quantity_check"
+  end
+
+  create_table "products", force: :cascade do |t|
+    t.bigint "band_id", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.string "status", default: "draft", null: false
+    t.datetime "updated_at", null: false
+    t.index ["band_id"], name: "index_products_on_band_id"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "products_status_check"
+  end
+
   create_table "ratings", force: :cascade do |t|
     t.bigint "album_id", null: false
     t.datetime "created_at", null: false
@@ -361,6 +447,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_072412) do
     t.index ["reporter_id"], name: "index_reports_on_reporter_id"
     t.check_constraint "char_length(reason) > 0", name: "reports_reason_not_blank"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'resolved'::character varying, 'dismissed'::character varying]::text[])", name: "reports_status_check"
+  end
+
+  create_table "shipping_addresses", force: :cascade do |t|
+    t.string "city", null: false
+    t.string "country", null: false
+    t.datetime "created_at", null: false
+    t.string "line1", null: false
+    t.string "line2"
+    t.bigint "order_id", null: false
+    t.string "postal_code", null: false
+    t.string "recipient_name", null: false
+    t.string "state", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_id"], name: "index_shipping_addresses_on_order_id", unique: true
   end
 
   create_table "stripe_webhook_events", force: :cascade do |t|
@@ -429,6 +529,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_072412) do
   add_foreign_key "band_memberships", "bands"
   add_foreign_key "band_memberships", "users"
   add_foreign_key "bands", "categories"
+  add_foreign_key "cart_items", "carts"
+  add_foreign_key "cart_items", "product_variants"
+  add_foreign_key "carts", "bands"
+  add_foreign_key "carts", "users"
   add_foreign_key "categories", "categories", column: "parent_id"
   add_foreign_key "comments", "posts"
   add_foreign_key "comments", "users"
@@ -445,14 +549,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_072412) do
   add_foreign_key "memberships", "bands"
   add_foreign_key "memberships", "users"
   add_foreign_key "merch_discounts", "bands"
+  add_foreign_key "order_items", "orders"
+  add_foreign_key "order_items", "product_variants", on_delete: :nullify
+  add_foreign_key "orders", "bands"
+  add_foreign_key "orders", "users"
   add_foreign_key "poll_options", "polls"
   add_foreign_key "poll_votes", "poll_options"
   add_foreign_key "poll_votes", "users"
   add_foreign_key "polls", "bands"
   add_foreign_key "posts", "bands"
+  add_foreign_key "product_variants", "products"
+  add_foreign_key "products", "bands"
   add_foreign_key "ratings", "albums"
   add_foreign_key "ratings", "users"
   add_foreign_key "reports", "users", column: "reporter_id"
+  add_foreign_key "shipping_addresses", "orders"
   add_foreign_key "subscriptions", "bands"
   add_foreign_key "subscriptions", "users"
   add_foreign_key "tracks", "albums"

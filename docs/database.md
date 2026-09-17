@@ -101,25 +101,255 @@ were not publicly accessible and published ones could be.
 
 ---
 
-## Orders
+## Products
+
+### Purpose
+
+A band's sellable item (merch, physical or digital) shown in its Store.
+
+### Attributes
+
+- id
+- band_id
+- name
+- description
+- status (draft/published — same gating pattern as Albums/Posts)
+- created_at
+- updated_at
 
 ### Rules
 
-- An order belongs to one band in the MVP.
+- A product belongs to one band.
+- A product has one or more variants (`ProductVariants`); a product with
+  no size/color options still has exactly one variant (e.g. "Default"),
+  so price and stock always live on the variant, never on the product
+  itself — no separate "simple product" code path.
+- Draft products are not publicly accessible, same visibility gating as
+  Albums/Posts.
+
+---
+
+## ProductVariants
+
+### Purpose
+
+One purchasable SKU of a product (e.g. "T-shirt — M — Black").
+
+### Attributes
+
+- id
+- product_id
+- sku (unique)
+- name (e.g. "M / Black")
+- price_cents
+- stock_quantity
+- created_at
+- updated_at
+
+### Rules
+
+- A variant belongs to one product.
+- Price and stock are per variant, not per product — two variants of the
+  same product may have different prices (e.g. a limited color costs
+  more) and independent stock counts.
+- `stock_quantity` must never go negative. Decrementing stock on purchase
+  and the variant's own row must be guarded against two concurrent
+  purchases both reading the same pre-decrement count (row-level lock or
+  an equivalent atomic update — decided at implementation time, not a
+  product decision).
+- A variant with `stock_quantity` 0 is shown as sold out, not hidden —
+  same "don't silently hide the existence of content" principle already
+  applied to locked content (`docs/product.md` §3 Journey 2/6 discussion).
+
+---
+
+## Carts
+
+### Purpose
+
+A fan's in-progress selection of variants from one band's Store, prior to
+checkout.
+
+### Attributes
+
+- id
+- user_id
+- band_id
+- status (active/converted/abandoned)
+- created_at
+- updated_at
+
+### Rules
+
+- A user has at most one `active` cart at a time, across the whole
+  platform (not per band) — ADR-003 already required a cart to hold only
+  one band's products; this adds that a second, parallel active cart with
+  a *different* band cannot coexist. Adding a product from a different
+  band while an active cart exists must either be blocked (surfaced to
+  the fan) or replace/clear the current cart — the exact UX is an
+  implementation-time decision, not a data-model one, but the invariant
+  "at most one active cart per user" is enforced at the database level
+  (unique partial index on `user_id` where `status = 'active'`).
+- A cart converts to exactly one Order at checkout and is not reused
+  afterward (`status` becomes `converted`).
+
+---
+
+## CartItems
+
+### Purpose
+
+One line item inside a Cart: a variant and a quantity.
+
+### Attributes
+
+- id
+- cart_id
+- product_variant_id
+- quantity
+- created_at
+- updated_at
+
+### Rules
+
+- A cart item's `product_variant_id` must belong to the same band as the
+  cart's `band_id` (enforced at the model/service layer, not just
+  assumed).
+- Quantity must be a positive integer and is checked against the
+  variant's current `stock_quantity` both when added to the cart and
+  again at checkout (stock can change between the two).
+
+---
+
+## Orders
+
+### Purpose
+
+A completed or in-progress purchase of one band's products by one fan.
+
+### Attributes
+
+- id
+- user_id
+- band_id
+- status (pending/paid/processing/completed/cancelled/refunded —
+  `docs/payments.md` Order States)
+- subtotal_cents
+- shipping_cents
+- total_cents
+- platform_fee_cents (10% of subtotal, per ADR-007 — recorded on the
+  order even though Stripe Connect computes the actual split, so the
+  band's payout is auditable independent of Stripe's own records)
+- stripe_checkout_session_id
+- created_at
+- updated_at
+
+### Rules
+
+- An order belongs to one band in the MVP (ADR-003).
 - Monetary values are stored in cents.
-- Order state must be explicit.
+- Order state must be explicit and, once payment-related, driven by
+  Stripe webhooks as the source of truth (`docs/payments.md`), not
+  inferred client-side.
+- An order is created from a Cart at checkout; it snapshots each item's
+  product name, variant name, and price at that moment (`OrderItems`,
+  below) so later edits to the product/variant never change a past
+  order's recorded price or description.
+- An order has exactly one `ShippingAddress` (`has_one`, the foreign key
+  lives on `shipping_addresses.order_id` — see below), required since
+  Store ships physical goods in this version; there is no digital-
+  delivery/no-shipping order type yet.
+
+---
+
+## OrderItems
+
+### Purpose
+
+A frozen snapshot of one Cart item at the moment an Order was placed.
+
+### Attributes
+
+- id
+- order_id
+- product_variant_id (kept for traceability; not used to re-derive
+  price/name)
+- product_name (snapshot)
+- variant_name (snapshot)
+- unit_price_cents (snapshot)
+- quantity
+- created_at
+- updated_at
+
+### Rules
+
+- Snapshotted fields are never recomputed from the live `ProductVariant`
+  after the order is placed, even if the product is later renamed,
+  repriced, or deleted.
+
+---
+
+## ShippingAddresses
+
+### Purpose
+
+The delivery address for one Order.
+
+### Attributes
+
+- id
+- order_id
+- recipient_name
+- line1
+- line2
+- city
+- state
+- postal_code
+- country
+- created_at
+- updated_at
+
+### Rules
+
+- Belongs to exactly one order (addresses are captured per order, not
+  reused from a stored address book in this version — a fan re-enters
+  the address each purchase).
+- Shipping cost calculation method (flat rate per band, weight/zone-based,
+  or a carrier-rate API) is not yet decided — an open question, not a
+  data-model blocker, since `shipping_cents` on Order is provider-agnostic.
 
 ---
 
 ## Relationships
 
 User
-  └── has_many BandMemberships
+  ├── has_many BandMemberships
+  ├── has_many Carts
+  └── has_many Orders
 
 Band
   ├── has_many BandMemberships
   ├── has_many Albums
-  └── has_many Products
+  ├── has_many Products
+  ├── has_many Carts
+  └── has_many Orders
 
 Album
   └── (links out to Spotify; no Tracks association since 2026-09-16)
+
+Product
+  └── has_many ProductVariants
+
+ProductVariant
+  └── has_many CartItems, OrderItems (via product_variant_id)
+
+Cart
+  ├── belongs_to User
+  ├── belongs_to Band
+  └── has_many CartItems
+
+Order
+  ├── belongs_to User
+  ├── belongs_to Band
+  ├── has_many OrderItems
+  └── has_one ShippingAddress

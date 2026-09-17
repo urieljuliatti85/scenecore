@@ -73,6 +73,21 @@ RSpec.describe "Stripe webhooks", type: :request do
       expect(subscription.reload.status).to eq("cancelled")
     end
 
+    it "syncs a band's connect status for account.updated (ADR-007)" do
+      band = create(:band, stripe_connect_account_id: "acct_1", stripe_connect_status: :onboarding)
+      account = instance_double(
+        Stripe::Account, id: "acct_1", charges_enabled: true, payouts_enabled: true,
+        requirements: Stripe::StripeObject.construct_from(disabled_reason: nil)
+      )
+      event = instance_double(Stripe::Event, id: "evt_connect_1", type: "account.updated",
+        data: instance_double(Stripe::Event::Data, object: account))
+
+      post_webhook(event)
+
+      expect(response).to have_http_status(:ok)
+      expect(band.reload).to be_stripe_connect_active
+    end
+
     it "returns 200 and records the event for an event type it doesn't handle" do
       event = instance_double(Stripe::Event, id: "evt_4", type: "invoice.paid",
         data: instance_double(Stripe::Event::Data, object: instance_double(Stripe::StripeObject)))
