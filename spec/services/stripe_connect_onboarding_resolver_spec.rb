@@ -32,8 +32,6 @@ RSpec.describe StripeConnectOnboardingResolver do
       expect(band).to be_stripe_connect_onboarding
     end
 
-    # Stripe rejects v1 account creation for new integrations, and the v2
-    # shape replaces `type: "express"` with three independent dimensions.
     it "creates the account through the v2 API using the band's country" do
       band = create(:band, country_code: "PT", stripe_connect_account_id: nil)
       allow(accounts_service).to receive(:create).and_return(double(id: "acct_new"))
@@ -55,21 +53,18 @@ RSpec.describe StripeConnectOnboardingResolver do
       )
     end
 
-    # SceneCore is merchant of record and the band receives transfers, so
-    # the account needs the transfer capability and not card_payments —
-    # requesting the latter would lengthen onboarding for something the
-    # band never uses.
-    it "requests the transfer capability rather than card payments" do
+    it "requests merchant card payments and recipient transfers" do
       band = create(:band, stripe_connect_account_id: nil)
       allow(accounts_service).to receive(:create).and_return(double(id: "acct_new"))
 
       resolve(band)
 
       expect(accounts_service).to have_received(:create) do |args|
+        merchant = args[:configuration][:merchant]
         recipient = args[:configuration][:recipient]
 
+        expect(merchant[:capabilities][:card_payments]).to eq(requested: true)
         expect(recipient[:capabilities][:stripe_balance][:stripe_transfers]).to eq(requested: true)
-        expect(args[:configuration]).not_to have_key(:merchant)
       end
     end
 
@@ -83,7 +78,7 @@ RSpec.describe StripeConnectOnboardingResolver do
       expect(account_links_service).to have_received(:create).with(hash_including(account: "acct_existing"))
     end
 
-    it "requests an onboarding link with the given return and refresh urls" do
+    it "requests an onboarding link for merchant and recipient with the given return and refresh urls" do
       band = create(:band, stripe_connect_account_id: "acct_existing")
 
       resolve(band)
@@ -92,15 +87,12 @@ RSpec.describe StripeConnectOnboardingResolver do
         onboarding = args[:use_case][:account_onboarding]
 
         expect(args[:use_case][:type]).to eq("account_onboarding")
-        expect(onboarding[:configurations]).to eq([ "recipient" ])
+        expect(onboarding[:configurations]).to eq([ "merchant", "recipient" ])
         expect(onboarding[:return_url]).to eq("https://app.test/return")
         expect(onboarding[:refresh_url]).to eq("https://app.test/refresh")
       end
     end
 
-    # A band that already finished onboarding may revisit the link (e.g.
-    # to update details); that must not knock a live account back to
-    # "onboarding" and close its store.
     it "does not downgrade an already active status" do
       band = create(:band, stripe_connect_account_id: "acct_existing", stripe_connect_status: :active)
 
