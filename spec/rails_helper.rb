@@ -19,12 +19,26 @@ require 'selenium-webdriver'
 # what's actually known about it) — kept because it's harmless, not
 # because it was proven to help. --no-sandbox is required for Chrome to
 # run at all as root in a container.
+#
+# --window-size is explicit because without it, --headless=new on this
+# GitHub Actions runner launches a small default viewport (confirmed via
+# a failure screenshot: 780x437) that clips controls below the fold —
+# in band_member_invite_spec's case, the "Add member" submit button.
+# --headless=new appears to silently drop a click on an element outside
+# the visible viewport instead of scrolling it into view first, which
+# matches the flake's exact symptom (the click never reaches the server
+# at all). This mirrors the fix already applied to
+# ci_headless_chrome_mobile/mobile_navigation_spec for the same class of
+# problem — a real window size fixed at launch instead of a runtime
+# resize, which proved unreliable under --headless=new in this
+# environment.
 Capybara.register_driver :ci_headless_chrome do |app|
   options = Selenium::WebDriver::Chrome::Options.new
   options.add_argument("--headless=new")
   options.add_argument("--no-sandbox")
   options.add_argument("--disable-dev-shm-usage")
   options.add_argument("--disable-gpu")
+  options.add_argument("--window-size=1280,1024")
   Capybara::Selenium::Driver.new(app, browser: :chrome, options: options)
 end
 
