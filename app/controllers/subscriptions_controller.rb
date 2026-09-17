@@ -43,19 +43,14 @@ class SubscriptionsController < ApplicationController
     @subscription = @band.subscriptions.find_by!(user: current_user)
     authorize @subscription, :cancel?, policy_class: SubscriptionPolicy
 
-    if @subscription.stripe_subscription_id.present?
-      StripeClient.instance.v1.subscriptions.cancel(@subscription.stripe_subscription_id)
-    end
-
     # The customer.subscription.deleted webhook is the source of truth for
-    # local status (see StripeSubscriptionDeletedHandler) — this just gives
-    # the user immediate feedback instead of waiting on webhook delivery.
-    @subscription.update!(status: :cancelled)
-    membership = @band.memberships.find_by(user: current_user)
-    membership&.update!(status: :cancelled)
+    # local status (see StripeSubscriptionDeletedHandler) — the local
+    # updates inside the canceller just give the user immediate feedback
+    # instead of waiting on webhook delivery.
+    SubscriptionCanceller.call(band: @band, user: current_user)
 
     redirect_to public_band_path(@band.slug), notice: "Your subscription to #{@band.name} has been cancelled."
-  rescue Stripe::StripeError => e
+  rescue SubscriptionCanceller::Error => e
     redirect_to public_band_path(@band.slug), alert: "Could not cancel your subscription: #{e.message}"
   end
 
