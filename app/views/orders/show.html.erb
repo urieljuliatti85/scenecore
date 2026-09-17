@@ -1,0 +1,75 @@
+<% content_for :title, "Order ##{@order.id} — SceneCore" %>
+
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-2xl mx-auto">
+  <%= link_to orders_path, class: "text-sm text-neutral-400 hover:text-white transition" do %>
+    &larr; Your orders
+  <% end %>
+
+  <div class="mt-4 flex flex-wrap items-center justify-between gap-3 mb-2">
+    <h1 class="text-3xl font-extrabold tracking-tight">Order #<%= @order.id %></h1>
+    <%= render "status_badge", order: @order %>
+  </div>
+
+  <p class="text-neutral-400 mb-8">
+    From <%= link_to @order.band.name, public_band_path(@order.band.slug), class: "text-neutral-300 hover:text-white transition" %>
+    · <%= @order.created_at.strftime("%d %b %Y") %>
+  </p>
+
+  <%# A fan landing here straight from Stripe can arrive before the webhook
+      has been delivered, so a pending order is explained rather than left
+      looking like a failed payment. %>
+  <% if @order.pending? %>
+    <p class="rounded-xl border border-neutral-800 bg-neutral-900/60 text-sm text-neutral-400 p-4 mb-6">
+      We're waiting for Stripe to confirm this payment. This page updates once it does.
+    </p>
+  <% end %>
+
+  <div class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 mb-6">
+    <ul class="flex flex-col gap-2 text-sm mb-4">
+      <% @order.order_items.each do |item| %>
+        <li class="flex items-start justify-between gap-4">
+          <span class="text-neutral-300 min-w-0">
+            <%= item.quantity %>&times; <%= item.product_name %>
+            <span class="text-neutral-500">(<%= item.variant_name %>)</span>
+          </span>
+          <span class="text-white shrink-0">
+            <%= number_to_currency(item.quantity * item.unit_price_cents / 100.0) %>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+
+    <dl class="flex flex-col gap-2 text-sm border-t border-neutral-800 pt-4">
+      <div class="flex items-center justify-between">
+        <dt class="text-neutral-400">Subtotal</dt>
+        <dd class="text-white"><%= number_to_currency(@order.subtotal_cents / 100.0) %></dd>
+      </div>
+      <div class="flex items-center justify-between">
+        <dt class="text-neutral-400">Shipping</dt>
+        <dd class="text-white">
+          <%= @order.shipping_cents.zero? ? "Free" : number_to_currency(@order.shipping_cents / 100.0) %>
+        </dd>
+      </div>
+      <div class="flex items-center justify-between pt-3 mt-1 border-t border-neutral-800">
+        <dt class="font-semibold text-white">Total</dt>
+        <dd class="text-xl font-extrabold text-white"><%= number_to_currency(@order.total_cents / 100.0) %></dd>
+      </div>
+    </dl>
+  </div>
+
+  <% if @order.shipping_address %>
+    <div class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
+      <h2 class="text-sm font-semibold text-white mb-3">Shipping to</h2>
+      <address class="text-sm text-neutral-400 not-italic leading-relaxed">
+        <%= @order.shipping_address.recipient_name %><br>
+        <%= @order.shipping_address.line1 %><br>
+        <% if @order.shipping_address.line2.present? %>
+          <%= @order.shipping_address.line2 %><br>
+        <% end %>
+        <%= @order.shipping_address.city %>, <%= @order.shipping_address.state %>
+        <%= @order.shipping_address.postal_code %><br>
+        <%= @order.shipping_address.country %>
+      </address>
+    </div>
+  <% end %>
+</section>

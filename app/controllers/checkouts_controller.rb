@@ -5,12 +5,15 @@ class CheckoutsController < ApplicationController
     @shipping_address = ShippingAddress.new
   end
 
-  # Turns the cart into a pending order with its address. Payment is not
-  # wired yet (roadmap 8.1 step 6), so the order stops at pending and no
-  # stock is decremented — that belongs with the Stripe Connect session,
-  # where a failed payment must not have already consumed inventory.
+  # Turns the cart into a pending order and hands the fan to Stripe. The
+  # order stays pending and no stock moves until the webhook confirms
+  # payment — a failed or abandoned checkout must not consume inventory.
   def create
     @shipping_address = ShippingAddress.new(shipping_address_params)
+
+    unless @cart.band.store_checkout_ready?
+      return redirect_to cart_path, alert: "#{@cart.band.name} can't take payments yet."
+    end
 
     order = nil
     ActiveRecord::Base.transaction do
@@ -18,12 +21,21 @@ class CheckoutsController < ApplicationController
       order.save!
       @shipping_address.order = order
       @shipping_address.save!
-      @cart.converted!
     end
 
-    redirect_to cart_path, notice: "Order ##{order.id} placed. Payment is not available yet."
+    url = StoreCheckoutSessionCreator.call(
+      order,
+      success_url: order_url(order),
+      cancel_url: cart_url
+    )
+
+    @cart.converted!
+    redirect_to url, allow_other_host: true
   rescue ActiveRecord::RecordInvalid
     render :new, status: :unprocessable_entity
+  rescue StoreCheckoutSessionCreator::Error => e
+    order&.destroy
+    redirect_to cart_path, alert: e.message
   end
 
   private

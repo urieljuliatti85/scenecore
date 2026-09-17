@@ -190,6 +190,7 @@ Rails.application.routes.draw do
     delete :remove_item
   end
   resource :checkout, only: [ :new, :create ], controller: "checkouts"
+  resources :orders, only: [ :index, :show ]
 
   get "/about", to: "pages#about", as: :about
   get "/how-it-works", to: "pages#how_it_works", as: :how_it_works

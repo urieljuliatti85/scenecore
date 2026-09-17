@@ -31,7 +31,15 @@ class Band < ApplicationRecord
        default: :not_started, validate: true, prefix: :stripe_connect
 
   scope :approved, -> { where(status: :approved) }
+
   scope :explicitly_featured, -> { approved.where(featured: true) }
+
+  # A band can only take Store money once Stripe has cleared its connected
+  # account (ADR-007). An onboarding or restricted account can still hold a
+  # Connect id, so the id alone is not enough to charge against.
+  def store_checkout_ready?
+    stripe_connect_active? && stripe_connect_account_id.present?
+  end
 
   # The home page hero. A platform administrator may pin one band via
   # Band#feature!; with nothing pinned this falls back to the most

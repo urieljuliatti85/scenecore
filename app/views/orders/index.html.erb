@@ -1,0 +1,7 @@
+<% content_for :title, "Your orders — SceneCore" %>
+
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-2xl mx-auto">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-8">Your orders</h1>
+
+  <%= render "orders/list", orders: @orders %>
+</section>
