@@ -63,7 +63,11 @@ RSpec.describe "Memberships", type: :request do
       other_band = create(:band)
       admin = create(:user)
       create(:band_membership, :administrator, band: band, user: admin)
-      other_bands_supporter = create(:membership, :supporter, band: other_band)
+      # A distinct name, because the factory gives every user the same one
+      # and the header now renders the signed-in admin's name — matching on
+      # the shared default would flag the header as a leak.
+      other_bands_supporter = create(:membership, :supporter, band: other_band,
+                                                             user: create(:user, name: "Other Band Supporter"))
       sign_in admin
 
       get band_memberships_path(band)
