@@ -5,7 +5,7 @@ class DirectMessageThreadsController < ApplicationController
   def index
     authorize @band, :show?, policy_class: BandPolicy
 
-    @threads = @band.direct_message_threads.includes(:user).order(updated_at: :desc)
+    @threads = @band.direct_message_threads.includes(:user, :direct_messages).order(updated_at: :desc)
   end
 
   def show

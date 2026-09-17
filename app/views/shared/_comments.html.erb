@@ -1,7 +1,7 @@
 <div class="mt-4 pt-4 border-t border-neutral-800">
   <% if post.comments.any? %>
     <ul class="flex flex-col gap-3">
-      <% post.comments.order(created_at: :asc).each do |comment| %>
+      <% post.comments.each do |comment| %>
         <li class="flex items-start justify-between gap-3">
           <div class="flex-1">
             <p class="text-sm text-neutral-300">

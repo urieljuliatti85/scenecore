@@ -16,7 +16,7 @@
               <p class="font-semibold text-white"><%= thread.user.name %></p>
               <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-2 py-0.5"><%= thread.status %></span>
             </div>
-            <% if (last_message = thread.direct_messages.order(created_at: :desc).first) %>
+            <% if (last_message = thread.direct_messages.max_by(&:created_at)) %>
               <p class="text-sm text-neutral-500 mt-1 truncate">"<%= last_message.body %>"</p>
             <% end %>
           <% end %>
