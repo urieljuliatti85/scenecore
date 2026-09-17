@@ -115,5 +115,30 @@ RSpec.describe AttachmentVisibility do
         expect(described_class.visible?(post, user: user)).to be true
       end
     end
+
+    context "with a Product" do
+      it "is visible to anyone when published and the band is approved" do
+        band = create(:band, :approved)
+        product = create(:product, :published, band: band)
+
+        expect(described_class.visible?(product, user: nil)).to be true
+      end
+
+      it "is not visible to a visitor when a draft" do
+        band = create(:band, :approved)
+        product = create(:product, band: band)
+
+        expect(described_class.visible?(product, user: nil)).to be false
+      end
+
+      it "is visible to a band member even when a draft" do
+        band = create(:band, :approved)
+        product = create(:product, band: band)
+        user = create(:user)
+        create(:band_membership, band: band, user: user)
+
+        expect(described_class.visible?(product, user: user)).to be true
+      end
+    end
   end
 end

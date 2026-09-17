@@ -21,6 +21,8 @@ module AttachmentVisibility
       record.published? && record.band.approved?
     when Post
       record.published? && record.band.approved? && record.visible_to?(user)
+    when Product
+      record.published? && record.band.approved?
     else
       false
     end
@@ -30,7 +32,7 @@ module AttachmentVisibility
     case record
     when Band
       record
-    when Album, Post
+    when Album, Post, Product
       record.band
     end
   end
