@@ -1,52 +1,52 @@
 # Membership, Band Admin & Administration
 
-## Objetivo
+## Objective
 
-Implementar no SceneCore um sistema de memberships para bandas independentes, composto por três planos:
+Implement a membership system in SceneCore for independent bands, made up of three plans:
 
 - Fan
 - Supporter
 - Core Member
 
-O sistema também deve possuir dois níveis administrativos distintos:
+The system must also have two distinct administrative levels:
 
-1. **Band Admin** — administração de uma banda específica.
-2. **SceneCore Administrator** — administração global da plataforma.
+1. **Band Admin** — administration of a specific band.
+2. **SceneCore Administrator** — platform-wide administration.
 
-A implementação deve preservar uma separação clara entre:
+The implementation must preserve a clear separation between:
 
-- o que o fã pode acessar;
-- o que a banda pode oferecer;
-- o que o administrador da plataforma pode administrar.
+- what the fan can access;
+- what the band can offer;
+- what the platform administrator can administer.
 
-Não criar três painéis administrativos separados para os três planos.
+Do not create three separate admin panels for the three plans.
 
-Deve existir **um único Band Admin**, com funcionalidades relacionadas aos recursos disponíveis para aquela banda.
-
----
-
-# 1. Regras fundamentais
-
-Antes de escrever código:
-
-1. Inspecione a estrutura atual da aplicação.
-2. Identifique como usuários, bandas, autenticação, pagamentos e conteúdo estão atualmente implementados.
-3. Verifique os modelos existentes antes de criar novos.
-4. Reutilize estruturas existentes quando fizer sentido.
-5. Não crie abstrações prematuras.
-6. Não introduza funcionalidades que não estejam especificadas neste documento.
-7. Não implemente lógica duplicada para cada plano.
-8. Use regras de acesso baseadas em membership/benefits.
-9. Mantenha a lógica de negócio fora dos controllers.
-10. Prefira modelos, policies e services simples.
-11. Não altere funcionalidades existentes sem necessidade.
-12. Antes de implementar uma mudança estrutural, explique o impacto e verifique se ela é compatível com a arquitetura existente.
+There must be **a single Band Admin**, with features tied to the resources available to that band.
 
 ---
 
-# 2. Hierarquia do produto
+# 1. Fundamental rules
 
-A arquitetura conceitual deve ser:
+Before writing code:
+
+1. Inspect the application's current structure.
+2. Identify how users, bands, authentication, payments, and content are currently implemented.
+3. Check the existing models before creating new ones.
+4. Reuse existing structures where it makes sense.
+5. Do not create premature abstractions.
+6. Do not introduce features that are not specified in this document.
+7. Do not implement duplicated logic for each plan.
+8. Use access rules based on membership/benefits.
+9. Keep business logic out of the controllers.
+10. Prefer simple models, policies, and services.
+11. Do not change existing features without need.
+12. Before implementing a structural change, explain the impact and verify that it is compatible with the existing architecture.
+
+---
+
+# 2. Product hierarchy
+
+The conceptual architecture must be:
 
 ```text
 SceneCore
@@ -63,11 +63,11 @@ SceneCore
     └── SceneCore Administrator
 ```
 
-Os memberships pertencem ao relacionamento entre usuário e banda.
+Memberships belong to the relationship between a user and a band.
 
-Um usuário pode ter memberships diferentes em bandas diferentes.
+A user can hold different memberships in different bands.
 
-Exemplo:
+Example:
 
 ```text
 User
@@ -76,119 +76,119 @@ User
  └── Band C → Core Member
 ```
 
-Não assumir que o plano é uma propriedade global do usuário.
+Do not assume the plan is a global property of the user.
 
 ---
 
 # 3. Membership Plans
 
-Os três planos iniciais são:
+The three initial plans are:
 
 ## Fan
 
-Preço:
+Price:
 
 ```text
 US$ 3
 ```
 
-Também deve existir representação em dólar quando a interface ou configuração exigir conversão.
+A dollar representation must also exist wherever the interface or configuration requires conversion.
 
-Benefícios:
+Benefits:
 
-- Feed exclusivo da banda
-- Notícias antes do público geral
-- Fotos e pequenos vídeos de bastidores
-- Algumas demos e versões alternativas
-- Enquetes sobre repertório, capas ou merchandising
-- Badge Fan no perfil
-- Acesso à comunidade de assinantes
+- Exclusive band feed
+- News ahead of the general public
+- Behind-the-scenes photos and short videos
+- Some demos and alternative versions
+- Polls about setlists, cover art, or merchandising
+- Fan badge on the profile
+- Access to the subscriber community
 
-Promessa:
+Promise:
 
-> Fique mais perto da banda.
+> Get closer to the band.
 
 ---
 
 ## Supporter
 
-Preço:
+Price:
 
 ```text
 US$ 5
 ```
 
-Benefícios:
+Benefits:
 
-- Todos os benefícios do Fan
-- Lançamentos antecipados
-- Demos completas e gravações de ensaio
-- Diário de composição e produção
-- Vídeos e transmissões exclusivas
-- Nome nos créditos digitais como apoiador
-- Desconto em merchandising e ingressos
-- Acesso antecipado às vendas
+- All Fan benefits
+- Early releases
+- Full demos and rehearsal recordings
+- Songwriting and production journal
+- Exclusive videos and streams
+- Name in the digital credits as a supporter
+- Discount on merchandising and tickets
+- Early access to sales
 
-Promessa:
+Promise:
 
-> Apoie a música e acompanhe sua criação.
+> Support the music and follow how it is made.
 
 ---
 
 ## Core Member
 
-Preço:
+Price:
 
 ```text
 US$ 8
 ```
 
-Benefícios:
+Benefits:
 
-- Todos os benefícios do Supporter
-- Lives privadas periódicas
-- Sessões de perguntas e respostas
-- Conteúdos raros: arquivos, gravações antigas e versões inéditas
-- Prioridade em ingressos e produtos limitados
-- Descontos maiores
-- Nome em uma página permanente de apoiadores
-- Créditos em encartes ou lançamentos selecionados
-- Sorteios de itens autografados
-- Mensagem direto para a banda
-- Possibilidade de votar em decisões previamente escolhidas pela banda
-- Acesso a encontros virtuais ou presenciais especiais
+- All Supporter benefits
+- Periodic private livestreams
+- Q&A sessions
+- Rare content: archives, old recordings, and unreleased versions
+- Priority on tickets and limited products
+- Larger discounts
+- Name on a permanent supporters page
+- Credits in liner notes or selected releases
+- Giveaways of signed items
+- Direct messaging to the band
+- The ability to vote on decisions the band has chosen in advance
+- Access to special virtual or in-person meetups
 
-Promessa:
+Promise:
 
-> Faça parte do núcleo da banda.
+> Be part of the band's core.
 
 ---
 
-# 4. Progressão dos planos
+# 4. Plan progression
 
-A progressão conceitual é:
+The conceptual progression is:
 
 ```text
 Fan
   ↓
-acompanha
+follows
 
 Supporter
   ↓
-sustenta e participa
+sustains and takes part
 
 Core Member
   ↓
-pertence ao núcleo
+belongs to the core
 ```
 
-Essa progressão deve aparecer na experiência do usuário.
+This progression must show up in the user experience.
 
-Entretanto, não duplicar funcionalidades entre planos.
+However, do not duplicate features across plans.
 
-Um Core Member deve herdar os benefícios dos níveis anteriores através da hierarquia de benefícios.
+A Core Member must inherit the benefits of the lower levels through the benefits hierarchy.
 
-Evitar implementações como:
+Avoid implementations such as:
 
 ```ruby
 if fan?
@@ -196,17 +196,17 @@ elsif supporter?
 elsif core_member?
 ```
 
-espalhadas pela aplicação.
+scattered across the application.
 
-Preferir uma regra centralizada de benefícios/permissões.
+Prefer a centralized benefits/permissions rule.
 
 ---
 
 # 5. Benefits
 
-Criar uma estrutura que permita representar benefícios de membership.
+Create a structure that can represent membership benefits.
 
-Exemplo conceitual:
+Conceptual example:
 
 ```text
 Fan
@@ -238,9 +238,9 @@ Core Member
 └── special_meetings
 ```
 
-Os benefícios de níveis inferiores devem ser herdados.
+Benefits from lower levels must be inherited.
 
-Exemplo:
+Example:
 
 ```text
 Core Member
@@ -250,29 +250,29 @@ Supporter benefits
 Fan benefits
 ```
 
-Não duplicar registros desnecessariamente.
+Do not duplicate records unnecessarily.
 
 ---
 
 # 6. Band Admin
 
-Não criar um painel administrativo diferente para cada membership.
+Do not create a different admin panel for each membership.
 
-Criar:
+Create:
 
 ```text
 Band Admin
 ```
 
-A banda administra sua própria comunidade, conteúdo, memberships e benefícios.
+The band administers its own community, content, memberships, and benefits.
 
-A banda nunca deve conseguir administrar dados de outra banda.
+A band must never be able to administer another band's data.
 
 ---
 
 # 7. Band Admin Navigation
 
-A navegação conceitual deve ser:
+The conceptual navigation must be:
 
 ```text
 Dashboard
@@ -334,59 +334,59 @@ Analytics
 Settings
 ```
 
-Não implementar todas as telas automaticamente se elas ainda não forem necessárias para o MVP.
+Do not implement every screen automatically if it is not yet required for the MVP.
 
-Primeiro verificar o ROADMAP e o estado atual do projeto.
+Check the ROADMAP and the project's current state first.
 
 ---
 
 # 8. Band Admin — Dashboard
 
-O Dashboard deve permitir que a banda compreenda rapidamente sua comunidade.
+The Dashboard must let the band quickly understand its community.
 
-Informações possíveis:
+Possible information:
 
-- quantidade de Fans;
-- quantidade de Supporters;
-- quantidade de Core Members;
-- receita recorrente;
-- novos membros;
-- atividade recente;
-- visualizações;
-- comentários;
-- participação em enquetes.
+- number of Fans;
+- number of Supporters;
+- number of Core Members;
+- recurring revenue;
+- new members;
+- recent activity;
+- views;
+- comments;
+- poll participation.
 
-Exemplo conceitual:
+Conceptual example:
 
 ```text
 1,248 Fans
 184 Supporters
 37 Core Members
 
-R$ 12.480 / mês
+R$ 12.480 / month
 
-+42 membros este mês
++42 members this month
 ```
 
-Não inventar métricas adicionais sem necessidade.
+Do not invent additional metrics without need.
 
 ---
 
 # 9. Content Management
 
-A banda deve conseguir criar conteúdo.
+The band must be able to create content.
 
-Tipos iniciais:
+Initial types:
 
-- texto;
-- foto;
-- vídeo;
-- áudio;
-- enquete.
+- text;
+- photo;
+- video;
+- audio;
+- poll.
 
-Cada conteúdo deve possuir uma política de visibilidade.
+Every piece of content must have a visibility policy.
 
-Exemplo:
+Example:
 
 ```text
 Visibility:
@@ -397,15 +397,15 @@ Supporter
 Core Member
 ```
 
-O acesso deve ser determinado pelo membership do usuário naquela banda.
+Access must be determined by the user's membership in that band.
 
 ---
 
 # 10. Exclusive Feed
 
-O Band Admin deve permitir que a banda publique conteúdo exclusivo.
+Band Admin must let the band publish exclusive content.
 
-Exemplo:
+Example:
 
 ```text
 New Post
@@ -420,29 +420,29 @@ Visibility:
 Fan
 ```
 
-Ou:
+Or:
 
 ```text
 Visibility:
 Supporter
 ```
 
-Ou:
+Or:
 
 ```text
 Visibility:
 Core Member
 ```
 
-A banda deve conseguir controlar a audiência do conteúdo.
+The band must be able to control the content's audience.
 
 ---
 
 # 11. Polls
 
-A banda deve poder criar enquetes.
+The band must be able to create polls.
 
-Exemplo:
+Example:
 
 ```text
 Question:
@@ -460,51 +460,51 @@ Audience:
 Core Members
 ```
 
-A banda deve poder definir:
+The band must be able to define:
 
-- audiência;
-- opções;
-- duração;
-- quando os resultados aparecem.
+- audience;
+- options;
+- duration;
+- when the results appear.
 
-As votações do Core Member são **decisões previamente escolhidas pela banda**.
+Core Member votes are **decisions the band has chosen in advance**.
 
-Não implementar um sistema no qual Core Members possam votar arbitrariamente em qualquer aspecto da banda.
+Do not implement a system in which Core Members can vote arbitrarily on any aspect of the band.
 
-A banda decide quais decisões podem ser submetidas à votação.
+The band decides which decisions can be put to a vote.
 
 ---
 
 # 12. Releases
 
-Supporters e Core Members podem receber lançamentos antecipadamente.
+Supporters and Core Members can receive releases early.
 
-O sistema deve suportar janelas de acesso.
+The system must support access windows.
 
-Exemplo:
+Example:
 
 ```text
 Core Member
-10/10
+October 10
 
 Supporter
-15/10
+October 15
 
 Public
-20/10
+October 20
 ```
 
-A implementação deve evitar duplicação do arquivo ou conteúdo.
+The implementation must avoid duplicating the file or the content.
 
-Preferir um único release com regras de disponibilidade.
+Prefer a single release with availability rules.
 
 ---
 
 # 13. Composition Journal
 
-Supporters e Core Members podem receber acesso ao processo criativo.
+Supporters and Core Members can be given access to the creative process.
 
-A banda deve poder criar:
+The band must be able to create:
 
 ```text
 Composition Journal Entry
@@ -524,32 +524,32 @@ Visibility:
 Supporter
 ```
 
-Não criar um CMS complexo sem necessidade.
+Do not build a complex CMS without need.
 
 ---
 
 # 14. Exclusive Lives
 
-Supporters podem ter acesso a lives exclusivas.
+Supporters can have access to exclusive livestreams.
 
-Core Members também podem participar de lives privadas.
+Core Members can also join private livestreams.
 
-A banda deve poder:
+The band must be able to:
 
-- criar uma transmissão;
-- definir data;
-- definir horário;
-- definir audiência;
-- publicar descrição;
-- controlar replay quando aplicável.
+- create a stream;
+- set the date;
+- set the time;
+- set the audience;
+- publish a description;
+- control the replay where applicable.
 
-Exemplo:
+Example:
 
 ```text
 Listening Session
 
 Date:
-20/10/2026
+October 20, 2026
 
 Audience:
 Supporter + Core Member
@@ -559,9 +559,9 @@ Supporter + Core Member
 
 # 15. Core Sessions
 
-Core Members possuem acesso a encontros especiais.
+Core Members have access to special meetups.
 
-Tipos possíveis:
+Possible types:
 
 ```text
 Video
@@ -571,16 +571,16 @@ Listening Party
 Meet & Greet
 ```
 
-A banda pode definir:
+The band can define:
 
-- data;
-- horário;
-- tipo;
-- participantes;
-- limite de vagas;
-- descrição.
+- date;
+- time;
+- type;
+- participants;
+- seat limit;
+- description.
 
-Exemplo:
+Example:
 
 ```text
 Private Listening Session
@@ -591,76 +591,76 @@ Private Listening Session
 2 available
 ```
 
-Não implementar um sistema completo de eventos/tickets se isso não fizer parte do escopo atual.
+Do not implement a full events/tickets system if that is not part of the current scope.
 
 ---
 
 # 16. Direct Messages
 
-Core Members podem enviar mensagens diretamente para a banda.
+Core Members can message the band directly.
 
-O Band Admin deve possuir uma caixa de entrada.
+Band Admin must have an inbox.
 
-Exemplo:
+Example:
 
 ```text
 Messages
 
 Carlos
-"Quando vocês pretendem lançar..."
+"When are you planning to release..."
 
 Ana
-"Tenho uma sugestão..."
+"I have a suggestion..."
 
 Pedro
-"Gostaria de perguntar..."
+"I'd like to ask..."
 ```
 
-A banda deve poder:
+The band must be able to:
 
-- visualizar;
-- responder;
-- arquivar;
-- bloquear;
-- moderar.
+- view;
+- reply;
+- archive;
+- block;
+- moderate.
 
-Importante:
+Important:
 
-O benefício significa que o Core Member pode enviar mensagem diretamente à banda.
+The benefit means a Core Member can send a message directly to the band.
 
-Não significa que a banda é obrigada a responder imediatamente ou individualmente.
+It does not mean the band is required to reply immediately or individually.
 
-Considerar limites e mecanismos anti-abuso antes da implementação.
+Consider rate limits and anti-abuse mechanisms before implementing.
 
-Não criar um sistema de chat complexo sem necessidade.
+Do not build a complex chat system without need.
 
 ---
 
 # 17. Credits
 
-Supporters podem aparecer em créditos digitais.
+Supporters can appear in digital credits.
 
-Core Members podem aparecer também em:
+Core Members can also appear in:
 
-- página permanente de apoiadores;
-- encartes;
-- lançamentos selecionados.
+- the permanent supporters page;
+- liner notes;
+- selected releases.
 
-O sistema deve permitir que a banda controle onde os nomes aparecem.
+The system must let the band control where the names appear.
 
-Não assumir que todo lançamento deve necessariamente exibir todos os membros.
+Do not assume every release must necessarily list every member.
 
 ---
 
 # 18. Merchandising
 
-Supporters possuem desconto.
+Supporters get a discount.
 
-Core Members possuem desconto maior.
+Core Members get a larger discount.
 
-O Band Admin deve permitir configurar regras de desconto.
+Band Admin must allow discount rules to be configured.
 
-Exemplo:
+Example:
 
 ```text
 Fan
@@ -673,17 +673,17 @@ Core Member
 20%
 ```
 
-Os valores devem ser configuráveis.
+The values must be configurable.
 
-Não hardcodar percentuais se a arquitetura atual permitir configuração.
+Do not hardcode percentages if the current architecture allows configuration.
 
 ---
 
 # 19. Early Access
 
-A banda deve poder configurar acesso antecipado.
+The band must be able to configure early access.
 
-Exemplo:
+Example:
 
 ```text
 Limited Vinyl
@@ -698,42 +698,42 @@ Fan
 Public release
 ```
 
-O acesso antecipado deve ser tratado como regra de membership, não como cópias diferentes do produto.
+Early access must be handled as a membership rule, not as separate copies of the product.
 
 ---
 
 # 20. Tickets
 
-Quando existir integração com ingressos, Supporters podem receber acesso antecipado e Core Members podem receber prioridade.
+Once a ticketing integration exists, Supporters can receive early access and Core Members can receive priority.
 
-Não implementar um sistema completo de ticketing apenas para satisfazer essa regra se ele ainda não existir.
+Do not implement a full ticketing system just to satisfy this rule if one does not already exist.
 
-Criar a integração quando houver infraestrutura correspondente.
+Build the integration when the corresponding infrastructure is in place.
 
 ---
 
 # 21. Core Member Giveaways
 
-Core Members podem participar de sorteios de itens autografados.
+Core Members can enter giveaways for signed items.
 
-A funcionalidade deve ser tratada como benefício exclusivo.
+The feature must be treated as an exclusive benefit.
 
-Antes de implementar sorteios reais, verificar:
+Before implementing real giveaways, check:
 
-- requisitos legais;
-- regras da plataforma;
-- necessidade de integração;
-- regras de elegibilidade.
+- legal requirements;
+- platform rules;
+- whether an integration is needed;
+- eligibility rules.
 
-Não inventar regras jurídicas.
+Do not invent legal rules.
 
 ---
 
 # 22. Band Members
 
-A banda deve possuir uma visão de seus membros.
+The band must have a view of its members.
 
-Categorias:
+Categories:
 
 ```text
 All
@@ -742,28 +742,28 @@ Supporter
 Core Member
 ```
 
-Informações relevantes:
+Relevant information:
 
-- usuário;
+- user;
 - membership;
 - status;
-- data de entrada;
-- benefícios;
-- atividade quando disponível.
+- join date;
+- benefits;
+- activity where available.
 
-A banda não deve ter acesso a dados pessoais desnecessários.
+The band must not have access to unnecessary personal data.
 
-Aplicar princípio de menor privilégio.
+Apply the principle of least privilege.
 
 ---
 
 # 23. SceneCore Administrator
 
-O Administrator é diferente do Band Admin.
+The Administrator is different from Band Admin.
 
-O Administrator opera a plataforma inteira.
+The Administrator operates the entire platform.
 
-Conceitualmente:
+Conceptually:
 
 ```text
 SceneCore Administrator
@@ -780,75 +780,75 @@ SceneCore Administrator
 └── Audit
 ```
 
-O Administrator pode administrar recursos globais da plataforma.
+The Administrator can administer platform-wide resources.
 
 ---
 
 # 24. Administrator — Bands
 
-O Administrator deve poder:
+The Administrator must be able to:
 
-- visualizar bandas;
-- visualizar status;
-- administrar contas quando autorizado;
-- suspender contas quando necessário;
-- consultar informações operacionais.
+- view bands;
+- view status;
+- administer accounts when authorized;
+- suspend accounts when necessary;
+- look up operational information.
 
-O Administrator não deve assumir o papel de membro da banda.
+The Administrator must not take on the role of a band member.
 
 ---
 
 # 25. Administrator — Users
 
-O Administrator pode:
+The Administrator can:
 
-- localizar usuários;
-- visualizar status;
-- consultar memberships;
-- lidar com denúncias;
-- aplicar ações administrativas quando necessário.
+- find users;
+- view status;
+- look up memberships;
+- handle reports;
+- apply administrative actions when necessary.
 
-Não expor dados pessoais além do necessário.
+Do not expose personal data beyond what is necessary.
 
 ---
 
 # 26. Administrator — Payments
 
-O Administrator deve possuir visão operacional de:
+The Administrator must have an operational view of:
 
 - memberships;
-- pagamentos;
-- assinaturas;
-- cancelamentos;
-- reembolsos;
-- status de transações.
+- payments;
+- subscriptions;
+- cancellations;
+- refunds;
+- transaction status.
 
-Não armazenar dados sensíveis de cartão diretamente.
+Do not store sensitive card data directly.
 
-Utilizar o gateway de pagamento definido pelo projeto.
+Use the payment gateway defined by the project.
 
-Se houver integração existente, reutilizá-la.
+If an integration already exists, reuse it.
 
 ---
 
 # 27. Administrator — Moderation
 
-O Administrator deve possuir ferramentas para:
+The Administrator must have tools for:
 
-- denúncias;
-- conteúdo reportado;
-- usuários reportados;
-- bandas reportadas;
-- ações de moderação;
-- histórico de ações.
+- reports;
+- reported content;
+- reported users;
+- reported bands;
+- moderation actions;
+- action history.
 
-A moderação deve ser separada da moderação cotidiana feita pela banda.
+This moderation must be separate from the day-to-day moderation the band performs.
 
 ---
 
 # 28. Permissions
 
-A autorização deve respeitar três níveis:
+Authorization must respect three levels:
 
 ```text
 User
@@ -864,30 +864,30 @@ Exemplo:
 
 ```text
 Fan
-→ pode acessar conteúdo Fan
+→ can access Fan content
 
 Supporter
-→ pode acessar conteúdo Fan + Supporter
+→ can access Fan + Supporter content
 
 Core Member
-→ pode acessar conteúdo Fan + Supporter + Core
+→ can access Fan + Supporter + Core content
 
 Band Admin
-→ administra sua própria banda
+→ administers its own band
 
 SceneCore Administrator
-→ administra a plataforma
+→ administers the platform
 ```
 
-Nunca permitir que o membership do usuário conceda privilégios administrativos.
+Never let a user's membership grant administrative privileges.
 
-Membership e role são conceitos diferentes.
+Membership and role are different concepts.
 
 ---
 
 # 29. Membership ≠ Role
 
-Não misturar:
+Do not conflate:
 
 ```text
 Fan
@@ -895,22 +895,22 @@ Supporter
 Core Member
 ```
 
-com:
+with:
 
 ```text
 Band Admin
 SceneCore Administrator
 ```
 
-Membership representa:
+Membership represents:
 
-> relacionamento do usuário com uma banda.
+> the user's relationship with a band.
 
-Role representa:
+Role represents:
 
-> autoridade administrativa no sistema.
+> administrative authority in the system.
 
-Exemplo:
+Example:
 
 ```text
 User A
@@ -926,15 +926,15 @@ membership: Fan
 role: platform_admin
 ```
 
-Os papéis devem ser avaliados separadamente.
+Roles must be evaluated separately.
 
 ---
 
 # 30. Multi-band
 
-O sistema deve considerar que uma pessoa pode acompanhar várias bandas.
+The system must account for a person following several bands.
 
-Portanto:
+Therefore:
 
 ```text
 User
@@ -944,21 +944,21 @@ User
   └── Membership → Band C → Core
 ```
 
-Não criar:
+Do not create:
 
 ```text
 user.membership_plan
 ```
 
-como regra global, caso isso impeça memberships independentes por banda.
+as a global rule, if doing so prevents independent per-band memberships.
 
-O membership deve pertencer ao contexto da banda.
+Membership must belong to the band's context.
 
 ---
 
 # 31. Security
 
-Toda ação administrativa deve validar:
+Every administrative action must validate:
 
 ```text
 current_user
@@ -974,38 +974,38 @@ Exemplo:
 Band Admin A
 ```
 
-não pode editar:
+cannot edit:
 
 ```text
 Band B
 ```
 
-mesmo que conheça o ID da banda.
+even if it knows the band's ID.
 
-Nunca confiar apenas em parâmetros enviados pelo browser.
+Never trust parameters sent by the browser alone.
 
 ---
 
 # 32. Controllers
 
-Controllers devem permanecer finos.
+Controllers must stay thin.
 
-Não colocar regras como:
+Do not put rules such as:
 
 ```ruby
 if current_user.core_member?
 ```
 
-espalhadas pelos controllers.
+scattered across the controllers.
 
-Preferir:
+Prefer:
 
 - policies;
 - models;
 - scopes;
-- services quando houver fluxo realmente complexo.
+- services when a flow is genuinely complex.
 
-Exemplo conceitual:
+Conceptual example:
 
 ```ruby
 MembershipPolicy
@@ -1013,15 +1013,15 @@ ContentPolicy
 BandPolicy
 ```
 
-A implementação concreta deve seguir os padrões já existentes no projeto.
+The concrete implementation must follow the patterns already present in the project.
 
 ---
 
 # 33. Models
 
-Antes de criar novos models, analisar os existentes.
+Before creating new models, review the existing ones.
 
-Estrutura conceitual possível:
+Possible conceptual structure:
 
 ```text
 User
@@ -1037,19 +1037,19 @@ Credit
 Subscription
 ```
 
-Essa lista é conceitual.
+This list is conceptual.
 
-**Não criar todos esses models automaticamente.**
+**Do not create all of these models automatically.**
 
-Determinar quais são realmente necessários após analisar o código existente e o MVP.
+Determine which are actually necessary after reviewing the existing code and the MVP.
 
 ---
 
 # 34. Subscription
 
-A assinatura financeira deve ser separada do conceito de membership quando necessário.
+The financial subscription must be separated from the membership concept where necessary.
 
-Conceitualmente:
+Conceptually:
 
 ```text
 User
@@ -1061,25 +1061,25 @@ Membership
 Band
 ```
 
-A implementação concreta deve respeitar o gateway de pagamento utilizado pelo projeto.
+The concrete implementation must respect the payment gateway the project uses.
 
-Status possíveis devem ser definidos com base no gateway existente.
+Possible statuses must be defined based on the existing gateway.
 
-Não inventar estados financeiros.
+Do not invent financial states.
 
 ---
 
 # 35. Content Access
 
-O acesso ao conteúdo deve ser derivado do membership.
+Content access must be derived from the membership.
 
-Exemplo:
+Example:
 
 ```text
 content.required_plan = supporter
 ```
 
-Então:
+Then:
 
 ```text
 Fan
@@ -1092,7 +1092,7 @@ Core Member
 → allow
 ```
 
-Para conteúdo Core:
+For Core content:
 
 ```text
 Fan
@@ -1105,18 +1105,18 @@ Core Member
 → allow
 ```
 
-Para conteúdo público:
+For public content:
 
 ```text
-qualquer usuário
+any user
 → allow
 ```
 
 ---
 
-# 36. Hierarquia de acesso
+# 36. Access hierarchy
 
-A regra conceitual é:
+The conceptual rule is:
 
 ```text
 Public
@@ -1128,34 +1128,34 @@ Supporter
 Core Member
 ```
 
-Onde:
+Where:
 
 ```text
 Core Member >= Supporter >= Fan
 ```
 
-Não implementar regras independentes para cada recurso se uma hierarquia resolver o problema.
+Do not implement independent rules for each resource if a hierarchy solves the problem.
 
 ---
 
 # 37. UX
 
-A interface deve comunicar claramente:
+The interface must clearly communicate:
 
 ```text
 Fan
-Fique mais perto da banda.
+Get closer to the band.
 
 Supporter
-Apoie a música e acompanhe sua criação.
+Support the music and follow how it is made.
 
 Core Member
-Faça parte do núcleo da banda.
+Be part of the band's core.
 ```
 
-Quando um usuário encontrar conteúdo bloqueado, explicar qual membership é necessário.
+When a user hits locked content, explain which membership is required.
 
-Exemplo:
+Example:
 
 ```text
 This content is available to Supporters and Core Members.
@@ -1163,13 +1163,13 @@ This content is available to Supporters and Core Members.
 Upgrade to Supporter
 ```
 
-Não esconder silenciosamente a existência do conteúdo.
+Do not silently hide the existence of the content.
 
 ---
 
 # 38. Upgrade
 
-O usuário deve poder compreender a progressão:
+The user must be able to understand the progression:
 
 ```text
 Fan
@@ -1182,17 +1182,17 @@ Core Member
 R$ 50
 ```
 
-Ao fazer upgrade, o usuário deve receber automaticamente os benefícios correspondentes ao novo membership.
+On upgrade, the user must automatically receive the benefits matching the new membership.
 
-Evitar duplicação de memberships incompatíveis.
+Avoid duplicating incompatible memberships.
 
-A regra exata de upgrade/downgrade deve respeitar o sistema de pagamentos existente.
+The exact upgrade/downgrade rule must respect the existing payment system.
 
 ---
 
 # 39. Downgrade / Cancellation
 
-A assinatura pode ser:
+A subscription can be:
 
 ```text
 Active
@@ -1201,17 +1201,17 @@ Expired
 Pending
 ```
 
-Somente utilizar estados realmente suportados pelo sistema de pagamentos.
+Only use states the payment system actually supports.
 
-Quando uma assinatura deixa de dar direito ao membership, o acesso aos benefícios deve ser atualizado de acordo com o estado efetivo da assinatura.
+When a subscription stops entitling the user to the membership, access to the benefits must be updated to match the subscription's effective state.
 
-Não conceder acesso permanente baseado apenas no histórico de pagamento.
+Do not grant permanent access based on payment history alone.
 
 ---
 
 # 40. Analytics
 
-O Band Admin poderá futuramente acompanhar:
+Band Admin may later track:
 
 ```text
 Memberships
@@ -1220,24 +1220,24 @@ Engagement
 Content
 ```
 
-Exemplos:
+Examples:
 
-- crescimento de membros;
-- distribuição por plano;
-- receita;
-- visualizações;
-- participação;
-- atividade.
+- member growth;
+- distribution by plan;
+- revenue;
+- views;
+- participation;
+- activity.
 
-Não criar um sistema de analytics complexo no início.
+Do not build a complex analytics system up front.
 
-Implementar somente métricas necessárias ao MVP.
+Implement only the metrics the MVP requires.
 
 ---
 
 # 41. MVP
 
-Priorizar a implementação nesta ordem:
+Prioritize the implementation in this order:
 
 ## Phase 1 — Membership foundation
 
@@ -1307,32 +1307,32 @@ Priorizar a implementação nesta ordem:
 
 # 42. Implementation Strategy
 
-Para cada fase:
+For each phase:
 
-1. Analise o código existente.
-2. Identifique models relacionados.
-3. Identifique controllers.
-4. Identifique policies.
-5. Identifique rotas.
-6. Identifique testes existentes.
-7. Proponha alterações.
-8. Aguarde confirmação quando houver alteração arquitetural relevante.
-9. Implemente em pequenos passos.
-10. Execute os testes.
-11. Execute lint/formatters existentes.
-12. Verifique regressões.
-13. Atualize documentação.
-14. Só então avance para a próxima fase.
+1. Review the existing code.
+2. Identify related models.
+3. Identify controllers.
+4. Identify policies.
+5. Identify routes.
+6. Identify existing tests.
+7. Propose changes.
+8. Wait for confirmation whenever there is a relevant architectural change.
+9. Implement in small steps.
+10. Run the tests.
+11. Run the existing lint/formatters.
+12. Check for regressions.
+13. Update the documentation.
+14. Only then move on to the next phase.
 
-Não implementar todas as fases em uma única alteração.
+Do not implement every phase in a single change.
 
 ---
 
 # 43. Test Strategy
 
-Cada regra importante deve possuir testes.
+Every important rule must have tests.
 
-Testar principalmente:
+Test primarily:
 
 ### Membership
 
@@ -1361,13 +1361,13 @@ SceneCore Administrator
 
 ### Multi-band
 
-Verificar que:
+Verify that:
 
 ```text
 User → Band A → Fan
 ```
 
-não concede acesso a:
+does not grant access to:
 
 ```text
 Band B → Supporter content
@@ -1375,41 +1375,41 @@ Band B → Supporter content
 
 ### Security
 
-Verificar que um Band Admin não consegue administrar outra banda.
+Verify that a Band Admin cannot administer another band.
 
 ### Payments
 
-Testar transições de membership conforme a integração de pagamento existente.
+Test membership transitions against the existing payment integration.
 
-Usar Minitest caso seja o framework já adotado pelo projeto.
-
----
-
-# 44. Não fazer
-
-Claude não deve:
-
-- criar três dashboards administrativos;
-- transformar Fan/Supporter/Core em roles administrativas;
-- permitir que Core Members administrem a banda;
-- permitir que fãs votem em decisões não configuradas pela banda;
-- criar funcionalidades não especificadas;
-- criar um chat complexo sem necessidade;
-- criar um CMS complexo;
-- criar um sistema de ticketing sem necessidade;
-- criar analytics avançado antes da necessidade;
-- duplicar conteúdo para cada plano;
-- espalhar verificações de membership pelos controllers;
-- armazenar dados de cartão;
-- assumir que membership é global ao usuário;
-- permitir acesso administrativo baseado no plano;
-- criar abstrações antes de existir duplicação real.
+Use Minitest if that is the framework the project has already adopted.
 
 ---
 
-# 45. Princípio arquitetural central
+# 44. Do not
 
-O SceneCore deve manter esta separação:
+Claude must not:
+
+- create three admin dashboards;
+- turn Fan/Supporter/Core into administrative roles;
+- let Core Members administer the band;
+- let fans vote on decisions the band has not configured;
+- create unspecified features;
+- build a complex chat without need;
+- build a complex CMS;
+- build a ticketing system without need;
+- build advanced analytics before they are needed;
+- duplicate content for each plan;
+- scatter membership checks across the controllers;
+- store card data;
+- assume membership is global to the user;
+- grant administrative access based on the plan;
+- create abstractions before real duplication exists.
+
+---
+
+# 45. Core architectural principle
+
+SceneCore must maintain this separation:
 
 ```text
                 ┌─────────────────────┐
@@ -1443,7 +1443,7 @@ O SceneCore deve manter esta separação:
                 └──────────┬──────────┘
                            │
                            ▼
-                administra UMA banda
+                administers ONE band
 
 
                 ┌─────────────────────┐
@@ -1451,11 +1451,11 @@ O SceneCore deve manter esta separação:
                 └──────────┬──────────┘
                            │
                            ▼
-                administra A PLATAFORMA
+                administers THE PLATFORM
 ```
 
-A regra fundamental é:
+The fundamental rule is:
 
-> **Membership determina acesso e benefícios. Role determina autoridade administrativa.**
+> **Membership determines access and benefits. Role determines administrative authority.**
 
-Essa separação deve ser preservada em models, policies, controllers, views, services, rotas e testes.
+This separation must be preserved across models, policies, controllers, views, services, routes, and tests.

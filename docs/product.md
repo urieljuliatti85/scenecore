@@ -606,20 +606,20 @@ This structure is much more interesting than starting by thinking about "posts, 
 
 ### Administrator
 
-No SceneCore, o Administrator deve ter uma função diferente dos demais atores: ele não participa da cena como banda ou fã; ele mantém a cena organizada, confiável e saudável.
+In SceneCore, the Administrator has a different role from the other actors: they do not participate in the scene as a band or a fan; they keep the scene organized, trustworthy, and healthy.
 
-Eu separaria suas responsabilidades em quatro áreas.
+Their responsibilities fall into four areas.
 
-1. Administrar usuários
+1. Managing users
 
-O Administrator pode:
+The Administrator can:
 
-Visualizar usuários.
-Editar informações administrativas.
-Suspender ou reativar contas.
-Bloquear contas que violem regras.
-Gerenciar permissões e papéis.
-Ver o histórico básico de ações administrativas.
+View users.
+Edit administrative information.
+Suspend or reactivate accounts.
+Block accounts that violate the rules.
+Manage permissions and roles.
+View the basic history of administrative actions.
 Administrator
 │
 ├── Users
@@ -627,19 +627,19 @@ Administrator
 │   ├── Suspend
 │   ├── Reactivate
 │   └── Manage roles
-2. Moderar a cena
+2. Moderating the scene
 
-Como o SceneCore provavelmente terá conteúdo criado pelos próprios participantes, o Administrator pode:
+Since SceneCore will likely host content created by the participants themselves, the Administrator can:
 
-Revisar denúncias.
-Remover conteúdo inadequado.
-Moderar perfis de bandas.
-Moderar eventos.
-Moderar lançamentos e informações falsas.
-Resolver conflitos relacionados a conteúdo.
-Registrar o motivo de uma ação de moderação.
+Review reports.
+Remove inappropriate content.
+Moderate band profiles.
+Moderate events.
+Moderate releases and false information.
+Resolve content-related disputes.
+Record the reason for a moderation action.
 
-O ideal é ter auditabilidade:
+Auditability is the goal:
 
 Report
   ↓
@@ -651,7 +651,7 @@ Decision
   ├── Remove
   └── Suspend account
 
-3. Administrar a estrutura do SceneCore
+3. Managing SceneCore's structure
 
 This is a particularly important role.
 
