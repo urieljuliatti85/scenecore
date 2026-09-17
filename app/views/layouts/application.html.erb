@@ -11,6 +11,8 @@
 
     <%= yield :head %>
 
+    <%= render "shared/google_analytics" %>
+
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
     <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
@@ -105,5 +107,6 @@
     </main>
 
     <%= render "shared/footer" %>
+    <%= render "shared/cookie_consent" if ENV["GOOGLE_ANALYTICS_ID"].present? %>
   </body>
 </html>

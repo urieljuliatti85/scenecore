@@ -1,0 +1,22 @@
+<%# Google Analytics id lives in ENV, never committed — see .env.example.
+    Consent Mode starts with analytics_storage denied; the cookie consent
+    banner (shared/_cookie_consent) is what grants it, via
+    cookie_consent_controller.js calling gtag("consent", "update", ...). %>
+<%
+  # Re-checked against the expected GA4 Measurement ID shape rather than
+  # trusted outright — this value is interpolated into a <script src> and
+  # inline JS, so a malformed ENV value must not be able to break out of
+  # either context.
+  measurement_id = ENV["GOOGLE_ANALYTICS_ID"].to_s
+  measurement_id = nil unless measurement_id.match?(/\AG-[A-Z0-9]+\z/)
+%>
+<% if measurement_id %>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=<%= measurement_id %>"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("consent", "default", { analytics_storage: "denied" });
+    gtag("js", new Date());
+    gtag("config", "<%= measurement_id %>");
+  </script>
+<% end %>
