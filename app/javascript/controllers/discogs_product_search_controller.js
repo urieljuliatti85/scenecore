@@ -23,17 +23,31 @@ export default class extends Controller {
 
   async performSearch(query) {
     const separator = this.urlValue.includes("?") ? "&" : "?"
-    const response = await fetch(`${this.urlValue}${separator}q=${encodeURIComponent(query)}`, {
-      headers: { Accept: "application/json" }
-    })
 
-    if (!response.ok) {
-      this.renderError("Discogs search is unavailable right now.")
-      return
+    try {
+      const response = await fetch(`${this.urlValue}${separator}q=${encodeURIComponent(query)}`, {
+        headers: { Accept: "application/json" }
+      })
+
+      if (!response.ok) {
+        let message = "Discogs search is unavailable right now."
+
+        try {
+          const payload = await response.json()
+          if (payload?.error) message = payload.error
+        } catch (_error) {
+          // Keep the generic message when the server did not return JSON.
+        }
+
+        this.renderError(message)
+        return
+      }
+
+      const results = await response.json()
+      this.renderResults(results)
+    } catch (_error) {
+      this.renderError("Could not reach Discogs. Please check your connection and try again.")
     }
-
-    const results = await response.json()
-    this.renderResults(results)
   }
 
   renderResults(results) {
