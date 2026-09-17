@@ -9,12 +9,6 @@
 class StripeConnectOnboardingResolver
   Error = Class.new(StandardError)
 
-  # Accounts v2 requires identity.country before a recipient configuration
-  # can be applied. SceneCore currently operates Connect from Brazil; keep
-  # this configurable so another deployment can choose its account country
-  # without changing application code.
-  CONNECT_COUNTRY = ENV.fetch("STRIPE_CONNECT_COUNTRY", "BR").upcase.freeze
-
   # SceneCore runs checkout on the band's behalf and takes a cut, which is
   # the marketplace shape: the platform is merchant of record, so it owns
   # pricing and absorbs negative balances, and the band gets the
@@ -31,10 +25,16 @@ class StripeConnectOnboardingResolver
     }
   }.freeze
 
-  # A marketplace's connected accounts receive transfers; they are not
-  # merchants of record themselves. Requesting card_payments here would
-  # lengthen onboarding for a capability the band never uses.
-  RECIPIENT_CONFIGURATION = {
+  # Stripe Accounts v2 requires merchant card_payments when requesting
+  # recipient stripe_transfers. SceneCore still routes checkout through the
+  # platform, but both configurations must exist on the connected account
+  # for transfers to be enabled.
+  CONNECT_CONFIGURATION = {
+    merchant: {
+      capabilities: {
+        card_payments: { requested: true }
+      }
+    },
     recipient: {
       capabilities: {
         stripe_balance: {
@@ -67,7 +67,7 @@ class StripeConnectOnboardingResolver
       use_case: {
         type: "account_onboarding",
         account_onboarding: {
-          configurations: [ "recipient" ],
+          configurations: [ "merchant", "recipient" ],
           return_url: @return_url,
           refresh_url: @refresh_url
         }
@@ -88,8 +88,8 @@ class StripeConnectOnboardingResolver
     account = StripeClient.instance.v2.core.accounts.create(
       **ACCOUNT_CONFIGURATION,
       contact_email: @contact_email,
-      identity: { country: CONNECT_COUNTRY },
-      configuration: RECIPIENT_CONFIGURATION,
+      identity: { country: @band.country_code },
+      configuration: CONNECT_CONFIGURATION,
       metadata: { band_id: @band.id.to_s }
     )
 

@@ -45,6 +45,16 @@
   </div>
 
   <div>
+    <%= form.label :country_code, "Country code", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <% if band.stripe_connect_account_id.present? %>
+      <p class="text-xs text-neutral-500 mb-1">Country is locked because Stripe Connect setup has already started for this band.</p>
+    <% else %>
+      <p class="text-xs text-neutral-500 mb-1">Two-letter ISO country code used for Stripe Connect, for example BR, US, GB or PT.</p>
+    <% end %>
+    <%= form.text_field :country_code, required: true, maxlength: 2, pattern: "[A-Za-z]{2}", autocapitalize: "characters", placeholder: "BR", readonly: band.stripe_connect_account_id.present?, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 uppercase focus:outline-none focus:ring-2 focus:ring-yellow-400 #{'opacity-60 cursor-not-allowed' if band.stripe_connect_account_id.present?}" %>
+  </div>
+
+  <div>
     <%= form.label :photo, class: "block text-sm font-medium text-neutral-300 mb-1" %>
     <p class="text-xs text-neutral-500 mb-1">PNG, JPEG or WebP, up to 5MB</p>
     <% if band.photo.attached? && band.photo.persisted? %>
@@ -68,7 +78,7 @@
 
     <div>
       <%= form.label :instagram_url, "Instagram", class: "block text-sm font-medium text-neutral-300 mb-1" %>
-      <%= form.url_field :instagram_url, placeholder: "https://instagram.com/...", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+      <%= form.url_field :instagram_url, placeholder: "https://instagram.com/band", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
     </div>
 
     <div>

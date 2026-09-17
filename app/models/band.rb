@@ -3,6 +3,7 @@ class Band < ApplicationRecord
 
   SOCIAL_LINK_ATTRIBUTES = %i[spotify_url youtube_url instagram_url bandcamp_url website_url].freeze
   URL_FORMAT = %r{\Ahttps?://[^\s/$.?#].[^\s]*\z}i
+  COUNTRY_CODE_FORMAT = /\A[A-Z]{2}\z/
 
   has_many :band_memberships, dependent: :destroy
   has_many :members, through: :band_memberships, source: :user
@@ -53,9 +54,12 @@ class Band < ApplicationRecord
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
+  validates :country_code, presence: true, format: { with: COUNTRY_CODE_FORMAT, message: "must be a two-letter ISO country code" }
   validates :spotify_url, :youtube_url, :instagram_url, :bandcamp_url, :website_url,
             format: { with: URL_FORMAT, message: "must be a valid URL" }, allow_blank: true
+  validate :country_code_unchanged_after_connect, on: :update
 
+  before_validation :normalize_country_code
   before_validation :generate_slug, on: :create
 
   def followers_count
@@ -90,6 +94,16 @@ class Band < ApplicationRecord
   end
 
   private
+
+  def normalize_country_code
+    self.country_code = country_code.to_s.strip.upcase if country_code.present?
+  end
+
+  def country_code_unchanged_after_connect
+    return unless stripe_connect_account_id.present? && will_save_change_to_country_code?
+
+    errors.add(:country_code, "cannot be changed after Stripe Connect setup has started")
+  end
 
   def generate_slug
     return if name.blank?

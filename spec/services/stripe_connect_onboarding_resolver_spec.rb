@@ -34,8 +34,8 @@ RSpec.describe StripeConnectOnboardingResolver do
 
     # Stripe rejects v1 account creation for new integrations, and the v2
     # shape replaces `type: "express"` with three independent dimensions.
-    it "creates the account through the v2 API" do
-      band = create(:band, stripe_connect_account_id: nil)
+    it "creates the account through the v2 API using the band's country" do
+      band = create(:band, country_code: "PT", stripe_connect_account_id: nil)
       allow(accounts_service).to receive(:create).and_return(double(id: "acct_new"))
 
       resolve(band)
@@ -43,7 +43,7 @@ RSpec.describe StripeConnectOnboardingResolver do
       expect(accounts_service).to have_received(:create).with(
         hash_including(
           contact_email: "admin@example.com",
-          identity: { country: "BR" },
+          identity: { country: "PT" },
           dashboard: "express",
           defaults: {
             responsibilities: {

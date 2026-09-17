@@ -189,7 +189,7 @@ class BandsController < ApplicationController
   end
 
   def band_params
-    params.require(:band).permit(:name, :description, :photo, :category_id,
+    params.require(:band).permit(:name, :description, :photo, :category_id, :country_code,
       :spotify_url, :youtube_url, :instagram_url, :bandcamp_url, :website_url)
   end
 end
