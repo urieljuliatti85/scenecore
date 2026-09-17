@@ -88,6 +88,7 @@ Rails.application.routes.draw do
     end
     resources :categories, only: [ :index, :new, :create, :edit, :update, :destroy ]
     resources :audit_logs, only: [ :index ]
+    resource :analytics, only: [ :show ], controller: "analytics"
     resources :reports, only: [ :index ] do
       member do
         patch :resolve
