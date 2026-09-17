@@ -40,6 +40,18 @@ RSpec.describe "Bands", type: :request do
 
       expect(response).to have_http_status(:unprocessable_content)
     end
+
+    it "does not create a band when platform-wide sign-ups are disabled" do
+      user = create(:user)
+      sign_in user
+      PlatformSetting.current.update!(band_signups_enabled: false)
+
+      expect {
+        post bands_path, params: { band: { name: "The Testers" } }
+      }.not_to change(Band, :count)
+
+      expect(response).to redirect_to(bands_path)
+    end
   end
 
   describe "GET /bands/:id" do
