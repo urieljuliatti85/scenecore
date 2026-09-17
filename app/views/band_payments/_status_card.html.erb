@@ -1,0 +1,45 @@
+<%# Each Connect status means something different for the band, so the page
+    says which one it is in rather than printing the raw enum value. %>
+<% case band.stripe_connect_status
+   when "active"
+     tone = "border-green-900/60 bg-green-950/20"
+     dot = "bg-green-400"
+     heading = "You're set up to receive payments"
+     detail = "Stripe has cleared your account. Memberships and Store sales pay into it directly."
+     action = nil
+   when "onboarding"
+     tone = "border-yellow-500/30 bg-yellow-400/5"
+     dot = "bg-yellow-400"
+     heading = "Stripe still needs some details"
+     detail = "You started onboarding but Stripe hasn't finished checking your account. Until it does, fans can't pay you."
+     action = "Finish setting up"
+   when "restricted"
+     tone = "border-red-900/60 bg-red-950/20"
+     dot = "bg-red-400"
+     heading = "Stripe has restricted your account"
+     detail = "Stripe needs something from you before it will process payments again — the details are in your Stripe dashboard."
+     action = "Resolve with Stripe"
+   else
+     tone = "border-neutral-800 bg-neutral-900/40"
+     dot = "bg-neutral-500"
+     heading = "You haven't connected Stripe yet"
+     detail = "Connecting takes a few minutes. Stripe handles the payment details and pays you directly — SceneCore never sees a card number."
+     action = "Connect with Stripe"
+   end %>
+
+<div class="rounded-2xl border <%= tone %> p-6 mb-6">
+  <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+    <div class="min-w-0">
+      <p class="flex items-center gap-2 font-semibold text-white">
+        <span class="h-2 w-2 rounded-full shrink-0 <%= dot %>" aria-hidden="true"></span>
+        <%= heading %>
+      </p>
+      <p class="text-sm text-neutral-400 mt-2"><%= detail %></p>
+    </div>
+
+    <% if action %>
+      <%= button_to action, band_stripe_connect_account_path(band), method: :post,
+            class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-sm font-semibold px-5 py-2.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer whitespace-nowrap shrink-0" %>
+    <% end %>
+  </div>
+</div>

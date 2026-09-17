@@ -69,6 +69,15 @@
 
     <% if policy(@band).update? %>
       <%= link_to "Products", band_products_path(@band), class: "rounded-full border border-yellow-700 text-yellow-300 font-semibold px-5 py-2.5 hover:border-yellow-500 transition" %>
+      <%# Payments needs its own way in: a band that sells no merch has no
+          reason to open Products, and would never find out that taking
+          memberships needs Stripe too. %>
+      <%= link_to band_payments_path(@band), class: "flex items-center gap-2 rounded-full border #{@band.payouts_ready? ? "border-neutral-700 text-white hover:border-neutral-500" : "border-yellow-500/40 text-yellow-300 hover:border-yellow-400"} font-semibold px-5 py-2.5 transition" do %>
+        <% unless @band.payouts_ready? %>
+          <span class="h-1.5 w-1.5 rounded-full bg-yellow-400 shrink-0" aria-hidden="true"></span>
+        <% end %>
+        Payments
+      <% end %>
       <%= link_to "Edit", edit_band_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
       <%= link_to "Members", band_band_memberships_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
       <%= link_to "Supporters", band_memberships_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>

@@ -15,13 +15,15 @@
         <p class="font-semibold text-white">Payments</p>
         <p class="text-sm text-neutral-400 mt-1">
           Stripe Connect status: <span class="text-neutral-200"><%= @band.stripe_connect_status.humanize %></span>.
-          Products can be prepared before onboarding is complete, but checkout will remain unavailable until the account is active.
+          <% if @band.payouts_ready? %>
+            Fans can buy from your Store and start memberships.
+          <% else %>
+            Products can be prepared now, but fans can't buy them — or start a membership — until your account is active.
+          <% end %>
         </p>
       </div>
 
-      <% unless @band.stripe_connect_active? %>
-        <%= button_to "Set up Stripe Connect", band_stripe_connect_account_path(@band), method: :post, class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-2 hover:border-neutral-500 transition cursor-pointer whitespace-nowrap" %>
-      <% end %>
+      <%= link_to @band.payouts_ready? ? "Payment settings" : "Set up payments", band_payments_path(@band), class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-2 hover:border-neutral-500 transition whitespace-nowrap" %>
     </div>
   </div>
 
