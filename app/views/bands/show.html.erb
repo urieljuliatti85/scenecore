@@ -68,6 +68,7 @@
     <% end %>
 
     <% if policy(@band).update? %>
+      <%= link_to "Products", band_products_path(@band), class: "rounded-full border border-yellow-700 text-yellow-300 font-semibold px-5 py-2.5 hover:border-yellow-500 transition" %>
       <%= link_to "Edit", edit_band_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
       <%= link_to "Members", band_band_memberships_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
       <%= link_to "Supporters", band_memberships_path(@band), class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>

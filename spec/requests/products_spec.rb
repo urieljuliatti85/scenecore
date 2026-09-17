@@ -22,8 +22,101 @@ RSpec.describe "Band Admin products", type: :request do
 
       product = band.products.last
       expect(product).to be_draft
+      expect(product).to be_manual
       expect(product.variants.first.sku).to eq("TEE-BLK-M")
       expect(response).to redirect_to(band_products_path(band))
+    end
+
+    it "imports trusted release metadata from Discogs while keeping commerce fields local" do
+      band = create(:band)
+      admin = create(:user)
+      create(:band_membership, :administrator, band: band, user: admin)
+      sign_in admin
+
+      details = DiscogsClient::ReleaseDetails.new(
+        discogs_release_id: 123,
+        title: "Distant Place",
+        artist: "Lifelöck",
+        year: 2026,
+        format: "Vinyl · LP",
+        label: "Scene Records",
+        catalog_number: "SC-001",
+        barcode: "7891234567890",
+        country: "Brazil",
+        discogs_url: "https://www.discogs.com/release/123",
+        metadata: { "genres" => [ "Rock" ], "styles" => [ "Crust" ] }
+      )
+      client = instance_double(DiscogsClient, fetch_release: details)
+      allow(DiscogsClient).to receive(:new).and_return(client)
+
+      expect {
+        post band_products_path(band), params: {
+          discogs_release_id: "123",
+          product: {
+            name: "Tampered browser title",
+            description: "Limited pressing",
+            variants_attributes: {
+              "0" => { name: "Default", sku: "LIFE-DP-LP", price_cents: 12000, stock_quantity: 20 }
+            }
+          }
+        }
+      }.to change(Product, :count).by(1).and change(ProductVariant, :count).by(1)
+
+      product = band.products.last
+      expect(product).to have_attributes(
+        source: "discogs",
+        discogs_release_id: 123,
+        name: "Distant Place",
+        artist_name: "Lifelöck",
+        release_year: 2026,
+        release_format: "Vinyl · LP",
+        label_name: "Scene Records",
+        catalog_number: "SC-001",
+        barcode: "7891234567890"
+      )
+      expect(product.discogs_metadata).to include("styles" => [ "Crust" ])
+      expect(product.discogs_synced_at).to be_present
+      expect(product.variants.first).to have_attributes(sku: "LIFE-DP-LP", price_cents: 12000, stock_quantity: 20)
+    end
+
+    it "lets a band administrator search Discogs releases" do
+      band = create(:band)
+      admin = create(:user)
+      create(:band_membership, :administrator, band: band, user: admin)
+      sign_in admin
+
+      result = DiscogsClient::ReleaseResult.new(
+        discogs_release_id: 123,
+        title: "Distant Place",
+        artist: "Lifelöck",
+        year: 2026,
+        format: "Vinyl",
+        label: "Scene Records",
+        catalog_number: "SC-001",
+        country: "Brazil"
+      )
+      client = instance_double(DiscogsClient, search_releases: [ result ])
+      allow(DiscogsClient).to receive(:new).and_return(client)
+
+      get band_products_path(band, format: :json), params: { q: "Distant Place" }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.first).to include(
+        "discogs_release_id" => 123,
+        "title" => "Distant Place",
+        "artist" => "Lifelöck"
+      )
+    end
+
+    it "does not let a plain band member search Discogs" do
+      band = create(:band)
+      member = create(:user)
+      create(:band_membership, band: band, user: member)
+      sign_in member
+
+      get band_products_path(band, format: :json), params: { q: "Distant Place" }
+
+      expect(response).to redirect_to(root_path)
     end
 
     it "requires the first variant when creating a product" do
