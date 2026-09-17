@@ -126,22 +126,20 @@ this decision.
 
 ## ADR-007 — Stripe Connect for Store Revenue Split
 
-Status: Accepted (2026-09-17); rate amended 2026-09-17 from 10% to 25%
-before any Store checkout existed, so no order was ever charged at the
-original rate.
+Status: Accepted (2026-09-17)
 
 ### Decision
 
 Store checkout (product purchases, ADR-003) uses Stripe Connect, not the
 plain Stripe Checkout Sessions already used for Subscriptions. Each band
 onboards a Stripe Connect account; a Store checkout session's payment is
-split automatically at charge time via `application_fee_amount`: 25% to
-SceneCore, the remaining 75% to the band's connected account.
+split automatically at charge time via `application_fee_amount`: 10% to
+SceneCore, the remaining 90% to the band's connected account.
 
 ### Reason
 
 A store sells one band's physical/digital goods directly to a fan; the
-platform's 25% commission on that sale must be explicit per
+platform's 10% commission on that sale must be explicit per
 `docs/payments.md` and must not require a manual reconciliation process.
 Stripe Connect's destination charges compute and route both sides of the
 split within the same payment, so SceneCore never holds funds it must
@@ -160,7 +158,7 @@ Stripe's own dashboard/reports already provide the band.
   account; no commission split exists on subscription revenue today and
   this decision does not introduce one retroactively. A future decision
   to also split subscription revenue would need its own ADR.
-  *(Superseded on 2026-09-17: ADR-008 sets that split at 75/25. The
+  *(Superseded on 2026-09-17: ADR-008 sets that split at 85/15. The
   implementation note above still holds — subscriptions have not moved to
   Connect yet.)*
 - Store's Stripe webhooks must handle events under the connected account
@@ -178,16 +176,26 @@ Status: Accepted (2026-09-17)
 
 ### Decision
 
-Membership revenue is split 75% to the band, 25% to SceneCore. This is the
+Membership revenue is split 85% to the band, 15% to SceneCore. This is the
 decision ADR-007 anticipated when it recorded that splitting subscription
 revenue would require its own ADR.
 
-This was briefly set against a 10% Store rate, on the reasoning that a
-membership is an ongoing relationship the platform hosts every month
-while a store sale is a one-off transaction. That distinction was
-dropped the same day: ADR-007's rate was amended to 25% so both match,
-and a band now earns the same share whichever way a fan supports it —
-one number to explain rather than two.
+### Reason
+
+Both rates are set against what comparable platforms charge, so a band
+weighing SceneCore against the tools it already uses is not choosing
+between a home and its income. 15% matches Bandcamp's artist
+subscriptions; the Store's 10% (ADR-007) matches Bandcamp's physical
+merchandise rate.
+
+Memberships carry the higher of the two because the platform hosts and
+serves that relationship every month — the exclusive feed, content,
+community and messaging all run here — whereas a store sale is a one-off
+transaction where the band supplies and ships the goods itself.
+
+These are the platform's own rates and sit on top of Stripe's processing
+fees, which matters at these price points: on a $3 Fan membership the
+band's 85% is $2.55 before Stripe takes its share of the transaction.
 
 ### Consequence
 
