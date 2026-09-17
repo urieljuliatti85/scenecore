@@ -48,6 +48,12 @@
     <%= form.text_area :description, rows: 5, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
   </div>
 
+  <div>
+    <%= form.label :shipping_cents, "Shipping (cents)", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.number_field :shipping_cents, min: 0, step: 1, class: "w-full rounded-lg bg-neutral-950 border border-neutral-800 text-white px-4 py-2.5" %>
+    <p class="text-xs text-neutral-600 mt-1">Charged once per order for this product, however many the fan buys. Leave at 0 for free shipping.</p>
+  </div>
+
   <% if product.new_record? %>
     <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5">
       <h2 class="text-lg font-semibold text-white">First variant</h2>

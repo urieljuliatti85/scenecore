@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_143430) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -87,8 +87,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.index ["band_id", "status"], name: "index_albums_on_band_id_and_status"
     t.index ["band_id"], name: "index_albums_on_band_id"
     t.index ["spotify_id"], name: "index_albums_on_spotify_id"
-    t.check_constraint "early_access_level IS NULL OR (early_access_level::text = ANY (ARRAY['fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[]))", name: "albums_early_access_level_check"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "albums_status_check"
+    t.check_constraint "early_access_level IS NULL OR (early_access_level::text = ANY (ARRAY['fan'::character varying::text, 'supporter'::character varying::text, 'core_member'::character varying::text]))", name: "albums_early_access_level_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'published'::character varying::text])", name: "albums_status_check"
   end
 
   create_table "band_membership_prices", force: :cascade do |t|
@@ -100,7 +100,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.datetime "updated_at", null: false
     t.index ["band_id", "level"], name: "index_band_membership_prices_on_band_id_and_level", unique: true
     t.index ["band_id"], name: "index_band_membership_prices_on_band_id"
-    t.check_constraint "level::text = ANY (ARRAY['fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[])", name: "band_membership_prices_level_check"
+    t.check_constraint "level::text = ANY (ARRAY['fan'::character varying::text, 'supporter'::character varying::text, 'core_member'::character varying::text])", name: "band_membership_prices_level_check"
   end
 
   create_table "band_memberships", force: :cascade do |t|
@@ -113,7 +113,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.index ["band_id"], name: "index_band_memberships_on_band_id"
     t.index ["user_id", "band_id"], name: "index_band_memberships_on_user_id_and_band_id", unique: true
     t.index ["user_id"], name: "index_band_memberships_on_user_id"
-    t.check_constraint "role::text = ANY (ARRAY['member'::character varying, 'administrator'::character varying]::text[])", name: "band_memberships_role_check"
+    t.check_constraint "role::text = ANY (ARRAY['member'::character varying::text, 'administrator'::character varying::text])", name: "band_memberships_role_check"
   end
 
   create_table "bands", force: :cascade do |t|
@@ -137,8 +137,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.index ["slug"], name: "index_bands_on_slug", unique: true
     t.index ["status"], name: "index_bands_on_status"
     t.index ["stripe_connect_account_id"], name: "index_bands_on_stripe_connect_account_id", unique: true
-    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'approved'::character varying, 'rejected'::character varying, 'suspended'::character varying]::text[])", name: "bands_status_check"
-    t.check_constraint "stripe_connect_status::text = ANY (ARRAY['not_started'::character varying, 'onboarding'::character varying, 'active'::character varying, 'restricted'::character varying]::text[])", name: "bands_stripe_connect_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'approved'::character varying::text, 'rejected'::character varying::text, 'suspended'::character varying::text])", name: "bands_status_check"
+    t.check_constraint "stripe_connect_status::text = ANY (ARRAY['not_started'::character varying::text, 'onboarding'::character varying::text, 'active'::character varying::text, 'restricted'::character varying::text])", name: "bands_stripe_connect_status_check"
   end
 
   create_table "cart_items", force: :cascade do |t|
@@ -162,7 +162,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.index ["band_id"], name: "index_carts_on_band_id"
     t.index ["user_id"], name: "index_carts_on_user_id"
     t.index ["user_id"], name: "index_carts_on_user_id_when_active", unique: true, where: "((status)::text = 'active'::text)"
-    t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'converted'::character varying, 'abandoned'::character varying]::text[])", name: "carts_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['active'::character varying::text, 'converted'::character varying::text, 'abandoned'::character varying::text])", name: "carts_status_check"
   end
 
   create_table "categories", force: :cascade do |t|
@@ -218,8 +218,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.datetime "updated_at", null: false
     t.index ["band_id"], name: "index_core_sessions_on_band_id"
     t.check_constraint "capacity IS NULL OR capacity > 0", name: "core_sessions_capacity_check"
-    t.check_constraint "session_type::text = ANY (ARRAY['video'::character varying, 'audio'::character varying, 'qa'::character varying, 'listening_party'::character varying, 'meet_greet'::character varying]::text[])", name: "core_sessions_session_type_check"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "core_sessions_status_check"
+    t.check_constraint "session_type::text = ANY (ARRAY['video'::character varying::text, 'audio'::character varying::text, 'qa'::character varying::text, 'listening_party'::character varying::text, 'meet_greet'::character varying::text])", name: "core_sessions_session_type_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'published'::character varying::text])", name: "core_sessions_status_check"
   end
 
   create_table "direct_message_threads", force: :cascade do |t|
@@ -231,7 +231,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.index ["band_id", "user_id"], name: "index_direct_message_threads_on_band_id_and_user_id", unique: true
     t.index ["band_id"], name: "index_direct_message_threads_on_band_id"
     t.index ["user_id"], name: "index_direct_message_threads_on_user_id"
-    t.check_constraint "status::text = ANY (ARRAY['open'::character varying, 'archived'::character varying, 'blocked'::character varying]::text[])", name: "direct_message_threads_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['open'::character varying::text, 'archived'::character varying::text, 'blocked'::character varying::text])", name: "direct_message_threads_status_check"
   end
 
   create_table "direct_messages", force: :cascade do |t|
@@ -258,7 +258,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.datetime "updated_at", null: false
     t.index ["band_id", "status", "starts_at"], name: "index_events_on_band_id_and_status_and_starts_at"
     t.index ["band_id"], name: "index_events_on_band_id"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "events_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'published'::character varying::text])", name: "events_status_check"
   end
 
   create_table "follows", force: :cascade do |t|
@@ -283,8 +283,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.index ["band_id"], name: "index_memberships_on_band_id"
     t.index ["user_id", "band_id"], name: "index_memberships_on_user_id_and_band_id", unique: true
     t.index ["user_id"], name: "index_memberships_on_user_id"
-    t.check_constraint "level::text = ANY (ARRAY['fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[])", name: "memberships_level_check"
-    t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'paused'::character varying, 'cancelled'::character varying, 'expired'::character varying]::text[])", name: "memberships_status_check"
+    t.check_constraint "level::text = ANY (ARRAY['fan'::character varying::text, 'supporter'::character varying::text, 'core_member'::character varying::text])", name: "memberships_level_check"
+    t.check_constraint "status::text = ANY (ARRAY['active'::character varying::text, 'paused'::character varying::text, 'cancelled'::character varying::text, 'expired'::character varying::text])", name: "memberships_status_check"
   end
 
   create_table "merch_discounts", force: :cascade do |t|
@@ -295,7 +295,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.datetime "updated_at", null: false
     t.index ["band_id", "level"], name: "index_merch_discounts_on_band_id_and_level", unique: true
     t.index ["band_id"], name: "index_merch_discounts_on_band_id"
-    t.check_constraint "level::text = ANY (ARRAY['fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[])", name: "merch_discounts_level_check"
+    t.check_constraint "level::text = ANY (ARRAY['fan'::character varying::text, 'supporter'::character varying::text, 'core_member'::character varying::text])", name: "merch_discounts_level_check"
     t.check_constraint "percentage >= 0 AND percentage <= 100", name: "merch_discounts_percentage_range_check"
   end
 
@@ -328,7 +328,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.index ["band_id"], name: "index_orders_on_band_id"
     t.index ["stripe_checkout_session_id"], name: "index_orders_on_stripe_checkout_session_id", unique: true
     t.index ["user_id"], name: "index_orders_on_user_id"
-    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'paid'::character varying, 'processing'::character varying, 'completed'::character varying, 'cancelled'::character varying, 'refunded'::character varying]::text[])", name: "orders_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'paid'::character varying::text, 'processing'::character varying::text, 'completed'::character varying::text, 'cancelled'::character varying::text, 'refunded'::character varying::text])", name: "orders_status_check"
     t.check_constraint "subtotal_cents >= 0 AND shipping_cents >= 0 AND total_cents >= 0 AND platform_fee_cents >= 0", name: "orders_amounts_non_negative_check"
   end
 
@@ -377,8 +377,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.string "visibility", default: "public", null: false
     t.index ["band_id", "status"], name: "index_polls_on_band_id_and_status"
     t.index ["band_id"], name: "index_polls_on_band_id"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "polls_status_check"
-    t.check_constraint "visibility::text = ANY (ARRAY['public'::character varying, 'followers'::character varying, 'fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[])", name: "polls_visibility_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'published'::character varying::text])", name: "polls_status_check"
+    t.check_constraint "visibility::text = ANY (ARRAY['public'::character varying::text, 'followers'::character varying::text, 'fan'::character varying::text, 'supporter'::character varying::text, 'core_member'::character varying::text])", name: "polls_visibility_check"
   end
 
   create_table "posts", force: :cascade do |t|
@@ -393,10 +393,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.string "visibility", default: "public", null: false
     t.index ["band_id", "status", "visibility"], name: "index_posts_on_band_id_and_status_and_visibility"
     t.index ["band_id"], name: "index_posts_on_band_id"
-    t.check_constraint "early_access_level IS NULL OR (early_access_level::text = ANY (ARRAY['fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[]))", name: "posts_early_access_level_check"
-    t.check_constraint "post_type::text = ANY (ARRAY['announcement'::character varying, 'composition_journal'::character varying, 'rehearsal_recording'::character varying]::text[])", name: "posts_post_type_check"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "posts_status_check"
-    t.check_constraint "visibility::text = ANY (ARRAY['public'::character varying, 'followers'::character varying, 'fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[])", name: "posts_visibility_check"
+    t.check_constraint "early_access_level IS NULL OR (early_access_level::text = ANY (ARRAY['fan'::character varying::text, 'supporter'::character varying::text, 'core_member'::character varying::text]))", name: "posts_early_access_level_check"
+    t.check_constraint "post_type::text = ANY (ARRAY['announcement'::character varying::text, 'composition_journal'::character varying::text, 'rehearsal_recording'::character varying::text])", name: "posts_post_type_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'published'::character varying::text])", name: "posts_status_check"
+    t.check_constraint "visibility::text = ANY (ARRAY['public'::character varying::text, 'followers'::character varying::text, 'fan'::character varying::text, 'supporter'::character varying::text, 'core_member'::character varying::text])", name: "posts_visibility_check"
   end
 
   create_table "product_variants", force: :cascade do |t|
@@ -427,13 +427,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.string "name", null: false
     t.string "release_format"
     t.integer "release_year"
+    t.integer "shipping_cents", default: 0, null: false
     t.string "source", default: "manual", null: false
     t.string "status", default: "draft", null: false
     t.datetime "updated_at", null: false
     t.index ["band_id", "discogs_release_id"], name: "index_products_on_band_and_discogs_release", unique: true, where: "(discogs_release_id IS NOT NULL)"
     t.index ["band_id"], name: "index_products_on_band_id"
-    t.check_constraint "source::text = ANY (ARRAY['manual'::character varying, 'discogs'::character varying]::text[])", name: "products_source_check"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "products_status_check"
+    t.check_constraint "shipping_cents >= 0", name: "products_shipping_cents_check"
+    t.check_constraint "source::text = ANY (ARRAY['manual'::character varying::text, 'discogs'::character varying::text])", name: "products_source_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'published'::character varying::text])", name: "products_status_check"
   end
 
   create_table "ratings", force: :cascade do |t|
@@ -460,7 +462,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.index ["reportable_type", "reportable_id"], name: "index_reports_on_reportable"
     t.index ["reporter_id"], name: "index_reports_on_reporter_id"
     t.check_constraint "char_length(reason) > 0", name: "reports_reason_not_blank"
-    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'resolved'::character varying, 'dismissed'::character varying]::text[])", name: "reports_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'resolved'::character varying::text, 'dismissed'::character varying::text])", name: "reports_status_check"
   end
 
   create_table "shipping_addresses", force: :cascade do |t|
@@ -501,8 +503,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.index ["stripe_subscription_id"], name: "index_subscriptions_on_stripe_subscription_id", unique: true
     t.index ["user_id", "band_id"], name: "index_subscriptions_on_user_id_and_band_id", unique: true
     t.index ["user_id"], name: "index_subscriptions_on_user_id"
-    t.check_constraint "level::text = ANY (ARRAY['fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[])", name: "subscriptions_level_check"
-    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'active'::character varying, 'past_due'::character varying, 'cancelled'::character varying, 'expired'::character varying]::text[])", name: "subscriptions_status_check"
+    t.check_constraint "level::text = ANY (ARRAY['fan'::character varying::text, 'supporter'::character varying::text, 'core_member'::character varying::text])", name: "subscriptions_level_check"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'active'::character varying::text, 'past_due'::character varying::text, 'cancelled'::character varying::text, 'expired'::character varying::text])", name: "subscriptions_status_check"
   end
 
   create_table "tracks", force: :cascade do |t|
@@ -515,7 +517,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_123800) do
     t.datetime "updated_at", null: false
     t.index ["album_id", "status"], name: "index_tracks_on_album_id_and_status"
     t.index ["album_id"], name: "index_tracks_on_album_id"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "tracks_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'published'::character varying::text])", name: "tracks_status_check"
   end
 
   create_table "users", force: :cascade do |t|
