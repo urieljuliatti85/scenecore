@@ -23,6 +23,26 @@ RSpec.describe "Public album pages", type: :request do
       expect(response.body).to include("3.0")
     end
 
+    it "shows the Bandcamp embed player when the album has one" do
+      band = create(:band, :approved)
+      url = "https://bandcamp.com/EmbeddedPlayer/album=1234567890/size=large/"
+      album = create(:album, :published, band: band, bandcamp_embed_url: url)
+
+      get public_album_path(band.slug, album)
+
+      expect(response.body).to include("<iframe")
+      expect(response.body).to include(url)
+    end
+
+    it "does not show a Bandcamp player when the album has no embed URL" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band)
+
+      get public_album_path(band.slug, album)
+
+      expect(response.body).not_to include("<iframe")
+    end
+
     it "shows credited supporters" do
       band = create(:band, :approved)
       album = create(:album, :published, band: band)
