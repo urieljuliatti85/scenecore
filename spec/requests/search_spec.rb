@@ -93,5 +93,22 @@ RSpec.describe "Search", type: :request do
 
       expect(response.body).to include("Search for a band or an album")
     end
+
+    # The header has no search field, so this page must carry its own or
+    # there is nowhere to type.
+    it "renders a search form on the page itself" do
+      get search_path
+
+      expect(response.body).to include("name=\"q\"")
+      expect(response.body).to include("name=\"type\"")
+    end
+
+    it "keeps the current query and type in the form after searching" do
+      create(:band, :approved, name: "Farscape")
+
+      get search_path(type: "band", q: "Farscape")
+
+      expect(response.body).to include("value=\"Farscape\"")
+    end
   end
 end
