@@ -1,144 +1,298 @@
 <% content_for :title, "About — SceneCore" %>
 
-<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-4xl mx-auto">
-  <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 mb-3">About</p>
-  <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">
-    Your band. Your fans. Your home.
-  </h1>
-  <p class="text-lg text-neutral-300 mb-12 max-w-2xl">
-    SceneCore is a music-first home for independent bands — the place where a
-    band's music, its people and everything it shares with them stay together.
-  </p>
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-6xl mx-auto">
+  <div class="max-w-3xl">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 mb-3">About SceneCore</p>
+    <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-5">
+      Your band. Your fans. Your home.
+    </h1>
+    <p class="text-lg sm:text-xl text-neutral-300 max-w-2xl">
+      SceneCore is the music-first digital home where independent bands turn
+      discovery into a lasting relationship — through music, content,
+      memberships, community, merchandise and events.
+    </p>
+  </div>
 
-  <h2 class="text-2xl font-extrabold tracking-tight mb-2">The problem</h2>
-  <p class="text-neutral-400 mb-8 max-w-2xl">
-    A band is discovered on one service, publishes on another, sells somewhere
-    else, and talks to its fans through two or three more.
-  </p>
+  <nav class="flex flex-wrap gap-2 mt-8 mb-16" aria-label="About this page">
+    <% [
+         [ "How it works", "#how-it-works" ],
+         [ "What it does", "#what-it-does" ],
+         [ "Business model", "#business-model" ],
+         [ "Technology", "#technology" ],
+         [ "Current scope", "#current-scope" ]
+       ].each do |label, anchor| %>
+      <%= link_to label, anchor, class: "rounded-full border border-neutral-800 bg-neutral-900/60 px-4 py-2 text-sm text-neutral-300 hover:text-white hover:border-neutral-600 transition" %>
+    <% end %>
+  </nav>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-16">
     <%= render layout: "info_card" do %>
-      <h3 class="text-lg font-semibold text-white">It isn't only scattered tools</h3>
+      <h2 class="text-lg font-semibold text-white">The fragmented journey</h2>
       <p class="text-neutral-300">
-        Every one of those services is good at its part. What breaks is the
-        relationship itself: it ends up split across places the band does not
-        own, on terms the band does not set.
+        A band is discovered on one service, publishes on another, sells
+        somewhere else, and talks to its fans through two or three more.
       </p>
     <% end %>
 
-    <%= render layout: "info_card" do %>
-      <h3 class="text-lg font-semibold text-white">A rented audience is a fragile one</h3>
+    <%= render layout: "info_card", locals: { highlighted: true } do %>
+      <h2 class="text-lg font-semibold text-white">One continuous home</h2>
       <p class="text-neutral-300">
-        When the people who care about a band live inside someone else's
-        platform, reaching them depends on that platform continuing to allow
-        it. A following built this way can thin out without anyone leaving.
+        SceneCore keeps the relationship together. The music establishes the
+        band's identity; everything else helps that relationship grow.
       </p>
     <% end %>
   </div>
 
-  <h2 class="text-2xl font-extrabold tracking-tight mb-2">What SceneCore does</h2>
-  <p class="text-neutral-400 mb-8 max-w-2xl">
-    It gives that relationship one continuous home, with the music at its
-    centre.
-  </p>
+  <section id="how-it-works" class="scroll-mt-28 mb-20">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300 mb-3">The product loop</p>
+    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">How SceneCore works</h2>
+    <p class="text-neutral-400 max-w-2xl mb-8">
+      Discovery can happen anywhere. SceneCore begins when a listener wants to
+      stay connected and support the band directly.
+    </p>
 
-  <div class="flex flex-col gap-4 mb-16">
-    <%= render layout: "info_card" do %>
-      <h3 class="font-semibold text-white">For bands</h3>
-      <p class="text-neutral-300 text-sm">
-        A page that is yours: publish your albums, write to the people
-        following you, share what only members see, sell merchandise, announce
-        shows, and see how that relationship is going — without deciding first
-        which service each piece belongs to.
+    <ol class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+      <% [
+           [ "01", "A band builds its home", "It creates a public profile, brings in its music, introduces its members and publishes what is happening now." ],
+           [ "02", "A listener becomes a follower", "Visitors can discover and understand a band before creating an account. Following is free when they want to stay." ],
+           [ "03", "Membership deepens access", "Fan, Supporter and Core Member unlock progressively closer access for one specific band." ],
+           [ "04", "Community keeps the relationship active", "Posts, comments, polls, sessions, credits and direct messages create reasons to return between releases." ],
+           [ "05", "Commerce turns support into income", "Fans can buy merchandise, subscribe monthly and purchase tickets without leaving the band's experience." ],
+           [ "06", "The band runs it from one panel", "Band administrators manage content, products, orders, events, tickets, members and Stripe payouts." ]
+         ].each do |number, title, description| %>
+        <li class="flex gap-4">
+          <span class="shrink-0 h-9 w-9 rounded-full border border-yellow-500/30 bg-yellow-400/10 text-yellow-300 text-xs font-bold flex items-center justify-center"><%= number %></span>
+          <div>
+            <h3 class="font-semibold text-white mb-1"><%= title %></h3>
+            <p class="text-sm text-neutral-400"><%= description %></p>
+          </div>
+        </li>
+      <% end %>
+    </ol>
+  </section>
+
+  <section id="what-it-does" class="scroll-mt-28 mb-20">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300 mb-3">The platform today</p>
+    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">What SceneCore does</h2>
+    <p class="text-neutral-400 max-w-2xl mb-8">
+      The product is a multi-band platform. Every band's private data,
+      membership access, commerce and administration remain isolated from
+      every other band.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <% [
+           [ "Music and discovery", "Public band pages, album publishing, Spotify metadata import, Bandcamp links, covers, ratings and credits." ],
+           [ "Memberships", "Monthly Fan, Supporter and Core Member plans with hierarchical access and Stripe-powered lifecycle management." ],
+           [ "Exclusive content", "Announcements, demos, alternative versions, rehearsal recordings, composition journals, videos, streams and rare archives." ],
+           [ "Community", "Comments, membership polls, voting, private sessions, RSVP and Core Member conversations with the band." ],
+           [ "Store", "Products, variants, stock, shipping zones, single-band carts, Stripe Connect checkout, fulfilment and full refunds." ],
+           [ "Member benefits", "Merchandise discounts, early product access and priority access enforced by the server, not only hidden in the interface." ],
+           [ "Events and tickets", "Published events, free or paid ticket batches, protected reservations, ticket wallet, QR codes and one-time check-in." ],
+           [ "Band operations", "Members, content, catalogue, orders, events, tickets, connected Stripe account, balances and upcoming payouts." ],
+           [ "Platform governance", "Band approval, moderation, reports, users, subscriptions, categories, fees, analytics, settings and audit history." ]
+         ].each do |title, description| %>
+        <%= render layout: "info_card" do %>
+          <h3 class="font-semibold text-white"><%= title %></h3>
+          <p class="text-sm text-neutral-300"><%= description %></p>
+        <% end %>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="mb-20">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300 mb-3">Membership</p>
+        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Three ways to get closer</h2>
+      </div>
+      <%= link_to "See every benefit", "#{how_it_works_path}#membership-plans", class: "text-sm text-yellow-300 hover:text-yellow-200 transition" %>
+    </div>
+
+    <% membership_summaries = {
+         "fan" => [ "Follow more closely", "Exclusive posts, early news, selected demos, polls and community access." ],
+         "supporter" => [ "Support the creative process", "Everything in Fan, plus early releases, full demos, journals, credits and merchandise benefits." ],
+         "core_member" => [ "Join the core group", "Everything in Supporter, plus private sessions, rare archives, direct messages and a voice in selected decisions." ]
+       } %>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <% membership_summaries.each do |level, (promise, description)| %>
+        <%= render layout: "info_card", locals: { highlighted: level == "supporter" } do %>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500 mb-2"><%= promise %></p>
+            <h3 class="text-xl font-bold text-white"><%= level.humanize.titleize %></h3>
+            <p class="mt-2">
+              <span class="text-3xl font-extrabold text-white">$<%= Membership::PRICES_IN_CENTS.fetch(level) / 100 %></span>
+              <span class="text-sm text-neutral-500">/month</span>
+            </p>
+          </div>
+          <p class="text-sm text-neutral-300"><%= description %></p>
+        <% end %>
+      <% end %>
+    </div>
+    <p class="text-sm text-neutral-500 mt-5">
+      Membership belongs to one band. A person can be a Fan of one band and a
+      Core Member of another. Higher levels inherit the access of lower levels.
+    </p>
+  </section>
+
+  <section id="business-model" class="scroll-mt-28 mb-20">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300 mb-3">Business model</p>
+    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">SceneCore earns when bands earn</h2>
+    <p class="text-neutral-400 max-w-2xl mb-8">
+      There is no monthly platform fee to create a band page. Stripe processes
+      payments and separates SceneCore's fee from the band's share at the time
+      of the transaction.
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
+      <%= render layout: "info_card" do %>
+        <p class="text-4xl font-extrabold text-white">85%</p>
+        <h3 class="font-semibold text-white">Bands keep 85% of memberships</h3>
+        <p class="text-sm text-neutral-400">The standard SceneCore share is 15% of recurring membership payments.</p>
+      <% end %>
+
+      <%= render layout: "info_card" do %>
+        <p class="text-4xl font-extrabold text-white">90%</p>
+        <h3 class="font-semibold text-white">Bands keep 90% of store sales</h3>
+        <p class="text-sm text-neutral-400">The standard SceneCore share is 10% of one-time Store transactions.</p>
+      <% end %>
+
+      <%= render layout: "info_card" do %>
+        <p class="text-4xl font-extrabold text-white">90%</p>
+        <h3 class="font-semibold text-white">Bands keep 90% of paid tickets</h3>
+        <p class="text-sm text-neutral-400">Paid tickets use the same standard one-time commerce fee as the Store.</p>
+      <% end %>
+    </div>
+
+    <div class="rounded-3xl border border-neutral-800 bg-neutral-900/40 p-6 sm:p-8">
+      <h3 class="font-semibold text-white mb-4">Payment flow</h3>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+        <% [
+             [ "1", "Band connects Stripe" ],
+             [ "2", "Fan checks out" ],
+             [ "3", "Stripe separates the fee" ],
+             [ "4", "Signed webhooks confirm access" ]
+           ].each do |number, label| %>
+          <div class="flex items-center gap-3">
+            <span class="shrink-0 h-7 w-7 rounded-full bg-neutral-800 text-neutral-300 font-semibold flex items-center justify-center"><%= number %></span>
+            <span class="text-neutral-300"><%= label %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <section id="technology" class="scroll-mt-28 mb-20">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300 mb-3">Technology and delivery</p>
+    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">A Rails monolith built for a focused MVP</h2>
+    <p class="text-neutral-400 max-w-2xl mb-8">
+      SceneCore deliberately keeps the architecture compact: one application,
+      clear domain boundaries and PostgreSQL as the source of truth.
+    </p>
+
+    <div class="overflow-hidden rounded-3xl border border-neutral-800 divide-y divide-neutral-800">
+      <% [
+           [ "Application", "Ruby 3.3 and Rails 8.1, served by Puma and Thruster in a non-root Docker container." ],
+           [ "Web interface", "Server-rendered HTML with Hotwire, Turbo, Stimulus, Tailwind CSS, Importmap and Propshaft." ],
+           [ "Data and files", "PostgreSQL 16 for transactional data and Active Storage with image processing for media." ],
+           [ "Payments", "Stripe Checkout and Stripe Connect for memberships, Store orders, paid tickets, refunds, balances and payouts." ],
+           [ "Integrations", "Spotify and Discogs metadata, Bandcamp links, Google Analytics, Sentry monitoring and transactional email." ],
+           [ "Deployment", "A multi-stage Docker image deployed on Railway with HTTPS, health checks, database migrations and persistent storage." ],
+           [ "CI/CD", "GitHub Actions runs dependency and security scans, RSpec, browser system tests and RuboCop before changes reach main." ],
+           [ "Safety", "Devise authentication, Pundit authorization, signed idempotent webhooks, protected files, SSRF controls and atomic stock/check-in rules." ]
+         ].each do |label, description| %>
+        <div class="grid grid-cols-1 sm:grid-cols-[11rem_1fr] gap-2 sm:gap-6 px-6 py-5 bg-neutral-900/30">
+          <h3 class="font-semibold text-white"><%= label %></h3>
+          <p class="text-sm text-neutral-400"><%= description %></p>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="mb-20">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300 mb-3">Clear positioning</p>
+    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">What SceneCore is not</h2>
+    <p class="text-neutral-400 max-w-2xl mb-8">
+      Being clear about this is more useful than claiming to replace everything.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <%= render layout: "info_card" do %>
+        <h3 class="font-semibold text-white">Not a streaming replacement</h3>
+        <p class="text-neutral-300 text-sm">
+          Streaming services remain useful for discovery. SceneCore links out
+          to them and becomes the place where that discovery turns into a
+          direct relationship.
+        </p>
+      <% end %>
+
+      <%= render layout: "info_card" do %>
+        <h3 class="font-semibold text-white">Not a store with extra features</h3>
+        <p class="text-neutral-300 text-sm">
+          A purchase is one moment in a relationship. Commerce belongs beside
+          the music, content, membership and event that gave the purchase
+          meaning.
+        </p>
+      <% end %>
+
+      <%= render layout: "info_card" do %>
+        <h3 class="font-semibold text-white">Not a generic social network</h3>
+        <p class="text-neutral-300 text-sm">
+          The primary unit is a band's home and its own audience — not a global
+          algorithm deciding which band or fan should win attention.
+        </p>
+      <% end %>
+    </div>
+  </section>
+
+  <section id="current-scope" class="scroll-mt-28 mb-20">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300 mb-3">Current scope</p>
+    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">What is live — and what comes next</h2>
+    <p class="text-neutral-400 max-w-2xl mb-8">
+      The marketplace core is live. The next work is about deeper ticket
+      benefits and making the production operation ready for greater scale.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <%= render layout: "info_card", locals: { highlighted: true } do %>
+        <h3 class="font-semibold text-white">Live now</h3>
+        <ul class="flex flex-col gap-2 text-sm text-neutral-300">
+          <li>Band pages, music, following and public discovery</li>
+          <li>Memberships, exclusive content and community</li>
+          <li>Store, discounts, early access and order refunds</li>
+          <li>Stripe Connect financial panel</li>
+          <li>Native events, paid/free tickets, QR and check-in</li>
+          <li>Band and platform administration</li>
+        </ul>
+      <% end %>
+
+      <%= render layout: "info_card" do %>
+        <h3 class="font-semibold text-white">Next increments</h3>
+        <ul class="flex flex-col gap-2 text-sm text-neutral-300">
+          <li>Membership discounts and priority access for tickets</li>
+          <li>Guest ticket checkout and a dedicated door-staff role</li>
+          <li>Ticket transfer, automated refunds and camera scanning</li>
+          <li>A staging environment and a documented rollback path</li>
+          <li>Durable background jobs and shared storage before horizontal scaling</li>
+        </ul>
+      <% end %>
+    </div>
+  </section>
+
+  <div class="rounded-3xl border border-yellow-500/30 bg-yellow-400/10 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+    <div>
+      <h2 class="text-xl font-bold text-white mb-2">Start with the music. Stay for the relationship.</h2>
+      <p class="text-neutral-300 text-sm max-w-xl">
+        Browse independent bands, follow the ones that matter to you, or create
+        the digital home your own band can keep building on.
       </p>
-    <% end %>
-
-    <%= render layout: "info_card" do %>
-      <h3 class="font-semibold text-white">For fans</h3>
-      <p class="text-neutral-300 text-sm">
-        Discover a band, listen, follow, keep up with what it publishes, and
-        support it directly if you want to — without leaving the band's own
-        page to do each of those things.
-      </p>
-    <% end %>
-
-    <%= render layout: "info_card" do %>
-      <h3 class="font-semibold text-white">Music first, not content in general</h3>
-      <p class="text-neutral-300 text-sm">
-        A band is not a generic creator with a posting schedule. The music is
-        what the relationship is built on, so it stays at the centre of the
-        page rather than becoming one more kind of post.
-      </p>
-    <% end %>
-  </div>
-
-  <h2 class="text-2xl font-extrabold tracking-tight mb-2">What SceneCore is not</h2>
-  <p class="text-neutral-400 mb-8 max-w-2xl">
-    Being clear about this is more useful than claiming to replace everything.
-  </p>
-
-  <div class="flex flex-col gap-4 mb-16">
-    <%= render layout: "info_card" do %>
-      <h3 class="font-semibold text-white">Not a streaming replacement</h3>
-      <p class="text-neutral-300 text-sm">
-        Streaming services are where most people find new music, and that is
-        worth keeping. SceneCore links out to them rather than asking anyone to
-        listen somewhere new. Use them to be discovered; use SceneCore to build
-        on it.
-      </p>
-    <% end %>
-
-    <%= render layout: "info_card" do %>
-      <h3 class="font-semibold text-white">Not a store with extra features</h3>
-      <p class="text-neutral-300 text-sm">
-        Selling a record is one moment in a relationship, not the whole of it.
-        Commerce here sits inside the band's page because the people buying are
-        the same people following, reading and showing up.
-      </p>
-    <% end %>
-
-    <%= render layout: "info_card" do %>
-      <h3 class="font-semibold text-white">Not a social network</h3>
-      <p class="text-neutral-300 text-sm">
-        There is no feed ranking bands against each other and no algorithm
-        deciding who hears from whom. A fan follows a band and hears from that
-        band.
-      </p>
-    <% end %>
-  </div>
-
-  <h2 class="text-2xl font-extrabold tracking-tight mb-2">How we make money</h2>
-  <p class="text-neutral-400 mb-8 max-w-2xl">
-    Bands pay nothing to be here. SceneCore takes a share only when a band
-    earns.
-  </p>
-
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-4">
-    <%= render layout: "info_card" do %>
-      <h3 class="font-semibold text-white">Bands keep 85% of memberships</h3>
-      <p class="text-neutral-300 text-sm">
-        The remaining 15% covers running the platform: hosting the music and
-        content, handling payments, and keeping the band's home online.
-      </p>
-    <% end %>
-
-    <%= render layout: "info_card" do %>
-      <h3 class="font-semibold text-white">Bands keep 90% of store sales</h3>
-      <p class="text-neutral-300 text-sm">
-        The band supplies and ships the goods, so the platform takes less.
-      </p>
-    <% end %>
-  </div>
-
-  <p class="text-sm text-neutral-500 mb-16">
-    <%= link_to "How it works", how_it_works_path, class: "text-yellow-300 hover:text-yellow-200 transition" %>
-    goes through the membership levels and the money side in full.
-  </p>
-
-  <div class="flex flex-wrap items-center gap-3">
-    <%= link_to "Discover bands", discover_bands_path, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 font-semibold px-6 py-3 hover:bg-yellow-400/20 hover:text-yellow-200 transition" %>
-    <% unless user_signed_in? %>
-      <%= link_to "Create your band's home", new_user_registration_path, class: "rounded-full border border-neutral-700 text-white font-semibold px-6 py-3 hover:border-neutral-500 transition" %>
-    <% end %>
+    </div>
+    <div class="flex flex-wrap gap-3 shrink-0">
+      <%= link_to "Discover bands", discover_bands_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 transition" %>
+      <% unless user_signed_in? %>
+        <%= link_to "Create an account", new_user_registration_path, class: "rounded-full border border-neutral-600 text-white font-semibold px-6 py-3 hover:border-neutral-400 transition" %>
+      <% end %>
+    </div>
   </div>
 </section>
