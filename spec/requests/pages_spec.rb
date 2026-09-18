@@ -26,6 +26,24 @@ RSpec.describe "Pages", type: :request do
         expect(response.body).to include("Your bands")
       end
 
+      it "keeps primary and account actions inside one desktop navigation" do
+        admin = create(:user, :platform_admin)
+        sign_in admin
+
+        get root_path
+
+        navigation = Nokogiri::HTML(response.body).at_css("#desktop-nav")
+
+        expect(navigation).to be_present
+        expect(navigation.at_css("a[href='#{discover_bands_path}']")).to be_present
+        expect(navigation.at_css("a[href='#{bands_path}']")).to be_present
+        expect(navigation.at_css("a[href='#{admin_root_path}']")).to be_present
+        expect(navigation.at_css("a[href='#{profile_path}']")).to be_present
+        expect(navigation.at_css("a[href='#{cart_path}']")).to be_present
+        expect(navigation.at_css("a[href='#{tickets_path}']")).to be_present
+        expect(navigation.at_css("form[action='#{destroy_user_session_path}']")).to be_present
+      end
+
       it "shows a link to the public band directory when not authenticated" do
         get root_path
 
