@@ -253,6 +253,19 @@ Note: this section is about benefits tied to a Fan/Supporter/Core Member
 level (discounts, early access), not a general-purpose store any fan can
 buy from. That is a separate, larger piece of work — see §8.1 Store below.
 
+### Current implementation (2026-09-18)
+
+- `MerchDiscount` is applied server-side to Store cart and checkout prices.
+  The discounted unit price is snapshotted on each `OrderItem`, so later
+  membership or discount changes do not alter an existing order.
+- Discount eligibility uses the active membership for the product's band and
+  follows the membership hierarchy. A Core Member inherits an available
+  Supporter discount, while the highest configured eligible percentage wins.
+- Product early/priority access is enforced server-side in the storefront,
+  cart, checkout, and protected product attachments.
+- Ticket benefits remain deferred until the ticketing integration described
+  in `docs/band-admin.md` §20 exists.
+
 ### Detailed specification
 
 Read:
