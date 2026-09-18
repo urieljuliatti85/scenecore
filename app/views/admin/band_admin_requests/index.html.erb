@@ -11,10 +11,13 @@
       <% @band_admin_requests.each do |band_admin_request| %>
         <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4">
           <div class="flex items-center justify-between gap-4">
-            <p class="font-semibold text-white"><%= band_admin_request.user.name %> — <%= band_admin_request.band.name %></p>
+            <p class="font-semibold text-white">
+              <%= band_admin_request.user.name %> —
+              <%= link_to band_admin_request.band.name, band_path(band_admin_request.band), class: "text-yellow-300 hover:text-yellow-200 transition" %>
+            </p>
             <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-2 py-0.5"><%= band_admin_request.status %></span>
           </div>
-          <p class="text-sm text-neutral-400 mt-1">Requested <%= time_ago_in_words(band_admin_request.created_at) %> ago</p>
+          <p class="text-sm text-neutral-400 mt-1"><%= band_admin_request.user.email %> · requested <%= time_ago_in_words(band_admin_request.created_at) %> ago</p>
 
           <% if band_admin_request.pending? %>
             <div class="mt-3 flex items-center gap-2">

@@ -14,6 +14,28 @@ RSpec.describe "Admin::BandAdminRequests", type: :request do
       expect(response.body).to include("Hopeful Member")
     end
 
+    it "shows the requester's email, so the admin can verify them off-platform" do
+      admin = create(:user, :platform_admin)
+      requester = create(:user, email: "hopeful@example.com")
+      create(:band_admin_request, user: requester)
+      sign_in admin
+
+      get admin_band_admin_requests_path
+
+      expect(response.body).to include("hopeful@example.com")
+    end
+
+    it "links the band's name to its admin panel" do
+      admin = create(:user, :platform_admin)
+      band = create(:band)
+      band_admin_request = create(:band_admin_request, band: band)
+      sign_in admin
+
+      get admin_band_admin_requests_path
+
+      expect(response.body).to include(band_path(band_admin_request.band))
+    end
+
     it "returns 404 for a regular authenticated user" do
       user = create(:user)
       sign_in user
