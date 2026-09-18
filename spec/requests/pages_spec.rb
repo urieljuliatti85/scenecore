@@ -316,6 +316,34 @@ RSpec.describe "Pages", type: :request do
 
       expect(response.body).to include("85% of memberships")
       expect(response.body).to include("90% of store sales")
+      expect(response.body).to include("90% of paid tickets")
+    end
+
+    it "summarizes the live product from discovery through ticketing" do
+      get about_path
+
+      expect(response.body).to include("Music and discovery")
+      expect(response.body).to include("Memberships")
+      expect(response.body).to include("Store")
+      expect(response.body).to include("Events and tickets")
+      expect(response.body).to include("Platform governance")
+    end
+
+    it "documents the public technical stack and delivery pipeline" do
+      get about_path
+
+      expect(response.body).to include("Ruby 3.3 and Rails 8.1")
+      expect(response.body).to include("PostgreSQL 16")
+      expect(response.body).to include("GitHub Actions")
+      expect(response.body).to include("Railway")
+    end
+
+    it "distinguishes live capabilities from the next increments" do
+      get about_path
+
+      expect(response.body).to include("Live now")
+      expect(response.body).to include("Next increments")
+      expect(response.body).to include("Membership discounts and priority access for tickets")
     end
 
     it "is linked from the header nav and the footer" do
