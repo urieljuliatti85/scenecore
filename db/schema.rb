@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_18_123000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_18_134500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -572,6 +572,63 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_123000) do
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'active'::character varying, 'past_due'::character varying, 'cancelled'::character varying, 'expired'::character varying]::text[])", name: "subscriptions_status_check"
   end
 
+  create_table "ticket_batches", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "event_id", null: false
+    t.string "name", null: false
+    t.integer "price_cents", null: false
+    t.integer "quantity_total", null: false
+    t.datetime "sales_end_at"
+    t.datetime "sales_start_at"
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_ticket_batches_on_event_id"
+    t.check_constraint "price_cents >= 0", name: "ticket_batches_price_non_negative"
+    t.check_constraint "quantity_total > 0", name: "ticket_batches_quantity_positive"
+    t.check_constraint "sales_end_at IS NULL OR sales_start_at IS NULL OR sales_end_at > sales_start_at", name: "ticket_batches_sales_window_valid"
+  end
+
+  create_table "ticket_orders", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "paid_at"
+    t.integer "platform_fee_cents", null: false
+    t.integer "quantity", null: false
+    t.string "status", default: "pending", null: false
+    t.string "stripe_checkout_session_id"
+    t.string "stripe_payment_intent_id"
+    t.bigint "ticket_batch_id", null: false
+    t.integer "total_cents", null: false
+    t.integer "unit_price_cents", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["stripe_checkout_session_id"], name: "index_ticket_orders_on_stripe_checkout_session_id", unique: true
+    t.index ["stripe_payment_intent_id"], name: "index_ticket_orders_on_stripe_payment_intent_id", unique: true
+    t.index ["ticket_batch_id", "status", "expires_at"], name: "index_ticket_orders_on_batch_status_expiry"
+    t.index ["ticket_batch_id"], name: "index_ticket_orders_on_ticket_batch_id"
+    t.index ["user_id"], name: "index_ticket_orders_on_user_id"
+    t.check_constraint "quantity > 0", name: "ticket_orders_quantity_positive"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'paid'::character varying, 'expired'::character varying]::text[])", name: "ticket_orders_status_check"
+    t.check_constraint "unit_price_cents >= 0 AND total_cents >= 0 AND platform_fee_cents >= 0", name: "ticket_orders_amounts_non_negative"
+  end
+
+  create_table "tickets", force: :cascade do |t|
+    t.bigint "checked_in_by_id"
+    t.datetime "created_at", null: false
+    t.bigint "event_id", null: false
+    t.string "public_token", null: false
+    t.bigint "ticket_order_id", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "used_at"
+    t.bigint "user_id", null: false
+    t.index ["checked_in_by_id"], name: "index_tickets_on_checked_in_by_id"
+    t.index ["event_id", "used_at"], name: "index_tickets_on_event_id_and_used_at"
+    t.index ["event_id"], name: "index_tickets_on_event_id"
+    t.index ["public_token"], name: "index_tickets_on_public_token", unique: true
+    t.index ["ticket_order_id"], name: "index_tickets_on_ticket_order_id"
+    t.index ["user_id"], name: "index_tickets_on_user_id"
+    t.check_constraint "used_at IS NULL AND checked_in_by_id IS NULL OR used_at IS NOT NULL AND checked_in_by_id IS NOT NULL", name: "tickets_check_in_pair"
+  end
+
   create_table "tracks", force: :cascade do |t|
     t.bigint "album_id", null: false
     t.datetime "created_at", null: false
@@ -654,5 +711,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_123000) do
   add_foreign_key "shipping_zones", "bands"
   add_foreign_key "subscriptions", "bands"
   add_foreign_key "subscriptions", "users"
+  add_foreign_key "ticket_batches", "events"
+  add_foreign_key "ticket_orders", "ticket_batches"
+  add_foreign_key "ticket_orders", "users"
+  add_foreign_key "tickets", "events"
+  add_foreign_key "tickets", "ticket_orders"
+  add_foreign_key "tickets", "users"
+  add_foreign_key "tickets", "users", column: "checked_in_by_id"
   add_foreign_key "tracks", "albums"
 end

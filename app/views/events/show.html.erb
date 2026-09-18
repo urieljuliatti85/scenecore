@@ -48,4 +48,38 @@
   <% if @event.description.present? %>
     <p class="mt-8 text-neutral-300 whitespace-pre-line"><%= @event.description %></p>
   <% end %>
+
+  <section class="mt-10 border-t border-neutral-800 pt-8">
+    <div class="flex items-center justify-between gap-4 mb-4">
+      <div>
+        <h2 class="text-xl font-bold">Ticket batches</h2>
+        <p class="text-sm text-neutral-500 mt-1">Paid tickets are issued after Stripe confirms payment.</p>
+      </div>
+      <% new_batch = TicketBatch.new(event: @event) %>
+      <% if policy(new_batch).create? %>
+        <%= link_to "Add batch", new_band_event_ticket_batch_path(@band, @event), class: "rounded-full bg-yellow-400 text-black text-sm font-semibold px-4 py-2 hover:bg-yellow-300 transition" %>
+      <% end %>
+    </div>
+
+    <% if @ticket_batches.any? %>
+      <div class="space-y-3">
+        <% @ticket_batches.each do |batch| %>
+          <article class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p class="font-semibold"><%= batch.name %></p>
+              <p class="text-sm text-neutral-400"><%= number_to_currency(batch.price_cents / 100.0, unit: "US$") %> · <%= batch.remaining_quantity %> of <%= batch.quantity_total %> remaining</p>
+            </div>
+            <% if policy(batch).update? %>
+              <div class="flex items-center gap-3">
+                <%= link_to "Edit", edit_band_event_ticket_batch_path(@band, @event, batch), class: "text-sm text-neutral-300 hover:text-white" %>
+                <%= button_to "Delete", band_event_ticket_batch_path(@band, @event, batch), method: :delete, class: "text-sm text-red-400 hover:text-red-300", form: { data: { turbo_confirm: "Delete this ticket batch?" } } %>
+              </div>
+            <% end %>
+          </article>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="rounded-2xl border border-dashed border-neutral-800 p-5 text-sm text-neutral-500">No SceneCore ticket batches yet.</p>
+    <% end %>
+  </section>
 </section>

@@ -424,12 +424,50 @@ zone's figure for an item that is unusually heavy or light.
 
 ---
 
+## Events
+
+An Event belongs to one Band. Published future events may expose SceneCore
+ticket batches while `ticket_url` remains available for bands that still sell
+through an external partner. An Event with ticket history cannot be deleted.
+
+---
+
+## TicketBatches
+
+One priced allocation within an Event, with `quantity_total` and optional
+`sales_start_at`/`sales_end_at`. Availability subtracts paid orders and
+unexpired pending reservations. Creation and editing are restricted to a Band
+Administrator of the Event's band.
+
+---
+
+## TicketOrders
+
+The purchaser's immutable checkout snapshot: TicketBatch, quantity, unit and
+total cents, platform fee, status, Stripe Checkout/PaymentIntent ids and local
+reservation expiry. Paid orders issue exactly `quantity` Tickets. Pending
+orders past `expires_at` no longer reserve inventory.
+
+---
+
+## Tickets
+
+One admission credential belonging to exactly one TicketOrder, Event and
+purchasing User. `public_token` is a unique random URL-safe value used by the
+QR URL; sequential database ids are never exposed in the ticket/check-in
+routes. `used_at` and `checked_in_by_id` are written together under a row lock,
+so a ticket cannot be accepted twice.
+
+---
+
 ## Relationships
 
 User
   ├── has_many BandMemberships
   ├── has_many Carts
-  └── has_many Orders
+  ├── has_many Orders
+  ├── has_many TicketOrders
+  └── has_many Tickets
 
 Band
   ├── has_many BandMemberships
@@ -437,6 +475,7 @@ Band
   ├── has_many Products
   ├── has_many Carts
   ├── has_many Orders
+  ├── has_many Events
   └── has_many ShippingZones
         └── has_many ShippingZoneCountries
 
@@ -462,3 +501,14 @@ Order
   ├── belongs_to Band
   ├── has_many OrderItems
   └── has_one ShippingAddress
+
+Event
+  ├── belongs_to Band
+  ├── has_many TicketBatches
+  └── has_many Tickets
+
+TicketBatch
+  └── has_many TicketOrders
+
+TicketOrder
+  └── has_many Tickets

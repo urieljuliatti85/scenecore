@@ -1,0 +1,18 @@
+<% content_for :title, "Ticket check-in — SceneCore" %>
+
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-lg mx-auto">
+  <p class="text-xs uppercase tracking-[0.2em] text-yellow-400">Door check-in</p>
+  <h1 class="text-3xl font-extrabold tracking-tight mt-2"><%= @ticket.event.title %></h1>
+
+  <div class="mt-7 rounded-2xl border <%= @ticket.used? ? "border-red-900/60 bg-red-950/20" : "border-green-900/60 bg-green-950/20" %> p-6">
+    <p class="text-sm text-neutral-400">Ticket holder</p>
+    <p class="text-xl font-bold mt-1"><%= @ticket.user.name %></p>
+    <% if @ticket.used? %>
+      <p class="text-red-300 font-semibold mt-5">Already checked in</p>
+      <p class="text-sm text-neutral-400 mt-1"><%= @ticket.used_at.strftime("%d %b %Y · %H:%M:%S") %></p>
+    <% else %>
+      <p class="text-green-300 font-semibold mt-5">Valid and unused</p>
+      <%= button_to "Confirm check-in", ticket_check_in_path(@ticket.public_token), method: :patch, class: "w-full mt-5 rounded-full bg-green-400 text-black font-bold px-6 py-3 hover:bg-green-300 transition cursor-pointer", form: { data: { turbo_confirm: "Confirm this attendee's check-in?" } } %>
+    <% end %>
+  </div>
+</section>

@@ -704,7 +704,9 @@ Early access must be handled as a membership rule, not as separate copies of the
 
 # 20. Tickets
 
-Once a ticketing integration exists, Supporters can receive early access and Core Members can receive priority.
+Native ticketing now exists (§8.2 of `ROADMAP.md`). Supporter early access
+and Core Member priority remain a separate Commerce increment; the initial
+ticketing MVP deliberately does not infer membership benefits.
 
 Do not implement a full ticketing system just to satisfy this rule if one does not already exist.
 

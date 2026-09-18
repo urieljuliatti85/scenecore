@@ -88,7 +88,7 @@ class StripeWebhooksController < ActionController::Base
     StripeConnectStatusRefresher.call(band) if band
   end
 
-  # Store checkout (ADR-007) and Subscription checkout both complete as
+  # Store, ticket and Subscription checkout all complete as
   # checkout.session.completed on this same endpoint. The Store's sessions
   # are destination charges on the platform account, so the event does not
   # identify itself as belonging to a connected account — the order's own
@@ -96,8 +96,14 @@ class StripeWebhooksController < ActionController::Base
   def handle_checkout_completed(session)
     if Order.exists?(stripe_checkout_session_id: session.id)
       StripeStorePaymentHandler.call(session)
+    elsif TicketOrder.exists?(stripe_checkout_session_id: session.id) || ticket_order_metadata?(session)
+      StripeTicketPaymentHandler.call(session)
     else
       StripeCheckoutCompletedHandler.call(session)
     end
+  end
+
+  def ticket_order_metadata?(session)
+    session.respond_to?(:metadata) && session.metadata&.[]("ticket_order_id").present?
   end
 end

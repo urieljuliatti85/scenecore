@@ -1,0 +1,18 @@
+<% content_for :title, "Your tickets — SceneCore" %>
+
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-2xl mx-auto">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-8">Your tickets</h1>
+  <% if @tickets.any? %>
+    <div class="space-y-4">
+      <% @tickets.each do |ticket| %>
+        <%= link_to ticket_path(ticket.public_token), class: "block rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5 hover:border-neutral-600 transition" do %>
+          <p class="font-semibold text-white"><%= ticket.event.title %></p>
+          <p class="text-sm text-neutral-400 mt-1"><%= ticket.event.band.name %> · <%= ticket.event.starts_at.strftime("%d %b %Y · %H:%M") %></p>
+          <p class="text-xs mt-2 <%= ticket.used? ? "text-neutral-500" : "text-green-300" %>"><%= ticket.used? ? "Checked in" : "Ready" %></p>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="rounded-2xl border border-dashed border-neutral-800 p-6 text-neutral-500">You do not have any tickets yet.</p>
+  <% end %>
+</section>

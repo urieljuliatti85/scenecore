@@ -123,7 +123,8 @@ app/policies/ (Pundit, one policy per model — see CLAUDE.md)
 
 ### Stripe
 
-- Purpose: subscription billing for band memberships and Store checkout,
+- Purpose: subscription billing for band memberships, Store checkout and
+  event-ticket checkout,
   including Stripe Connect onboarding and revenue splits.
 - Authentication: server-to-server via a secret key
   (`Rails.application.credentials.dig(:stripe, :secret_key)`), wrapped
@@ -132,13 +133,15 @@ app/policies/ (Pundit, one policy per model — see CLAUDE.md)
   OAuth.
 - API: Stripe Checkout Sessions (`StripeCheckoutCompletedHandler`,
   `StripeStorePaymentHandler`, `StoreCheckoutSessionCreator`,
+  `StripeTicketPaymentHandler`, `TicketCheckoutSessionCreator`,
   `StoreOrderRefundCreator`, `StripeStoreRefundHandler`,
   `StripeCustomerResolver`, `StripePriceResolver`), Connect onboarding,
   connected-account financial reads (`StripeConnectedAccountFinancials`),
   single-use Express Dashboard access (`StripeExpressDashboardLink`), and the
   Subscriptions API (`StripeSubscriptionSwitcher` for plan changes).
-  Membership payments split 85/15 and Store payments split 90/10 through the
-  band's connected account. Balance and payout reads always send that band's
+  Membership payments split 85/15; Store and paid ticket orders split 90/10
+  through the band's connected account. Free ticket orders never call Stripe.
+  Balance and payout reads always send that band's
   account id as Stripe's per-request account option; without it the same API
   call would read the platform account instead.
 - Webhooks: `StripeWebhooksController` (`POST /stripe/webhooks`, no
@@ -158,8 +161,8 @@ app/policies/ (Pundit, one policy per model — see CLAUDE.md)
   destinations post to `/stripe/webhooks`. For the v2 capability notification,
   SceneCore uses the related account id to fetch the latest account with the
   required configuration includes before updating local readiness. A completed
-  checkout is dispatched to the Store or membership handler by its persisted
-  session id. Store refund events use
+  checkout is dispatched to the Store, ticket, or membership handler by its
+  persisted session id. Store refund events use
   the persisted refund id (with order metadata as the race-safe fallback)
   and only a successful Stripe event marks the order refunded.
   Idempotency: `StripeWebhookEvent.record!` uniquely constrains on

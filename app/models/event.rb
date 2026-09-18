@@ -2,6 +2,8 @@ class Event < ApplicationRecord
   URL_FORMAT = Band::URL_FORMAT
 
   belongs_to :band
+  has_many :ticket_batches, dependent: :restrict_with_error
+  has_many :tickets, dependent: :restrict_with_error
 
   enum :status, { draft: "draft", published: "published" },
        default: :draft, validate: true
@@ -21,5 +23,9 @@ class Event < ApplicationRecord
   def ticket_link
     url = ticket_url.to_s
     url if url.match?(URL_FORMAT)
+  end
+
+  def internal_tickets?
+    ticket_batches.exists?
   end
 end

@@ -271,8 +271,8 @@ buy from. That is a separate, larger piece of work — see §8.1 Store below.
   Stripe balance, next pending payout, and open a fresh single-use Express
   Dashboard login link. Stripe API failures degrade only this financial
   summary and never expose another band's data or block the rest of the panel.
-- Ticket benefits remain deferred until the ticketing integration described
-  in `docs/band-admin.md` §20 exists.
+- Native Events/Tickets now exists (§8.2). Membership-level ticket discounts,
+  early access and priority access remain a separate, deferred Commerce slice.
 
 ### Detailed specification
 
@@ -335,6 +335,33 @@ ShippingAddresses), `docs/payments.md`, and ADR-007
 Discogs Marketplace integration (`docs/product.md` §4.2) depends on this
 section existing first, plus its own separate scoping pass — do not fold
 Discogs-specific work into this implementation.
+
+---
+
+# 8.2 Events and Tickets MVP (implemented 2026-09-18)
+
+The first native ticketing slice is complete:
+
+- Band Administrators create ticket batches with price, capacity and optional
+  sales window on an existing Event.
+- A signed-in fan reserves up to ten tickets for approximately 30 minutes.
+  Batch availability is calculated under a row lock from paid orders plus
+  unexpired reservations.
+- Paid orders reuse Stripe Connect destination charges and the existing 10%
+  one-time-commerce fee. A signed, idempotent
+  `checkout.session.completed` webhook issues one Ticket per seat; free batches
+  are fulfilled without Stripe.
+- Each ticket has an opaque random public token and a locally generated QR
+  code. Ticket ids are not exposed in purchaser or check-in URLs.
+- QR validation is restricted to a Band Member or Band Administrator of the
+  hosting band. Platform Administrators receive no implicit door permission.
+  Check-in records validator and timestamp atomically and rejects reuse.
+
+Explicitly deferred: guest checkout, a dedicated door-staff role, ticket
+transfer, automated ticket refunds, native camera-scanner UI, and
+membership-level ticket discounts/priority access. The last item is now
+unblocked as a separate Commerce increment; do not fold it into the ticketing
+core retroactively.
 
 ---
 

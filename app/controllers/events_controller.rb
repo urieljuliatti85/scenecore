@@ -9,6 +9,7 @@ class EventsController < ApplicationController
 
   def show
     authorize @event
+    @ticket_batches = @event.ticket_batches.for_sale
   end
 
   def create
@@ -39,8 +40,11 @@ class EventsController < ApplicationController
   def destroy
     authorize @event
 
-    @event.destroy
-    redirect_to band_path(@band), notice: "Event deleted."
+    if @event.destroy
+      redirect_to band_path(@band), notice: "Event deleted."
+    else
+      redirect_to band_event_path(@band, @event), alert: @event.errors.full_messages.to_sentence
+    end
   end
 
   def publish

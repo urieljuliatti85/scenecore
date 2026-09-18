@@ -1,0 +1,39 @@
+<%= form_with model: [ band, event, ticket_batch ], class: "flex flex-col gap-5" do |form| %>
+  <% if ticket_batch.errors.any? %>
+    <div class="rounded-xl border border-red-900/60 bg-red-950/30 p-4 text-sm text-red-300">
+      <% ticket_batch.errors.full_messages.each do |message| %>
+        <p><%= message %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :name, "Batch name", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.text_field :name, required: true, placeholder: "General admission", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+  </div>
+
+  <div class="grid sm:grid-cols-2 gap-5">
+    <div>
+      <%= form.label :price_cents, "Price (USD cents)", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.number_field :price_cents, required: true, min: 0, step: 1, placeholder: "2500", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+      <p class="text-xs text-neutral-500 mt-1">Example: 2500 = US$25.00.</p>
+    </div>
+    <div>
+      <%= form.label :quantity_total, "Tickets available", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.number_field :quantity_total, required: true, min: 1, step: 1, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    </div>
+  </div>
+
+  <div class="grid sm:grid-cols-2 gap-5">
+    <div>
+      <%= form.label :sales_start_at, "Sales start (optional)", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.datetime_local_field :sales_start_at, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    </div>
+    <div>
+      <%= form.label :sales_end_at, "Sales end (optional)", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+      <%= form.datetime_local_field :sales_end_at, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    </div>
+  </div>
+
+  <%= form.submit submit_label, class: "self-start rounded-full bg-yellow-400 text-black font-semibold px-6 py-2.5 hover:bg-yellow-300 transition cursor-pointer" %>
+<% end %>
