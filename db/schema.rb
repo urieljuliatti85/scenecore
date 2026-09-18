@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_204415) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_18_000640) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -89,6 +89,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_204415) do
     t.index ["spotify_id"], name: "index_albums_on_spotify_id"
     t.check_constraint "early_access_level IS NULL OR (early_access_level::text = ANY (ARRAY['fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[]))", name: "albums_early_access_level_check"
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "albums_status_check"
+  end
+
+  create_table "band_admin_requests", force: :cascade do |t|
+    t.bigint "band_membership_id", null: false
+    t.datetime "created_at", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["band_membership_id"], name: "index_band_admin_requests_on_band_membership_id"
+    t.index ["band_membership_id"], name: "index_band_admin_requests_on_pending_membership", unique: true, where: "((status)::text = 'pending'::text)"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'approved'::character varying, 'rejected'::character varying, 'revoked'::character varying]::text[])", name: "band_admin_requests_status_check"
   end
 
   create_table "band_membership_prices", force: :cascade do |t|
@@ -581,6 +591,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_204415) do
   add_foreign_key "album_credits", "albums"
   add_foreign_key "album_credits", "users"
   add_foreign_key "albums", "bands"
+  add_foreign_key "band_admin_requests", "band_memberships"
   add_foreign_key "band_membership_prices", "bands"
   add_foreign_key "band_memberships", "bands"
   add_foreign_key "band_memberships", "users"

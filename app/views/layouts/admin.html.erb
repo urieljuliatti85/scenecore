@@ -37,6 +37,7 @@
             <%= admin_nav_link "Categories", admin_categories_path, current: request.path.start_with?(admin_categories_path), section: :categories %>
             <%= admin_nav_link "Analytics", admin_analytics_path, current: request.path.start_with?(admin_analytics_path), section: :analytics %>
             <%= admin_nav_link "Reports", admin_reports_path, current: request.path.start_with?(admin_reports_path), section: :reports %>
+            <%= admin_nav_link "Admin requests", admin_band_admin_requests_path, current: request.path.start_with?(admin_band_admin_requests_path), section: :band_admin_requests %>
             <%= admin_nav_link "Audit Log", admin_audit_logs_path, current: request.path.start_with?(admin_audit_logs_path), section: :audit_logs %>
             <%= admin_nav_link "Platform Settings", edit_admin_platform_settings_path, current: request.path.start_with?(admin_platform_settings_path), section: :platform_settings %>
           </div>
