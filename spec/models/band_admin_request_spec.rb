@@ -1,20 +1,24 @@
 require "rails_helper"
 
 RSpec.describe BandAdminRequest, type: :model do
-  it "is valid with a member's band_membership" do
-    membership = create(:band_membership, role: :member)
-
-    expect(build(:band_admin_request, band_membership: membership)).to be_valid
+  it "is valid with a user and a band" do
+    expect(build(:band_admin_request)).to be_valid
   end
 
-  it "requires a band_membership" do
-    expect(build(:band_admin_request, band_membership: nil)).not_to be_valid
+  it "requires a user" do
+    expect(build(:band_admin_request, user: nil)).not_to be_valid
   end
 
-  it "is not valid for a band_membership that is already an administrator" do
-    membership = create(:band_membership, :administrator)
+  it "requires a band" do
+    expect(build(:band_admin_request, band: nil)).not_to be_valid
+  end
 
-    expect(build(:band_admin_request, band_membership: membership)).not_to be_valid
+  it "is valid even when the user already holds a plain membership on the band" do
+    band = create(:band)
+    user = create(:user)
+    create(:band_membership, band: band, user: user, role: :member)
+
+    expect(build(:band_admin_request, user: user, band: band)).to be_valid
   end
 
   it "defaults status to pending" do
@@ -28,21 +32,40 @@ RSpec.describe BandAdminRequest, type: :model do
     expect(band_admin_request).not_to be_valid
   end
 
+  it "does not allow a second pending request from the same user for the same band" do
+    band = create(:band)
+    user = create(:user)
+    create(:band_admin_request, user: user, band: band)
+
+    duplicate = build(:band_admin_request, user: user, band: band)
+
+    expect(duplicate).not_to be_valid
+  end
+
   # The DB's partial unique index is what actually enforces this — bypass
   # model validations to prove the constraint holds on its own, not just
   # the (much easier to accidentally remove) validation layered on top.
-  it "does not allow a second pending request for the same membership, even bypassing validations" do
-    membership = create(:band_membership, role: :member)
-    create(:band_admin_request, band_membership: membership)
-    duplicate = build(:band_admin_request, band_membership: membership)
+  it "does not allow a second pending request, even bypassing validations" do
+    band = create(:band)
+    user = create(:user)
+    create(:band_admin_request, user: user, band: band)
+    duplicate = build(:band_admin_request, user: user, band: band)
 
     expect { duplicate.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
-  it "allows a new pending request after a previous one was rejected" do
-    membership = create(:band_membership, role: :member)
-    create(:band_admin_request, :rejected, band_membership: membership)
+  it "allows the same user to request a different band" do
+    user = create(:user)
+    create(:band_admin_request, user: user)
 
-    expect(build(:band_admin_request, band_membership: membership)).to be_valid
+    expect(build(:band_admin_request, user: user)).to be_valid
+  end
+
+  it "allows a new pending request after a previous one was rejected" do
+    band = create(:band)
+    user = create(:user)
+    create(:band_admin_request, :rejected, user: user, band: band)
+
+    expect(build(:band_admin_request, user: user, band: band)).to be_valid
   end
 end

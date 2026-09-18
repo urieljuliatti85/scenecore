@@ -176,6 +176,45 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).to include("#posts")
     end
 
+    it "shows the request-administrator-access control to a signed-in user with no membership" do
+      band = create(:band, :approved)
+      user = create(:user)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include(band_admin_request_path(band.slug))
+    end
+
+    it "does not show the request control to an anonymous visitor" do
+      band = create(:band, :approved)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Request administrator access")
+    end
+
+    it "does not show the request control to an existing band member" do
+      band = create(:band, :approved)
+      membership = create(:band_membership, band: band, role: :member)
+      sign_in membership.user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include(band_admin_request_path(band.slug))
+    end
+
+    it "shows the withdraw control when the user has a pending request" do
+      band = create(:band, :approved)
+      user = create(:user)
+      create(:band_admin_request, user: user, band: band)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Withdraw request")
+    end
+
     it "does not render the membership plans on the band's main page" do
       band = create(:band, :approved)
       user = create(:user)

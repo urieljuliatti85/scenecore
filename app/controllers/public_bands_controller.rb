@@ -34,6 +34,7 @@ class PublicBandsController < ApplicationController
     @core_sessions = @band.core_sessions.published.order(:starts_at)
     @products = @band.products.published.includes(:variants).order(created_at: :desc)
     @core_members_count = @band.memberships.active.core_member.count
+    load_band_admin_request
   rescue ActiveRecord::RecordNotFound
     render "not_found", status: :not_found
   end
@@ -55,5 +56,18 @@ class PublicBandsController < ApplicationController
     @core_members = @band.memberships.active.core_member.includes(:user).order(:created_at)
   rescue ActiveRecord::RecordNotFound
     render "not_found", status: :not_found
+  end
+
+  private
+
+  # Backs the "request administrator access" control on the public band
+  # page — shown to any signed-in user without their own BandMembership
+  # already there, and reflecting a pending request of their own if one
+  # exists.
+  def load_band_admin_request
+    return if current_user.nil?
+
+    @own_band_membership = @band.band_memberships.find_by(user_id: current_user.id)
+    @own_pending_band_admin_request = @band.band_admin_requests.pending.find_by(user_id: current_user.id)
   end
 end

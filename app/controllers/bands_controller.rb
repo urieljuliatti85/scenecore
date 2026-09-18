@@ -78,8 +78,6 @@ class BandsController < ApplicationController
       end
       @next_step = next_step_for(@band)
     end
-
-    load_own_membership
   end
 
   def edit
@@ -186,16 +184,6 @@ class BandsController < ApplicationController
     when "profile"
       authorize @band, :update?, policy_class: BandPolicy
     end
-  end
-
-  # Backs the "request administrator access" control on the band's page —
-  # only a plain Band Member sees it, and only their own pending request
-  # (if any) is shown, never another member's.
-  def load_own_membership
-    return if current_user.nil?
-
-    @own_membership = @band.band_memberships.find_by(user_id: current_user.id)
-    @own_pending_band_admin_request = @own_membership&.band_admin_requests&.pending&.first
   end
 
   def log_admin_action(action)
