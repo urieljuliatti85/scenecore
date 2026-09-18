@@ -10,7 +10,11 @@ RSpec.describe "Stripe webhooks", type: :request do
   def post_v2_webhook(event)
     stripe_client = instance_double(Stripe::StripeClient)
     allow(StripeClient).to receive(:instance).and_return(stripe_client)
-    allow(stripe_client).to receive(:parse_event_notification).and_return(event)
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("STRIPE_CONNECT_WEBHOOK_SECRET").and_return("whsec_connect")
+    allow(stripe_client).to receive(:parse_event_notification)
+      .with('{"object":"v2.core.event"}', "t=1,v1=fake", "whsec_connect")
+      .and_return(event)
     allow(Stripe::Webhook).to receive(:construct_event)
     post stripe_webhooks_path, params: '{"object":"v2.core.event"}',
       headers: { "Stripe-Signature" => "t=1,v1=fake", "CONTENT_TYPE" => "application/json" }
@@ -190,6 +194,8 @@ RSpec.describe "Stripe webhooks", type: :request do
     it "returns 400 when a v2 notification signature cannot be verified" do
       stripe_client = instance_double(Stripe::StripeClient)
       allow(StripeClient).to receive(:instance).and_return(stripe_client)
+      allow(ENV).to receive(:[]).and_call_original
+      allow(ENV).to receive(:[]).with("STRIPE_CONNECT_WEBHOOK_SECRET").and_return("whsec_connect")
       allow(stripe_client).to receive(:parse_event_notification)
         .and_raise(Stripe::SignatureVerificationError.new("bad signature", "sig_header"))
 

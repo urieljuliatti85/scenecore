@@ -152,11 +152,14 @@ app/policies/ (Pundit, one policy per model — see CLAUDE.md)
   `account.updated`, and the Accounts v2 thin notification
   `v2.core.account[configuration.recipient].capability_status_updated`.
   Snapshot events are verified and parsed with `Stripe::Webhook.construct_event`;
-  thin notifications use `StripeClient#parse_event_notification` with the same
-  destination secret. For the v2 capability notification, SceneCore uses the
-  related account id to fetch the latest account with the required
-  configuration includes before updating local readiness. A completed checkout is dispatched to the Store or
-  membership handler by its persisted session id. Store refund events use
+  thin notifications use `StripeClient#parse_event_notification` with the
+  separate `STRIPE_CONNECT_WEBHOOK_SECRET`, because Stripe requires distinct
+  destinations (and signing secrets) for snapshot and thin payloads. Both
+  destinations post to `/stripe/webhooks`. For the v2 capability notification,
+  SceneCore uses the related account id to fetch the latest account with the
+  required configuration includes before updating local readiness. A completed
+  checkout is dispatched to the Store or membership handler by its persisted
+  session id. Store refund events use
   the persisted refund id (with order metadata as the race-safe fallback)
   and only a successful Stripe event marks the order refunded.
   Idempotency: `StripeWebhookEvent.record!` uniquely constrains on
