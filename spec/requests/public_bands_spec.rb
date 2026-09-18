@@ -176,6 +176,29 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).to include("#posts")
     end
 
+    it "links Exclusive Content to a band's gated posts" do
+      band = create(:band, :approved)
+      create(:post, :published, :supporter_only, band: band)
+
+      get public_band_path(band.slug)
+
+      doc = Nokogiri::HTML(response.body)
+      exclusive_content = doc.xpath("//a[.//span[normalize-space()='Exclusive Content']]")
+
+      expect(exclusive_content.first["href"]).to eq("#posts")
+    end
+
+    it "links Exclusive Content to membership options before a band publishes gated posts" do
+      band = create(:band, :approved)
+
+      get public_band_path(band.slug)
+
+      doc = Nokogiri::HTML(response.body)
+      exclusive_content = doc.xpath("//a[.//span[normalize-space()='Exclusive Content']]")
+
+      expect(exclusive_content.first["href"]).to eq(public_band_subscriptions_path(band.slug))
+    end
+
     it "shows the request-administrator-access control to a signed-in user with no membership" do
       band = create(:band, :approved)
       user = create(:user)
