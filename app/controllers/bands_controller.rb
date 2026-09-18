@@ -181,9 +181,19 @@ class BandsController < ApplicationController
       authorize @band, :update?, policy_class: BandPolicy
       @active_subscribers = @band.subscriptions.where(status: Subscription::BILLING_STATUSES).count
       @published_products = @band.products.published.count
+      load_financial_summary
     when "profile"
       authorize @band, :update?, policy_class: BandPolicy
     end
+  end
+
+  def load_financial_summary
+    return unless @band.payouts_ready?
+
+    @financial_summary = StripeConnectedAccountFinancials.call(@band)
+  rescue StripeConnectedAccountFinancials::Error => e
+    Rails.logger.warn("Could not read Stripe financials for band #{@band.id}: #{e.cause&.class || e.class}")
+    @financial_summary_unavailable = true
   end
 
   def log_admin_action(action)

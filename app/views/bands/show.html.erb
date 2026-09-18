@@ -104,7 +104,9 @@
 
     <% when "payments" %>
       <%= render "band_payments/panel", band: @band,
-            active_subscribers: @active_subscribers, published_products: @published_products %>
+            active_subscribers: @active_subscribers, published_products: @published_products,
+            financial_summary: @financial_summary,
+            financial_summary_unavailable: @financial_summary_unavailable %>
 
     <% else %>
       <%= render "overview_section" %>

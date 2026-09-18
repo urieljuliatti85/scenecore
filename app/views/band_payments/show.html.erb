@@ -12,5 +12,7 @@
     never holds your money.
   </p>
 
-  <%= render "panel", band: @band, active_subscribers: @active_subscribers, published_products: @published_products %>
+  <%= render "panel", band: @band, active_subscribers: @active_subscribers,
+        published_products: @published_products, financial_summary: @financial_summary,
+        financial_summary_unavailable: @financial_summary_unavailable %>
 </section>

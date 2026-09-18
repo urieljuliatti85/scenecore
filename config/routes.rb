@@ -125,7 +125,9 @@ Rails.application.routes.draw do
     # expires before the band finishes (ADR-007); it just mints a fresh
     # link, so it is not a form page despite the name.
     resource :stripe_connect_account, only: [ :new, :create ], path: "stripe-connect"
-    resource :payments, only: [ :show ], controller: "band_payments"
+    resource :payments, only: [ :show ], controller: "band_payments" do
+      post :stripe_dashboard
+    end
     resources :orders, only: [ :show ], controller: "band_orders" do
       member do
         patch :fulfil

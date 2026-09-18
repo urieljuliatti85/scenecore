@@ -75,6 +75,13 @@ All payment webhooks must:
 - log enough information for debugging;
 - never expose secrets.
 
+The single Stripe event destination accepts both v1 snapshot events and
+Accounts v2 thin notifications. Accounts v2 connected accounts created by the
+platform report recipient readiness through
+`v2.core.account[configuration.recipient].capability_status_updated`; the thin
+payload is signature-verified, then SceneCore fetches the account's current
+state before changing local payment readiness.
+
 ---
 
 ## Financial Rules
@@ -100,6 +107,13 @@ All payment webhooks must:
   `PlatformSetting#store_fee_percentage` are admin-editable, defaulting to
   15% and 10% respectively. Subscription checkout reads the membership
   rate and Store checkout records and sends the Store rate to Stripe.
+- A Band Administrator can read the connected account's available and pending
+  balances and its next pending payout from Band Admin. Every request is
+  scoped to that band's Stripe account, and a Stripe outage degrades the
+  summary instead of blocking the panel. Opening the financial dashboard
+  creates a fresh single-use Stripe Express login link after the same
+  band-scoped authorization check; SceneCore does not store that link and
+  cannot move funds or change bank details.
 - Store refunds are full-only in the MVP and are initiated in SceneCore by
   an administrator of the band that owns the order. SceneCore creates the
   Stripe refund on the destination charge with both `reverse_transfer` and

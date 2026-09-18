@@ -64,16 +64,66 @@
 </div>
 
 <% if band.payouts_ready? %>
-  <%# Balance, payout schedule and bank details live in Stripe's own
-      dashboard — SceneCore does not hold this money and so cannot
-      report on it. %>
-  <div class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
-    <h2 class="text-sm font-semibold text-white mb-2">Your balance and payouts</h2>
-    <p class="text-sm text-neutral-400 mb-4">
-      Stripe holds your balance and pays it to your bank on its own schedule,
-      which you set. SceneCore can't see or change it.
+  <section class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-5">
+      <div>
+        <h2 class="text-sm font-semibold text-white">Financial overview</h2>
+        <p class="text-sm text-neutral-500 mt-1">Read directly from your connected Stripe account.</p>
+      </div>
+
+      <%= button_to "Open financial dashboard", stripe_dashboard_band_payments_path(band), method: :post,
+            form: { data: { turbo: false } },
+            class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-5 py-2.5 hover:border-neutral-500 transition cursor-pointer whitespace-nowrap" %>
+    </div>
+
+    <% if financial_summary_unavailable %>
+      <div class="rounded-xl border border-yellow-500/30 bg-yellow-400/5 px-4 py-3">
+        <p class="text-sm text-yellow-200">Financial information is temporarily unavailable.</p>
+        <p class="text-xs text-neutral-500 mt-1">Your Stripe connection and ability to receive payments are not affected.</p>
+      </div>
+    <% else %>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div class="rounded-xl border border-neutral-800 bg-neutral-950/50 p-5">
+          <p class="text-xs uppercase tracking-wide text-neutral-500">Balance</p>
+          <% if financial_summary.balances.any? %>
+            <div class="mt-3 flex flex-col gap-4">
+              <% financial_summary.balances.each do |balance| %>
+                <div>
+                  <p class="text-2xl font-extrabold text-white">
+                    <%= number_to_currency(balance.available_cents / 100.0, unit: "#{balance.currency.upcase} ") %>
+                  </p>
+                  <p class="text-xs text-neutral-500 mt-1">
+                    Available · <%= number_to_currency(balance.pending_cents / 100.0, unit: "#{balance.currency.upcase} ") %> pending
+                  </p>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-lg font-bold text-white mt-3">No balance yet</p>
+            <p class="text-xs text-neutral-500 mt-1">Your first payment will appear here.</p>
+          <% end %>
+        </div>
+
+        <div class="rounded-xl border border-neutral-800 bg-neutral-950/50 p-5">
+          <p class="text-xs uppercase tracking-wide text-neutral-500">Next payout</p>
+          <% if financial_summary.next_payout %>
+            <p class="text-2xl font-extrabold text-white mt-3">
+              <%= number_to_currency(financial_summary.next_payout.amount_cents / 100.0,
+                    unit: "#{financial_summary.next_payout.currency.upcase} ") %>
+            </p>
+            <p class="text-xs text-neutral-500 mt-1">
+              Expected <%= l(financial_summary.next_payout.arrival_at.to_date, format: :long) %>
+            </p>
+          <% else %>
+            <p class="text-lg font-bold text-white mt-3">No payout scheduled</p>
+            <p class="text-xs text-neutral-500 mt-1">Stripe will show a date here when a payout is pending.</p>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <p class="text-xs text-neutral-600 mt-4">
+      Stripe holds your funds and sends payouts to your bank. SceneCore can display this summary but cannot move the money or change your bank details.
     </p>
-    <%= link_to "Open your Stripe dashboard", "https://dashboard.stripe.com/", target: "_blank", rel: "noopener noreferrer",
-          class: "inline-block rounded-full border border-neutral-700 text-white text-sm font-semibold px-5 py-2.5 hover:border-neutral-500 transition" %>
-  </div>
+  </section>
 <% end %>

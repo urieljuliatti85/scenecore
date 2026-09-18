@@ -3,6 +3,20 @@ require "rails_helper"
 RSpec.describe "Band payments", type: :request do
   let(:band) { create(:band, :approved, name: "The Testers") }
   let(:admin) { create(:user) }
+  let(:financial_summary) do
+    StripeConnectedAccountFinancials::Summary.new(
+      balances: [ StripeConnectedAccountFinancials::Balance.new(
+        currency: "usd", available_cents: 12_500, pending_cents: 3_000
+      ) ],
+      next_payout: StripeConnectedAccountFinancials::Payout.new(
+        currency: "usd", amount_cents: 8_000, arrival_at: Time.zone.local(2026, 9, 25)
+      )
+    )
+  end
+
+  before do
+    allow(StripeConnectedAccountFinancials).to receive(:call).and_return(financial_summary)
+  end
 
   def sign_in_as_administrator
     create(:band_membership, :administrator, band: band, user: admin)
@@ -74,13 +88,13 @@ RSpec.describe "Band payments", type: :request do
       expect(response.body).to include("has restricted your account")
     end
 
-    it "confirms an active account and links to the Stripe dashboard" do
+    it "confirms an active account and offers its financial dashboard" do
       band.update!(stripe_connect_status: :active, stripe_connect_account_id: "acct_1")
 
       get band_payments_path(band)
 
-      expect(response.body).to include("set up to receive payments")
-      expect(response.body).to include("dashboard.stripe.com")
+      expect(response.body).to include("Stripe account verified")
+      expect(response.body).to include("Open financial dashboard")
     end
   end
 
@@ -118,7 +132,7 @@ RSpec.describe "Band payments", type: :request do
       get band_payments_path(band)
 
       expect(band.reload).to be_stripe_connect_active
-      expect(response.body).to include("set up to receive payments")
+      expect(response.body).to include("Stripe account verified")
     end
 
     # Only the state where the answer is expected to change is worth a call
@@ -196,6 +210,96 @@ RSpec.describe "Band payments", type: :request do
 
       expect(response.body).to include("85%")
       expect(response.body).to include("90%")
+    end
+  end
+
+  describe "financial overview" do
+    before do
+      sign_in_as_administrator
+      band.update!(stripe_connect_status: :active, stripe_connect_account_id: "acct_1")
+    end
+
+    it "shows available and pending balance with the next payout" do
+      get band_payments_path(band)
+
+      expect(response.body).to include("USD 125.00")
+      expect(response.body).to include("USD 30.00 pending")
+      expect(response.body).to include("USD 80.00")
+      expect(response.body).to include("September 25, 2026")
+    end
+
+    it "explains when there is no payout scheduled" do
+      allow(StripeConnectedAccountFinancials).to receive(:call).and_return(
+        financial_summary.with(next_payout: nil)
+      )
+
+      get band_payments_path(band)
+
+      expect(response.body).to include("No payout scheduled")
+    end
+
+    it "keeps the page available when Stripe financials cannot be read" do
+      allow(StripeConnectedAccountFinancials).to receive(:call)
+        .and_raise(StripeConnectedAccountFinancials::Error, "down")
+
+      get band_payments_path(band)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Financial information is temporarily unavailable")
+      expect(response.body).to include("Open financial dashboard")
+    end
+
+    it "also shows the financial overview in the band's Payments tab" do
+      get band_path(band, tab: "payments")
+
+      expect(response.body).to include("USD 125.00")
+      expect(response.body).to include("Open financial dashboard")
+    end
+  end
+
+  describe "opening the Stripe dashboard" do
+    before do
+      allow(StripeExpressDashboardLink).to receive(:call)
+        .and_return("https://connect.stripe.com/express/test")
+    end
+
+    it "requires signing in" do
+      post stripe_dashboard_band_payments_path(band)
+
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it "refuses another band's administrator" do
+      outsider = create(:user)
+      create(:band_membership, :administrator, band: create(:band), user: outsider)
+      sign_in outsider
+
+      post stripe_dashboard_band_payments_path(band)
+
+      expect(response).to redirect_to(root_path)
+      expect(StripeExpressDashboardLink).not_to have_received(:call)
+    end
+
+    it "redirects this band's administrator to a fresh Express link" do
+      sign_in_as_administrator
+      band.update!(stripe_connect_status: :active, stripe_connect_account_id: "acct_1")
+
+      post stripe_dashboard_band_payments_path(band)
+
+      expect(response).to redirect_to("https://connect.stripe.com/express/test")
+      expect(StripeExpressDashboardLink).to have_received(:call).with(band)
+    end
+
+    it "returns safely to Payments when Stripe cannot create the link" do
+      sign_in_as_administrator
+      band.update!(stripe_connect_status: :active, stripe_connect_account_id: "acct_1")
+      allow(StripeExpressDashboardLink).to receive(:call)
+        .and_raise(StripeExpressDashboardLink::Error, "Stripe dashboard unavailable")
+
+      post stripe_dashboard_band_payments_path(band)
+
+      expect(response).to redirect_to(band_payments_path(band))
+      expect(flash[:alert]).to eq("Stripe dashboard unavailable")
     end
   end
 
