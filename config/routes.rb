@@ -129,6 +129,7 @@ Rails.application.routes.draw do
     resources :orders, only: [ :show ], controller: "band_orders" do
       member do
         patch :fulfil
+        patch :refund
       end
     end
     resources :shipping_zones, only: [ :index, :new, :create, :edit, :update, :destroy ], path: "shipping"

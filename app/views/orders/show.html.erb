@@ -24,6 +24,16 @@
     </p>
   <% end %>
 
+  <% if @order.refund_pending? %>
+    <p class="rounded-xl border border-yellow-900 bg-yellow-950/30 text-sm text-yellow-300 p-4 mb-6">
+      Your full refund has been requested and is waiting for Stripe confirmation.
+    </p>
+  <% elsif @order.refund_failed? %>
+    <p class="rounded-xl border border-red-900 bg-red-950/30 text-sm text-red-300 p-4 mb-6">
+      Stripe could not complete the refund. Please contact the band for help.
+    </p>
+  <% end %>
+
   <div class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 mb-6">
     <ul class="flex flex-col gap-2 text-sm mb-4">
       <% @order.order_items.each do |item| %>

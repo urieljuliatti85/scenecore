@@ -132,6 +132,7 @@ app/policies/ (Pundit, one policy per model — see CLAUDE.md)
   OAuth.
 - API: Stripe Checkout Sessions (`StripeCheckoutCompletedHandler`,
   `StripeStorePaymentHandler`, `StoreCheckoutSessionCreator`,
+  `StoreOrderRefundCreator`, `StripeStoreRefundHandler`,
   `StripeCustomerResolver`, `StripePriceResolver`), Connect onboarding,
   and the Subscriptions API (`StripeSubscriptionSwitcher` for plan
   changes). Membership payments split 85/15 and Store payments split
@@ -142,9 +143,12 @@ app/policies/ (Pundit, one policy per model — see CLAUDE.md)
   `Stripe-Signature` header and the configured endpoint secret; an
   unverifiable payload gets `400` and nothing is processed. Handled
   event types: `checkout.session.completed`,
-  `customer.subscription.updated`, `customer.subscription.deleted`, and
-  connected-account `account.updated`. A completed checkout is dispatched
-  to the Store or membership handler by its persisted session id.
+  `customer.subscription.updated`, `customer.subscription.deleted`,
+  `refund.created`, `refund.updated`, `refund.failed`, and connected-account
+  `account.updated`. A completed checkout is dispatched to the Store or
+  membership handler by its persisted session id. Store refund events use
+  the persisted refund id (with order metadata as the race-safe fallback)
+  and only a successful Stripe event marks the order refunded.
   Idempotency: `StripeWebhookEvent.record!` uniquely constrains on
   `stripe_event_id` before any handler runs, so a redelivered event
   (Stripe's own retry policy, or a duplicate send) is recognized and
@@ -153,7 +157,7 @@ app/policies/ (Pundit, one policy per model — see CLAUDE.md)
   returns `400` so Stripe's own retry/alerting takes over. Once
   verified, a duplicate event is swallowed (see idempotency above)
   rather than erroring. There is no separate reconciliation job —
-  webhooks are the single source of subscription-state truth.
+  webhooks are the single source of payment-state truth.
 
 ### Spotify
 

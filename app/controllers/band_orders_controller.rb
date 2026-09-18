@@ -17,6 +17,16 @@ class BandOrdersController < ApplicationController
                   notice: "Order ##{@order.id} marked #{@order.status}."
   end
 
+  def refund
+    authorize @order, :refund?, policy_class: OrderPolicy
+
+    StoreOrderRefundCreator.call(@order)
+    redirect_to band_order_path(@band, @order),
+                notice: "Full refund requested. Waiting for Stripe to confirm it."
+  rescue StoreOrderRefundCreator::Error => e
+    redirect_to band_order_path(@band, @order), alert: e.message
+  end
+
   private
 
   def set_band

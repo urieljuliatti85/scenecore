@@ -100,8 +100,13 @@ All payment webhooks must:
   `PlatformSetting#store_fee_percentage` are admin-editable, defaulting to
   15% and 10% respectively. Subscription checkout reads the membership
   rate and Store checkout records and sends the Store rate to Stripe.
-- Refund behavior: not yet defined for Store (open question — does a
-  refund also reverse the platform's application fee, and who initiates
-  it: the band from its connected account, or SceneCore on the band's
-  behalf?). Needs its own decision before Store refunds are implemented.
+- Store refunds are full-only in the MVP and are initiated in SceneCore by
+  an administrator of the band that owns the order. SceneCore creates the
+  Stripe refund on the destination charge with both `reverse_transfer` and
+  `refund_application_fee`, returning the full item and shipping amount to
+  the fan while reversing the band's transfer and the platform commission
+  (ADR-009). The order becomes `refunded` only after a signed Stripe refund
+  webhook confirms success. Refunding never restores inventory
+  automatically; the band adjusts stock after physically receiving any
+  returned goods.
 - Payment provider is the source of payment status.

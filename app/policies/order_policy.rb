@@ -11,6 +11,13 @@ class OrderPolicy < ApplicationPolicy
     administrator_of_band? && record.next_fulfilment_status.present?
   end
 
+  # Money is returned on the band's behalf, so only an administrator of
+  # this exact band can request it. Platform administrators can inspect
+  # orders but do not act as the band's merchant here.
+  def refund?
+    band_administrator? && record.refundable?
+  end
+
   private
 
   def placed_by_user?
@@ -22,7 +29,12 @@ class OrderPolicy < ApplicationPolicy
   def administrator_of_band?
     return false if user.nil?
 
-    user.platform_admin? ||
-      record.band.band_memberships.exists?(user_id: user.id, role: :administrator)
+    user.platform_admin? || band_administrator?
+  end
+
+  def band_administrator?
+    return false if user.nil?
+
+    record.band.band_memberships.exists?(user_id: user.id, role: :administrator)
   end
 end

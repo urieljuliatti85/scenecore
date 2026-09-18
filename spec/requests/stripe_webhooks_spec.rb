@@ -64,7 +64,8 @@ RSpec.describe "Stripe webhooks", type: :request do
       order.order_items.create!(product_variant: variant, product_name: product.name,
                                 variant_name: "Standard", unit_price_cents: 12_000, quantity: 1)
 
-      session = instance_double(Stripe::Checkout::Session, id: "cs_store_9", payment_status: "paid")
+      session = instance_double(Stripe::Checkout::Session, id: "cs_store_9", payment_status: "paid",
+                                                          payment_intent: "pi_store_9")
       event = instance_double(Stripe::Event, id: "evt_store_1", type: "checkout.session.completed",
         data: instance_double(Stripe::Event::Data, object: session))
 
@@ -72,7 +73,36 @@ RSpec.describe "Stripe webhooks", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(order.reload).to be_paid
+      expect(order.stripe_payment_intent_id).to eq("pi_store_9")
       expect(variant.reload.stock_quantity).to eq(3)
+    end
+
+    it "marks a Store order refunded only after Stripe confirms the refund" do
+      order = create(:order, :paid, stripe_checkout_session_id: "cs_store_refund",
+                     stripe_payment_intent_id: "pi_store_refund", stripe_refund_id: "re_store_1",
+                     refund_status: "pending")
+      refund = instance_double(Stripe::Refund, id: "re_store_1", status: "succeeded",
+                                               payment_intent: "pi_store_refund",
+                                               metadata: { "order_id" => order.id.to_s })
+      event = instance_double(Stripe::Event, id: "evt_refund_1", type: "refund.updated",
+                                             data: instance_double(Stripe::Event::Data, object: refund))
+
+      post_webhook(event)
+
+      expect(response).to have_http_status(:ok)
+      expect(order.reload).to be_refunded
+      expect(order.refund_status).to eq("succeeded")
+      expect(order.refunded_at).to be_present
+    end
+
+    it "does not record a refund event when applying it fails, so Stripe can retry" do
+      refund = instance_double(Stripe::Refund)
+      event = instance_double(Stripe::Event, id: "evt_refund_retry", type: "refund.updated",
+                                             data: instance_double(Stripe::Event::Data, object: refund))
+      allow(StripeStoreRefundHandler).to receive(:call).and_raise(ActiveRecord::Deadlocked)
+
+      expect { post_webhook(event) }.to raise_error(ActiveRecord::Deadlocked)
+      expect(StripeWebhookEvent.exists?(stripe_event_id: "evt_refund_retry")).to be false
     end
 
     it "does not touch a Store order when the session belongs to a subscription" do

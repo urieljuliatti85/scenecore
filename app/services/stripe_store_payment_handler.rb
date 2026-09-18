@@ -39,7 +39,14 @@ class StripeStorePaymentHandler
         end
       end
 
-      order.paid!
+      order.update!(status: :paid, stripe_payment_intent_id: payment_intent_id)
     end
+  end
+
+  private
+
+  def payment_intent_id
+    value = @session.payment_intent
+    value.respond_to?(:id) ? value.id : value
   end
 end
