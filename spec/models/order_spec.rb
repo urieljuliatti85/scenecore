@@ -74,6 +74,54 @@ RSpec.describe Order do
     end
   end
 
+
+  describe "refunds" do
+    it "allows a paid, processing, or completed Store order to be refunded" do
+      %i[paid processing completed].each do |status|
+        order = create(:order, status: status, stripe_checkout_session_id: "cs_#{status}")
+
+        expect(order).to be_refundable
+      end
+    end
+
+    it "does not refund an unpaid or already reversed order" do
+      %i[pending cancelled refunded].each do |status|
+        order = create(:order, status: status, stripe_checkout_session_id: "cs_#{status}")
+
+        expect(order).not_to be_refundable
+      end
+    end
+
+    it "does not offer a refund when Stripe collected no money" do
+      order = create(:order, :paid, subtotal_cents: 0, total_cents: 0,
+                                    platform_fee_cents: 0, stripe_checkout_session_id: "cs_free")
+
+      expect(order).not_to be_refundable
+    end
+
+    it "does not offer a second refund after Stripe accepted one" do
+      order = create(:order, :paid, stripe_checkout_session_id: "cs_1",
+                     stripe_refund_id: "re_1", refund_status: "pending")
+
+      expect(order).not_to be_refundable
+      expect(order).to be_refund_pending
+    end
+
+    it "tracks a failed refund without presenting it as pending" do
+      order = create(:order, :paid, stripe_checkout_session_id: "cs_1",
+                     stripe_refund_id: "re_1", refund_status: "failed")
+
+      expect(order).to be_refund_failed
+      expect(order).not_to be_refund_pending
+    end
+
+    it "rejects an unknown refund status" do
+      order = build(:order, refund_status: "unknown")
+
+      expect(order).not_to be_valid
+    end
+  end
+
   describe ".awaiting_band" do
     # These are the orders the band owes goods on: money arrived, nothing
     # shipped yet.

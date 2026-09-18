@@ -241,6 +241,11 @@ A completed or in-progress purchase of one band's products by one fan.
   order even though Stripe Connect computes the actual split, so the
   band's payout is auditable independent of Stripe's own records)
 - stripe_checkout_session_id
+- stripe_payment_intent_id
+- stripe_refund_id
+- refund_status (pending/requires_action/succeeded/failed/canceled, nullable
+  until a refund is requested)
+- refunded_at
 - created_at
 - updated_at
 
@@ -251,6 +256,11 @@ A completed or in-progress purchase of one band's products by one fan.
 - Order state must be explicit and, once payment-related, driven by
   Stripe webhooks as the source of truth (`docs/payments.md`), not
   inferred client-side.
+- A Store order can receive at most one full refund request in the MVP.
+  `stripe_refund_id` makes that request auditable and unique; the order does
+  not enter `refunded` until Stripe confirms a successful refund by webhook.
+- Refunds do not change ProductVariant stock. A band adjusts stock manually
+  after it has physically received a returned product.
 - An order is created from a Cart at checkout; it snapshots each item's
   product name, variant name, and price at that moment (`OrderItems`,
   below) so later edits to the product/variant never change a past

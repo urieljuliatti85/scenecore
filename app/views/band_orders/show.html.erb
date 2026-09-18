@@ -85,4 +85,21 @@
       Waiting for Stripe to confirm this payment. Nothing to send until it does.
     </p>
   <% end %>
+
+  <% if @order.refund_pending? %>
+    <p class="mt-4 rounded-xl border border-yellow-900 bg-yellow-950/30 text-sm text-yellow-300 p-4">
+      Full refund requested. Waiting for Stripe to confirm it.
+    </p>
+  <% elsif @order.refund_failed? %>
+    <p class="mt-4 rounded-xl border border-red-900 bg-red-950/30 text-sm text-red-300 p-4">
+      Stripe could not complete this refund. Contact SceneCore support before trying another refund.
+    </p>
+  <% elsif policy(@order).refund? %>
+    <div class="mt-6 pt-6 border-t border-neutral-800">
+      <%= button_to "Issue full refund", refund_band_order_path(@band, @order), method: :patch,
+            form: { data: { turbo_confirm: "Refund the full amount, including shipping? This also reverses the band's payout and SceneCore's commission." } },
+            class: "rounded-full border border-red-900 text-red-400 font-semibold px-6 py-3 hover:bg-red-950/40 transition cursor-pointer" %>
+      <p class="text-xs text-neutral-500 mt-2">Stock is not restored automatically.</p>
+    </div>
+  <% end %>
 </section>

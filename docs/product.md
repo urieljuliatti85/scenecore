@@ -1141,6 +1141,10 @@ tracks.
 - Built and verified for Subscriptions and Store. Checkout completion is
   dispatched by the persisted session id, while connected-account
   `account.updated` events synchronize each band's payout status (ADR-007).
+- Store full refunds are initiated by the order's Band Administrator and
+  reverse both the connected-account transfer and SceneCore's application
+  fee. Stripe refund webhooks confirm the final order state; inventory is
+  never restored automatically (ADR-009).
 
 ### Subscriptions
 
@@ -1182,9 +1186,6 @@ yet made, tracked in §7 Open Questions:
   be started before account creation?).
 - Subscription cancellation/failed-payment grace-period rule (referenced
   in ROADMAP.md Phase 10 but not yet defined).
-- Store refund behavior — does refunding also reverse SceneCore's
-  application fee, and who initiates it, the band or SceneCore
-  (`docs/payments.md` Financial Rules)?
 - Door/check-in role for ticket validation (ROADMAP.md 11.5 assumes
   someone validates tickets, but that role isn't in `docs/permissions.md`
   yet — likely a Band Member/Administrator action, to be confirmed).

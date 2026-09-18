@@ -31,21 +31,28 @@ class StripeWebhooksController < ActionController::Base
   end
 
   def process_event(event)
-    StripeWebhookEvent.record!(stripe_event_id: event.id, event_type: event.type)
+    # Recording and applying an event are one unit. If a handler fails, the
+    # marker rolls back too, so Stripe can retry instead of being told that a
+    # half-applied financial event was already processed.
+    StripeWebhookEvent.transaction do
+      StripeWebhookEvent.record!(stripe_event_id: event.id, event_type: event.type)
 
-    case event.type
-    when "checkout.session.completed"
-      handle_checkout_completed(event.data.object)
-    when "customer.subscription.updated"
-      StripeSubscriptionUpdatedHandler.call(event.data.object)
-    when "customer.subscription.deleted"
-      StripeSubscriptionDeletedHandler.call(event.data.object)
-    when "account.updated"
-      # Only ever sent for a connected account (ADR-007's Store/Connect
-      # flow) — the platform account itself does not receive its own
-      # account.updated events, so no `event.account` check is needed to
-      # tell this apart from Subscriptions' platform-level events above.
-      StripeConnectAccountUpdatedHandler.call(event.data.object)
+      case event.type
+      when "checkout.session.completed"
+        handle_checkout_completed(event.data.object)
+      when "customer.subscription.updated"
+        StripeSubscriptionUpdatedHandler.call(event.data.object)
+      when "customer.subscription.deleted"
+        StripeSubscriptionDeletedHandler.call(event.data.object)
+      when "account.updated"
+        # Only ever sent for a connected account (ADR-007's Store/Connect
+        # flow) — the platform account itself does not receive its own
+        # account.updated events, so no `event.account` check is needed to
+        # tell this apart from Subscriptions' platform-level events above.
+        StripeConnectAccountUpdatedHandler.call(event.data.object)
+      when "refund.created", "refund.updated", "refund.failed"
+        StripeStoreRefundHandler.call(event.data.object)
+      end
     end
   end
 

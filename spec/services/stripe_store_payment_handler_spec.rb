@@ -18,8 +18,9 @@ RSpec.describe StripeStorePaymentHandler do
     order
   end
 
-  def session(id: "cs_store_1", payment_status: "paid")
-    instance_double(Stripe::Checkout::Session, id: id, payment_status: payment_status)
+  def session(id: "cs_store_1", payment_status: "paid", payment_intent: "pi_store_1")
+    instance_double(Stripe::Checkout::Session, id: id, payment_status: payment_status,
+                                              payment_intent: payment_intent)
   end
 
   it "marks the order paid" do
@@ -28,6 +29,7 @@ RSpec.describe StripeStorePaymentHandler do
     described_class.call(session)
 
     expect(order.reload).to be_paid
+    expect(order.stripe_payment_intent_id).to eq("pi_store_1")
   end
 
   it "consumes the stock the order claimed" do
@@ -66,7 +68,7 @@ RSpec.describe StripeStorePaymentHandler do
   it "accepts a zero-amount order Stripe reports as requiring no payment" do
     order
 
-    described_class.call(session(payment_status: "no_payment_required"))
+    described_class.call(session(payment_status: "no_payment_required", payment_intent: nil))
 
     expect(order.reload).to be_paid
   end

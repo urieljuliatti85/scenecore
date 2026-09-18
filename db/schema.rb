@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_18_020001) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_18_123000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -335,16 +335,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_020001) do
     t.bigint "band_id", null: false
     t.datetime "created_at", null: false
     t.integer "platform_fee_cents", null: false
+    t.string "refund_status"
+    t.datetime "refunded_at"
     t.integer "shipping_cents", default: 0, null: false
     t.string "status", default: "pending", null: false
     t.string "stripe_checkout_session_id"
+    t.string "stripe_payment_intent_id"
+    t.string "stripe_refund_id"
     t.integer "subtotal_cents", null: false
     t.integer "total_cents", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["band_id"], name: "index_orders_on_band_id"
     t.index ["stripe_checkout_session_id"], name: "index_orders_on_stripe_checkout_session_id", unique: true
+    t.index ["stripe_payment_intent_id"], name: "index_orders_on_stripe_payment_intent_id", unique: true
+    t.index ["stripe_refund_id"], name: "index_orders_on_stripe_refund_id", unique: true
     t.index ["user_id"], name: "index_orders_on_user_id"
+    t.check_constraint "refund_status IS NULL OR (refund_status::text = ANY (ARRAY['pending'::character varying, 'requires_action'::character varying, 'succeeded'::character varying, 'failed'::character varying, 'canceled'::character varying]::text[]))", name: "orders_refund_status_check"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'paid'::character varying, 'processing'::character varying, 'completed'::character varying, 'cancelled'::character varying, 'refunded'::character varying]::text[])", name: "orders_status_check"
     t.check_constraint "subtotal_cents >= 0 AND shipping_cents >= 0 AND total_cents >= 0 AND platform_fee_cents >= 0", name: "orders_amounts_non_negative_check"
   end

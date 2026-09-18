@@ -263,6 +263,10 @@ buy from. That is a separate, larger piece of work — see §8.1 Store below.
   Supporter discount, while the highest configured eligible percentage wins.
 - Product early/priority access is enforced server-side in the storefront,
   cart, checkout, and protected product attachments.
+- Store orders support Band Administrator-initiated full refunds. Stripe
+  reverses both the band's transfer and SceneCore's application fee; signed
+  refund webhooks confirm the final order state, and inventory remains a
+  manual adjustment after a physical return (ADR-009).
 - Ticket benefits remain deferred until the ticketing integration described
   in `docs/band-admin.md` §20 exists.
 

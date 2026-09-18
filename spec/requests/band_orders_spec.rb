@@ -8,7 +8,8 @@ RSpec.describe "Band orders", type: :request do
   def order_for(band, status: :paid, with_address: true)
     order = create(:order, band: band, user: fan, status: status,
                            subtotal_cents: 12_000, shipping_cents: 1_500,
-                           total_cents: 13_500, platform_fee_cents: 1_200)
+                           total_cents: 13_500, platform_fee_cents: 1_200,
+                           stripe_checkout_session_id: "cs_order_#{SecureRandom.hex(4)}")
     order.order_items.create!(product_name: "Vinyl", variant_name: "Standard",
                               unit_price_cents: 12_000, quantity: 1)
     if with_address
@@ -170,6 +171,78 @@ RSpec.describe "Band orders", type: :request do
       patch fulfil_band_order_path(band, order)
 
       expect(order.reload).to be_completed
+    end
+  end
+
+
+  describe "PATCH /bands/:band_id/orders/:id/refund" do
+    before do
+      allow(StoreOrderRefundCreator).to receive(:call) do |order|
+        order.update!(stripe_payment_intent_id: "pi_1", stripe_refund_id: "re_1", refund_status: "pending")
+      end
+    end
+
+    it "lets the band's administrator request a full refund" do
+      sign_in_as_administrator
+      order = order_for(band)
+
+      patch refund_band_order_path(band, order)
+
+      expect(StoreOrderRefundCreator).to have_received(:call).with(order)
+      expect(response).to redirect_to(band_order_path(band, order))
+      expect(flash[:notice]).to include("Full refund requested")
+    end
+
+    it "does not let the purchaser request their own refund directly" do
+      sign_in fan
+      order = order_for(band)
+
+      patch refund_band_order_path(band, order)
+
+      expect(StoreOrderRefundCreator).not_to have_received(:call)
+      expect(order.reload.stripe_refund_id).to be_nil
+    end
+
+    it "does not let another band's administrator request the refund" do
+      outsider = create(:user)
+      create(:band_membership, :administrator, band: create(:band), user: outsider)
+      sign_in outsider
+      order = order_for(band)
+
+      patch refund_band_order_path(band, order)
+
+      expect(StoreOrderRefundCreator).not_to have_received(:call)
+    end
+
+    it "does not let a platform administrator act as the band's merchant" do
+      sign_in create(:user, :platform_admin)
+      order = order_for(band)
+
+      patch refund_band_order_path(band, order)
+
+      expect(StoreOrderRefundCreator).not_to have_received(:call)
+    end
+
+    it "does not refund a pending order" do
+      sign_in_as_administrator
+      order = order_for(band, status: :pending)
+
+      patch refund_band_order_path(band, order)
+
+      expect(StoreOrderRefundCreator).not_to have_received(:call)
+    end
+
+    it "shows a Stripe failure without changing the order" do
+      sign_in_as_administrator
+      order = order_for(band)
+      allow(StoreOrderRefundCreator).to receive(:call)
+        .and_raise(StoreOrderRefundCreator::Error, "Stripe could not start the refund")
+
+      patch refund_band_order_path(band, order)
+
+      expect(response).to redirect_to(band_order_path(band, order))
+      expect(flash[:alert]).to include("Stripe could not start")
+      expect(order.reload).to be_paid
     end
   end
 end

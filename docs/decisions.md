@@ -203,3 +203,44 @@ band's 85% is $2.55 before Stripe takes its share of the transaction.
   membership payment. The `subscriptions:unsplit` and
   `subscriptions:apply_split` tasks cover subscriptions created before the
   split shipped.
+
+---
+
+## ADR-009 — Full Store Refunds Reverse Both Revenue Shares
+
+Status: Accepted (2026-09-18)
+
+### Decision
+
+The Store supports full refunds only in the MVP. An administrator of the band
+that owns the order initiates the refund through SceneCore. The platform creates
+the Stripe refund for the destination charge with `reverse_transfer: true` and
+`refund_application_fee: true`, so the fan receives the complete order total,
+including shipping, while both the band's transfer and SceneCore's commission
+are reversed.
+
+The request records Stripe's refund identifier, but the order becomes
+`refunded` only after a signed Stripe refund webhook reports success. A refund
+does not restore product stock automatically.
+
+### Reason
+
+The platform created the destination charge and is therefore the reliable
+place to coordinate all parts of its reversal. Keeping the application fee on
+a sale that no longer exists would make the band absorb SceneCore's commission.
+A full-only operation avoids ambiguous allocations across products, shipping,
+and discounts in the first version.
+
+Physical inventory cannot safely be inferred from a financial refund: a shipped
+item may not have been returned, may arrive damaged, or may not be resellable.
+The band must inspect the return before changing stock.
+
+### Consequence
+
+- Fans cannot issue an automatic refund; they contact the band.
+- Platform administrators can inspect orders but do not act as a band's
+  merchant by initiating this refund.
+- Paid, processing, and completed orders are eligible. Pending, cancelled,
+  already-refunded, or already-requested orders are not.
+- Partial refunds, automatic returns, and automatic restocking remain outside
+  the MVP.

@@ -59,6 +59,7 @@ A Band Member with elevated permissions within their own band. Can:
 - manage band's products
 - manage band's shipping destinations and rates (which also decides the
   countries the band's Store sells to at all)
+- issue full refunds for their own band's paid Store orders
 - manage band's events
 - invite, remove, and change the role of their band's members
 
