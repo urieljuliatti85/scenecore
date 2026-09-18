@@ -26,15 +26,15 @@
 
   <body class="bg-black text-white min-h-screen flex flex-col">
     <header class="border-b border-neutral-800 bg-black/95 backdrop-blur sticky top-0 z-50" data-controller="mobile-menu">
-      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+      <div class="max-w-[100rem] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
         <%= link_to root_path, class: "shrink-0" do %>
           <%= image_tag "logo.png", alt: "SceneCore", class: "h-[3.9rem] w-auto" %>
         <% end %>
 
-        <%# Centred pill of primary links, with the current page in its own
-            capsule. Sits absolutely so it stays centred on the header
-            regardless of how wide the logo or the right-hand pill get. %>
-        <nav id="desktop-nav" class="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-1 rounded-full border border-neutral-800 bg-neutral-900/80 px-1.5 py-1.5">
+        <%# One desktop navigation surface keeps primary and account actions
+            together. Normal flex positioning prevents the account controls
+            from overlapping the centred links on busy signed-in states. %>
+        <nav id="desktop-nav" class="hidden xl:flex min-w-0 items-center gap-1 rounded-full border border-neutral-800 bg-neutral-900/80 px-1.5 py-1.5">
           <%= nav_pill_link "Home", root_path, current: current_page?(root_path), icon: :home %>
           <%= nav_pill_link "Bands", discover_bands_path, current: current_page?(discover_bands_path), icon: :bands %>
           <%= nav_pill_link "About", about_path, current: current_page?(about_path), icon: :about %>
@@ -44,52 +44,45 @@
             <% if current_user.platform_admin? %>
               <%= nav_pill_link "Admin", admin_root_path, current: request.path.start_with?("/admin"), icon: :admin %>
             <% end %>
-          <% end %>
-        </nav>
-
-        <div class="flex items-center gap-3 sm:gap-4">
-          <% if user_signed_in? %>
-            <%# Account cluster mirrors the reference's right-hand pill:
-                avatar + name, then the actions, grouped in one rounded bar. %>
-            <div class="hidden sm:flex items-center gap-2 rounded-full border border-neutral-800 bg-neutral-900/80 py-1.5 pl-1.5 pr-2">
-              <%= link_to profile_path, class: "flex items-center gap-2 rounded-full pr-2 hover:bg-neutral-800 transition", "aria-label": "Profile" do %>
-                <span class="h-8 w-8 rounded-full bg-yellow-400 text-black text-sm font-bold flex items-center justify-center shrink-0">
-                  <%= current_user.name.first.upcase %>
-                </span>
-                <span class="text-sm font-medium text-neutral-200 max-w-[8rem] truncate"><%= current_user.name %></span>
+            <span class="mx-1 h-6 w-px bg-neutral-700" aria-hidden="true"></span>
+            <%= link_to profile_path, class: "flex items-center gap-2 rounded-full px-1.5 py-1 hover:bg-neutral-800 transition", "aria-label": "Profile" do %>
+              <span class="h-8 w-8 rounded-full bg-yellow-400 text-black text-sm font-bold flex items-center justify-center shrink-0">
+                <%= current_user.name.first.upcase %>
+              </span>
+              <span class="hidden 2xl:block text-sm font-medium text-neutral-200 max-w-20 truncate"><%= current_user.name %></span>
+            <% end %>
+            <%= link_to cart_path, class: "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800 transition", "aria-label": "Your cart" do %>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 shrink-0" aria-hidden="true">
+                <circle cx="9" cy="20" r="1.5" />
+                <circle cx="18" cy="20" r="1.5" />
+                <path d="M3 4h2l2.4 11h11L21 7H6" />
+              </svg>
+              <% count = current_user.carts.find_by(status: :active)&.cart_items&.sum(:quantity).to_i %>
+              <% if count.positive? %>
+                <span class="text-xs font-semibold text-yellow-300"><%= count %></span>
               <% end %>
-              <%= link_to cart_path, class: "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800 transition", "aria-label": "Your cart" do %>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 shrink-0" aria-hidden="true">
-                  <circle cx="9" cy="20" r="1.5" />
-                  <circle cx="18" cy="20" r="1.5" />
-                  <path d="M3 4h2l2.4 11h11L21 7H6" />
-                </svg>
-                <% count = current_user.carts.find_by(status: :active)&.cart_items&.sum(:quantity).to_i %>
-                <% if count.positive? %>
-                  <span class="text-xs font-semibold text-yellow-300"><%= count %></span>
-                <% end %>
-              <% end %>
-              <%= link_to "Tickets", tickets_path, class: "rounded-full px-3 py-1.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800 transition" %>
-              <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-sm font-semibold px-4 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
-            </div>
+            <% end %>
+            <%= nav_pill_link "Tickets", tickets_path, current: request.path.start_with?("/tickets") %>
+            <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-sm font-semibold px-4 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer whitespace-nowrap" %>
           <% else %>
-            <div class="hidden sm:flex items-center gap-2 rounded-full border border-neutral-800 bg-neutral-900/80 p-1.5">
-              <%= link_to "Sign in", new_user_session_path, class: "rounded-full px-4 py-1.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800 transition" %>
-              <%= link_to "Join Now", new_user_registration_path, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-sm font-semibold px-4 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition" %>
-            </div>
+            <span class="mx-1 h-6 w-px bg-neutral-700" aria-hidden="true"></span>
+            <%= link_to "Sign in", new_user_session_path, class: "rounded-full px-4 py-1.5 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800 transition whitespace-nowrap" %>
+            <%= link_to "Join Now", new_user_registration_path, class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-sm font-semibold px-4 py-1.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition whitespace-nowrap" %>
           <% end %>
 
-          <%= link_to search_path, class: "h-9 w-9 rounded-full border border-neutral-800 bg-neutral-900/80 hidden sm:flex items-center justify-center text-neutral-300 hover:text-white hover:border-neutral-600 transition", "aria-label": "Search" do %>
+          <%= link_to search_path, class: "h-9 w-9 rounded-full flex shrink-0 items-center justify-center text-neutral-300 hover:text-white hover:bg-neutral-800 transition", "aria-label": "Search" do %>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="h-4 w-4">
               <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
             </svg>
           <% end %>
+        </nav>
 
-          <%# Visible below lg, where the centred pill is hidden — not just
-              below sm, or the medium widths would have no navigation. %>
+        <div class="flex items-center">
+          <%# Below xl the compact menu owns all navigation and account
+              actions, so the desktop bar can never wrap over the logo. %>
           <button
             type="button"
-            class="lg:hidden h-9 w-9 flex items-center justify-center text-neutral-300 hover:text-white"
+            class="xl:hidden h-9 w-9 flex items-center justify-center text-neutral-300 hover:text-white"
             aria-label="Open menu"
             aria-expanded="false"
             aria-controls="mobile-menu-panel"
@@ -103,7 +96,7 @@
         </div>
       </div>
 
-      <div id="mobile-menu-panel" data-mobile-menu-target="panel" class="hidden lg:hidden border-t border-neutral-800 px-4 py-4 flex flex-col gap-4">
+      <div id="mobile-menu-panel" data-mobile-menu-target="panel" class="hidden xl:hidden border-t border-neutral-800 px-4 py-4 flex flex-col gap-4">
         <%= form_with url: search_path, method: :get, class: "flex items-center gap-2" do |form| %>
           <%= form.select :type, [ [ "Band", "band" ], [ "Album", "album" ] ], { selected: params[:type] }, class: "rounded-full bg-neutral-900 border border-neutral-800 text-white text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
           <%= form.text_field :q, value: params[:q], placeholder: "Search...", class: "flex-1 rounded-full bg-neutral-900 border border-neutral-800 text-white text-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
