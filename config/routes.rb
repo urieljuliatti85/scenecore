@@ -96,6 +96,13 @@ Rails.application.routes.draw do
         patch :dismiss
       end
     end
+    resources :band_admin_requests, only: [ :index ] do
+      member do
+        patch :approve
+        patch :reject
+        patch :revoke
+      end
+    end
   end
 
   resources :bands, only: [ :index, :new, :create, :show, :edit, :update ] do
@@ -113,6 +120,7 @@ Rails.application.routes.draw do
     end
 
     resources :band_memberships, only: [ :index, :new, :create, :edit, :update, :destroy ], path: "members"
+    resource :band_admin_request, only: [ :create, :destroy ], path: "admin-request"
     resources :memberships, only: [ :index, :new, :create, :edit, :update, :destroy ], path: "supporters"
     # `new` is the refresh_url Stripe redirects to when an onboarding link
     # expires before the band finishes (ADR-007); it just mints a fresh

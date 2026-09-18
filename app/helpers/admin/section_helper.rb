@@ -65,6 +65,12 @@ module Admin::SectionHelper
       dot: "bg-amber-400",
       active: "bg-amber-400 text-black"
     },
+    band_admin_requests: {
+      text: "text-indigo-400",
+      border: "border-indigo-500/40",
+      dot: "bg-indigo-400",
+      active: "bg-indigo-400 text-black"
+    },
     platform_settings: {
       text: "text-neutral-300",
       border: "border-neutral-700",
