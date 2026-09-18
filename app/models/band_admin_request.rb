@@ -1,25 +1,15 @@
-# A Band Member asking a Platform Administrator to promote their own
-# BandMembership to administrator (docs/proposals/band-admin-promotion-request.md).
-# Mirrors Report's shape: a member-initiated escalation the platform
+# A user asking a Platform Administrator to be let in and made an
+# administrator of a band (docs/proposals/band-admin-promotion-request.md)
+# — typically someone with no existing tie to the band on SceneCore yet.
+# Mirrors Report's shape: a user-initiated escalation the platform
 # decides on, not something the band itself arbitrates.
 class BandAdminRequest < ApplicationRecord
-  belongs_to :band_membership
+  belongs_to :user
+  belongs_to :band
 
   enum :status, { pending: "pending", approved: "approved", rejected: "rejected", revoked: "revoked" },
        default: :pending, validate: true
 
-  validate :band_membership_is_a_member, on: :create
-  validates :band_membership_id, uniqueness: { conditions: -> { pending }, message: "already has a pending request" },
+  validates :user_id, uniqueness: { scope: :band_id, conditions: -> { pending }, message: "already has a pending request for this band" },
             if: :pending?
-
-  private
-
-  # An existing administrator has no reason to request what they already
-  # have, and approving one would be a no-op that still fires the
-  # "you've been promoted" email.
-  def band_membership_is_a_member
-    return if band_membership.nil? || band_membership.member?
-
-    errors.add(:band_membership, "must be a Band Member to request administrator access")
-  end
 end

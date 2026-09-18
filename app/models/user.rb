@@ -20,6 +20,7 @@ class User < ApplicationRecord
   has_many :direct_message_threads, dependent: :destroy
   has_many :direct_messages, dependent: :destroy
   has_many :reports, foreign_key: :reporter_id, inverse_of: :reporter, dependent: :destroy
+  has_many :band_admin_requests, dependent: :destroy
 
   validates :name, presence: true
 

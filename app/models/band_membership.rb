@@ -1,7 +1,6 @@
 class BandMembership < ApplicationRecord
   belongs_to :user
   belongs_to :band
-  has_many :band_admin_requests, dependent: :destroy
 
   enum :role, { member: "member", administrator: "administrator" },
        default: :member, validate: true

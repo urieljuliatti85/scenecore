@@ -2,14 +2,16 @@ class Admin::BandAdminRequestsController < Admin::BaseController
   before_action :set_band_admin_request, only: [ :approve, :reject, :revoke ]
 
   def index
-    @band_admin_requests = BandAdminRequest.includes(band_membership: [ :user, :band ]).order(created_at: :desc)
+    @band_admin_requests = BandAdminRequest.includes(:user, :band).order(created_at: :desc)
   end
 
   def approve
     authorize @band_admin_request
 
     ActiveRecord::Base.transaction do
-      @band_admin_request.band_membership.update!(role: :administrator)
+      membership = @band_admin_request.band.band_memberships.find_or_initialize_by(user_id: @band_admin_request.user_id)
+      membership.role = :administrator
+      membership.save!
       @band_admin_request.approved!
     end
 
@@ -43,15 +45,15 @@ class Admin::BandAdminRequestsController < Admin::BaseController
   end
 
   def requester_name
-    @band_admin_request.band_membership.user.name
+    @band_admin_request.user.name
   end
 
   def band_name
-    @band_admin_request.band_membership.band.name
+    @band_admin_request.band.name
   end
 
   def log_admin_action(action)
-    AdminActionLog.create!(actor: current_user, action: action, subject: @band_admin_request.band_membership.band)
+    AdminActionLog.create!(actor: current_user, action: action, subject: @band_admin_request.band)
   end
 
   # The decision is already recorded either way, so a mail failure must

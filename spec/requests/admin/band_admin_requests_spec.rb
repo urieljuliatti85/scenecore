@@ -5,14 +5,35 @@ RSpec.describe "Admin::BandAdminRequests", type: :request do
     it "lists requests for a platform admin" do
       admin = create(:user, :platform_admin)
       requester = create(:user, name: "Hopeful Member")
-      membership = create(:band_membership, role: :member, user: requester)
-      create(:band_admin_request, band_membership: membership)
+      create(:band_admin_request, user: requester)
       sign_in admin
 
       get admin_band_admin_requests_path
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Hopeful Member")
+    end
+
+    it "shows the requester's email, so the admin can verify them off-platform" do
+      admin = create(:user, :platform_admin)
+      requester = create(:user, email: "hopeful@example.com")
+      create(:band_admin_request, user: requester)
+      sign_in admin
+
+      get admin_band_admin_requests_path
+
+      expect(response.body).to include("hopeful@example.com")
+    end
+
+    it "links the band's name to its admin panel" do
+      admin = create(:user, :platform_admin)
+      band = create(:band)
+      band_admin_request = create(:band_admin_request, band: band)
+      sign_in admin
+
+      get admin_band_admin_requests_path
+
+      expect(response.body).to include(band_path(band_admin_request.band))
     end
 
     it "returns 404 for a regular authenticated user" do
@@ -32,22 +53,38 @@ RSpec.describe "Admin::BandAdminRequests", type: :request do
   end
 
   describe "PATCH /admin/band_admin_requests/:id/approve" do
-    it "promotes the membership and marks the request approved" do
+    it "creates a new administrator membership when the user had none" do
       admin = create(:user, :platform_admin)
-      membership = create(:band_membership, role: :member)
-      band_admin_request = create(:band_admin_request, band_membership: membership)
+      band = create(:band)
+      band_admin_request = create(:band_admin_request, band: band)
       sign_in admin
 
-      patch approve_admin_band_admin_request_path(band_admin_request)
+      expect {
+        patch approve_admin_band_admin_request_path(band_admin_request)
+      }.to change(BandMembership, :count).by(1)
+
+      membership = band.band_memberships.find_by(user: band_admin_request.user)
+      expect(membership.role).to eq("administrator")
+      expect(band_admin_request.reload.status).to eq("approved")
+    end
+
+    it "promotes an existing plain membership instead of duplicating it" do
+      admin = create(:user, :platform_admin)
+      band = create(:band)
+      membership = create(:band_membership, band: band, role: :member)
+      band_admin_request = create(:band_admin_request, user: membership.user, band: band)
+      sign_in admin
+
+      expect {
+        patch approve_admin_band_admin_request_path(band_admin_request)
+      }.not_to change(BandMembership, :count)
 
       expect(membership.reload.role).to eq("administrator")
-      expect(band_admin_request.reload.status).to eq("approved")
     end
 
     it "sends an approval email to the requester" do
       admin = create(:user, :platform_admin)
-      membership = create(:band_membership, role: :member)
-      band_admin_request = create(:band_admin_request, band_membership: membership)
+      band_admin_request = create(:band_admin_request)
       sign_in admin
 
       expect {
@@ -57,8 +94,7 @@ RSpec.describe "Admin::BandAdminRequests", type: :request do
 
     it "records an admin action log" do
       admin = create(:user, :platform_admin)
-      membership = create(:band_membership, role: :member)
-      band_admin_request = create(:band_admin_request, band_membership: membership)
+      band_admin_request = create(:band_admin_request)
       sign_in admin
 
       expect {
@@ -68,8 +104,7 @@ RSpec.describe "Admin::BandAdminRequests", type: :request do
 
     it "does not allow a regular user to approve" do
       user = create(:user)
-      membership = create(:band_membership, role: :member)
-      band_admin_request = create(:band_admin_request, band_membership: membership)
+      band_admin_request = create(:band_admin_request)
       sign_in user
 
       patch approve_admin_band_admin_request_path(band_admin_request)
@@ -80,22 +115,21 @@ RSpec.describe "Admin::BandAdminRequests", type: :request do
   end
 
   describe "PATCH /admin/band_admin_requests/:id/reject" do
-    it "marks the request rejected without changing the membership role" do
+    it "marks the request rejected without creating a membership" do
       admin = create(:user, :platform_admin)
-      membership = create(:band_membership, role: :member)
-      band_admin_request = create(:band_admin_request, band_membership: membership)
+      band_admin_request = create(:band_admin_request)
       sign_in admin
 
-      patch reject_admin_band_admin_request_path(band_admin_request)
+      expect {
+        patch reject_admin_band_admin_request_path(band_admin_request)
+      }.not_to change(BandMembership, :count)
 
       expect(band_admin_request.reload.status).to eq("rejected")
-      expect(membership.reload.role).to eq("member")
     end
 
     it "sends a rejection email to the requester" do
       admin = create(:user, :platform_admin)
-      membership = create(:band_membership, role: :member)
-      band_admin_request = create(:band_admin_request, band_membership: membership)
+      band_admin_request = create(:band_admin_request)
       sign_in admin
 
       expect {
@@ -103,14 +137,13 @@ RSpec.describe "Admin::BandAdminRequests", type: :request do
       }.to have_enqueued_mail(BandAdminRequestMailer, :rejected)
     end
 
-    it "does not block the member from requesting again afterwards" do
+    it "does not block the user from requesting again afterwards" do
       admin = create(:user, :platform_admin)
-      membership = create(:band_membership, role: :member)
-      band_admin_request = create(:band_admin_request, band_membership: membership)
+      band_admin_request = create(:band_admin_request)
       sign_in admin
       patch reject_admin_band_admin_request_path(band_admin_request)
 
-      expect(build(:band_admin_request, band_membership: membership.reload)).to be_valid
+      expect(build(:band_admin_request, user: band_admin_request.user, band: band_admin_request.band)).to be_valid
     end
   end
 end

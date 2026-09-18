@@ -1,6 +1,7 @@
 FactoryBot.define do
   factory :band_admin_request do
-    band_membership
+    user
+    band
 
     trait :approved do
       status { :approved }

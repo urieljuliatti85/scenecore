@@ -2,7 +2,7 @@
 
 <div class="max-w-3xl">
   <h1 class="text-3xl font-extrabold tracking-tight mb-2">Admin requests</h1>
-  <p class="text-neutral-500 mb-8">Band Members asking to be promoted to administrator of their own band.</p>
+  <p class="text-neutral-500 mb-8">Users asking to be let in and made an administrator of a band.</p>
 
   <% if @band_admin_requests.empty? %>
     <p class="text-neutral-500">No requests.</p>
@@ -11,10 +11,13 @@
       <% @band_admin_requests.each do |band_admin_request| %>
         <li class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4">
           <div class="flex items-center justify-between gap-4">
-            <p class="font-semibold text-white"><%= band_admin_request.band_membership.user.name %> — <%= band_admin_request.band_membership.band.name %></p>
+            <p class="font-semibold text-white">
+              <%= band_admin_request.user.name %> —
+              <%= link_to band_admin_request.band.name, band_path(band_admin_request.band), class: "text-yellow-300 hover:text-yellow-200 transition" %>
+            </p>
             <span class="text-xs uppercase tracking-wide text-neutral-500 border border-neutral-700 rounded-full px-2 py-0.5"><%= band_admin_request.status %></span>
           </div>
-          <p class="text-sm text-neutral-400 mt-1">Requested <%= time_ago_in_words(band_admin_request.created_at) %> ago</p>
+          <p class="text-sm text-neutral-400 mt-1"><%= band_admin_request.user.email %> · requested <%= time_ago_in_words(band_admin_request.created_at) %> ago</p>
 
           <% if band_admin_request.pending? %>
             <div class="mt-3 flex items-center gap-2">

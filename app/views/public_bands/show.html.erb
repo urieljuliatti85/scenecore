@@ -59,6 +59,21 @@
         <%= render "shared/social_links", band: @band %>
       </div>
 
+      <%# For someone with no BandMembership here yet — e.g. an actual
+          member of the band who has never signed up on SceneCore. This is
+          a message to the platform, not a grant: a Platform Administrator
+          reviews it before anything changes (docs/proposals/band-admin-promotion-request.md). %>
+      <% if user_signed_in? && @own_band_membership.nil? %>
+        <div class="mt-4">
+          <% if @own_pending_band_admin_request %>
+            <p class="text-sm text-neutral-400 mb-2">Your request to administer this band is awaiting review by SceneCore.</p>
+            <%= button_to "Withdraw request", band_admin_request_path(@band.slug), method: :delete, class: "rounded-full border border-neutral-700 text-white text-sm font-semibold px-4 py-2 hover:border-neutral-500 transition cursor-pointer" %>
+          <% else %>
+            <%= button_to "Is this your band? Request administrator access", band_admin_request_path(@band.slug), method: :post, class: "rounded-full border border-neutral-700 text-neutral-300 text-sm font-semibold px-4 py-2 hover:border-neutral-500 hover:text-white transition cursor-pointer" %>
+          <% end %>
+        </div>
+      <% end %>
+
       <%# Merch only earns a card when the band has something published to sell,
           so the grid tracks the card count instead of assuming three. %>
       <div class="grid <%= @products.any? ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3" %> gap-3 sm:gap-4">

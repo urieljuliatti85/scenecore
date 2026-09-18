@@ -1,14 +1,12 @@
 class BandAdminRequestPolicy < ApplicationPolicy
   def create?
-    return false if user.nil?
-
-    record.band_membership.user_id == user.id && record.band_membership.member?
+    user.present? && record.user_id == user.id
   end
 
   def revoke?
     return false if user.nil?
 
-    user.platform_admin? || record.band_membership.user_id == user.id
+    user.platform_admin? || record.user_id == user.id
   end
 
   def approve?

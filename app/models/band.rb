@@ -6,6 +6,7 @@ class Band < ApplicationRecord
   COUNTRY_CODE_FORMAT = /\A[A-Z]{2}\z/
 
   has_many :band_memberships, dependent: :destroy
+  has_many :band_admin_requests, dependent: :destroy
   has_many :members, through: :band_memberships, source: :user
   has_many :memberships, dependent: :destroy
   has_many :subscriptions, dependent: :destroy

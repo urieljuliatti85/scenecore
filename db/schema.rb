@@ -92,12 +92,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_000640) do
   end
 
   create_table "band_admin_requests", force: :cascade do |t|
-    t.bigint "band_membership_id", null: false
+    t.bigint "band_id", null: false
     t.datetime "created_at", null: false
     t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
-    t.index ["band_membership_id"], name: "index_band_admin_requests_on_band_membership_id"
-    t.index ["band_membership_id"], name: "index_band_admin_requests_on_pending_membership", unique: true, where: "((status)::text = 'pending'::text)"
+    t.bigint "user_id", null: false
+    t.index ["band_id"], name: "index_band_admin_requests_on_band_id"
+    t.index ["user_id", "band_id"], name: "index_band_admin_requests_on_pending_user_and_band", unique: true, where: "((status)::text = 'pending'::text)"
+    t.index ["user_id"], name: "index_band_admin_requests_on_user_id"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'approved'::character varying, 'rejected'::character varying, 'revoked'::character varying]::text[])", name: "band_admin_requests_status_check"
   end
 
@@ -591,7 +593,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_000640) do
   add_foreign_key "album_credits", "albums"
   add_foreign_key "album_credits", "users"
   add_foreign_key "albums", "bands"
-  add_foreign_key "band_admin_requests", "band_memberships"
+  add_foreign_key "band_admin_requests", "bands"
+  add_foreign_key "band_admin_requests", "users"
   add_foreign_key "band_membership_prices", "bands"
   add_foreign_key "band_memberships", "bands"
   add_foreign_key "band_memberships", "users"

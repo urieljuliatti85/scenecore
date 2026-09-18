@@ -120,7 +120,6 @@ Rails.application.routes.draw do
     end
 
     resources :band_memberships, only: [ :index, :new, :create, :edit, :update, :destroy ], path: "members"
-    resource :band_admin_request, only: [ :create, :destroy ], path: "admin-request"
     resources :memberships, only: [ :index, :new, :create, :edit, :update, :destroy ], path: "supporters"
     # `new` is the refresh_url Stripe redirects to when an onboarding link
     # expires before the band finishes (ADR-007); it just mints a fresh
@@ -230,5 +229,7 @@ Rails.application.routes.draw do
     delete "/:slug/core_sessions/:core_session_id/rsvp", to: "core_session_rsvps#destroy", as: :cancel_core_session_rsvp
     post "/:slug/posts/:post_id/report", to: "reports#create_for_post", as: :report_post
     post "/:slug/posts/:post_id/comments/:comment_id/report", to: "reports#create_for_comment", as: :report_comment
+    post "/:slug/admin-request", to: "band_admin_requests#create", as: :band_admin_request
+    delete "/:slug/admin-request", to: "band_admin_requests#destroy"
   end
 end
