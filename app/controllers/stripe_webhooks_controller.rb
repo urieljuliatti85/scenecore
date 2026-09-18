@@ -26,16 +26,27 @@ class StripeWebhooksController < ActionController::Base
   def verified_event
     payload = request.body.read
     signature = request.headers["Stripe-Signature"]
-    endpoint_secret = Rails.application.credentials.dig(:stripe, :webhook_secret)
 
     case JSON.parse(payload)["object"]
     when "event"
-      Stripe::Webhook.construct_event(payload, signature, endpoint_secret)
+      Stripe::Webhook.construct_event(payload, signature, snapshot_webhook_secret)
     when "v2.core.event"
-      StripeClient.instance.parse_event_notification(payload, signature, endpoint_secret)
+      StripeClient.instance.parse_event_notification(payload, signature, thin_webhook_secret)
     end
   rescue JSON::ParserError, Stripe::SignatureVerificationError, ArgumentError
     nil
+  end
+
+  def snapshot_webhook_secret
+    Rails.application.credentials.dig(:stripe, :webhook_secret)
+  end
+
+  # Stripe does not allow v1 snapshot events and v2 thin events in the same
+  # event destination. Both destinations can post to this controller, but each
+  # has its own signing secret.
+  def thin_webhook_secret
+    ENV["STRIPE_CONNECT_WEBHOOK_SECRET"].presence ||
+      Rails.application.credentials.dig(:stripe, :connect_webhook_secret)
   end
 
   def process_event(event)

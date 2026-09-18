@@ -75,9 +75,12 @@ All payment webhooks must:
 - log enough information for debugging;
 - never expose secrets.
 
-The single Stripe event destination accepts both v1 snapshot events and
-Accounts v2 thin notifications. Accounts v2 connected accounts created by the
-platform report recipient readiness through
+Two Stripe event destinations post to the same SceneCore endpoint because
+Stripe does not allow v1 snapshot events and v2 thin events in one destination.
+The existing snapshot destination keeps checkout, subscription and refund
+events; the thin destination sends Accounts v2 notifications and uses the
+separate `STRIPE_CONNECT_WEBHOOK_SECRET` signing secret. Accounts v2 connected
+accounts created by the platform report recipient readiness through
 `v2.core.account[configuration.recipient].capability_status_updated`; the thin
 payload is signature-verified, then SceneCore fetches the account's current
 state before changing local payment readiness.

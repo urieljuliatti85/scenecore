@@ -222,6 +222,10 @@ the live environment): `ACTIVE_STORAGE_PATH`, `APP_HOST`, `CONTACT_EMAIL`,
 `SENTRY_DSN`, `SMTP_ADDRESS`, `SMTP_PASSWORD`, `SMTP_PORT`,
 `SMTP_USER_NAME`, plus the `RAILWAY_*` variables Railway injects itself.
 
+`STRIPE_CONNECT_WEBHOOK_SECRET` is required when the Accounts v2 thin-event
+destination is enabled. It is the signing secret generated for that destination,
+not the existing snapshot webhook secret stored in Rails credentials.
+
 `CONTACT_EMAIL` is where contact-form messages are delivered. It is
 optional: when unset, messages are still stored in `contact_messages` and
 nothing is lost — they just are not emailed to anyone.
