@@ -134,9 +134,13 @@ app/policies/ (Pundit, one policy per model — see CLAUDE.md)
   `StripeStorePaymentHandler`, `StoreCheckoutSessionCreator`,
   `StoreOrderRefundCreator`, `StripeStoreRefundHandler`,
   `StripeCustomerResolver`, `StripePriceResolver`), Connect onboarding,
-  and the Subscriptions API (`StripeSubscriptionSwitcher` for plan
-  changes). Membership payments split 85/15 and Store payments split
-  90/10 through the band's connected account.
+  connected-account financial reads (`StripeConnectedAccountFinancials`),
+  single-use Express Dashboard access (`StripeExpressDashboardLink`), and the
+  Subscriptions API (`StripeSubscriptionSwitcher` for plan changes).
+  Membership payments split 85/15 and Store payments split 90/10 through the
+  band's connected account. Balance and payout reads always send that band's
+  account id as Stripe's per-request account option; without it the same API
+  call would read the platform account instead.
 - Webhooks: `StripeWebhooksController` (`POST /stripe/webhooks`, no
   session/CSRF — Stripe calls this directly). Authenticity is verified
   via `Stripe::Webhook.construct_event` against the
@@ -144,8 +148,14 @@ app/policies/ (Pundit, one policy per model — see CLAUDE.md)
   unverifiable payload gets `400` and nothing is processed. Handled
   event types: `checkout.session.completed`,
   `customer.subscription.updated`, `customer.subscription.deleted`,
-  `refund.created`, `refund.updated`, `refund.failed`, and connected-account
-  `account.updated`. A completed checkout is dispatched to the Store or
+  `refund.created`, `refund.updated`, `refund.failed`, legacy connected-account
+  `account.updated`, and the Accounts v2 thin notification
+  `v2.core.account[configuration.recipient].capability_status_updated`.
+  Snapshot events are verified and parsed with `Stripe::Webhook.construct_event`;
+  thin notifications use `StripeClient#parse_event_notification` with the same
+  destination secret. For the v2 capability notification, SceneCore uses the
+  related account id to fetch the latest account with the required
+  configuration includes before updating local readiness. A completed checkout is dispatched to the Store or
   membership handler by its persisted session id. Store refund events use
   the persisted refund id (with order metadata as the race-safe fallback)
   and only a successful Stripe event marks the order refunded.
@@ -158,6 +168,9 @@ app/policies/ (Pundit, one policy per model — see CLAUDE.md)
   verified, a duplicate event is swallowed (see idempotency above)
   rather than erroring. There is no separate reconciliation job —
   webhooks are the single source of payment-state truth.
+  Financial-summary reads are different: they are live, read-only requests
+  made when a Band Administrator opens Payments. A Stripe failure hides only
+  the amounts and leaves the panel, payment readiness and checkout unchanged.
 
 ### Spotify
 

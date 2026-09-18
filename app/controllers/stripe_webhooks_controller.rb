@@ -5,6 +5,9 @@
 class StripeWebhooksController < ActionController::Base
   skip_forgery_protection
 
+  V2_RECIPIENT_CAPABILITY_EVENT =
+    "v2.core.account[configuration.recipient].capability_status_updated".freeze
+
   def create
     event = verified_event
     return head(:bad_request) if event.nil?
@@ -25,8 +28,13 @@ class StripeWebhooksController < ActionController::Base
     signature = request.headers["Stripe-Signature"]
     endpoint_secret = Rails.application.credentials.dig(:stripe, :webhook_secret)
 
-    Stripe::Webhook.construct_event(payload, signature, endpoint_secret)
-  rescue JSON::ParserError, Stripe::SignatureVerificationError
+    case JSON.parse(payload)["object"]
+    when "event"
+      Stripe::Webhook.construct_event(payload, signature, endpoint_secret)
+    when "v2.core.event"
+      StripeClient.instance.parse_event_notification(payload, signature, endpoint_secret)
+    end
+  rescue JSON::ParserError, Stripe::SignatureVerificationError, ArgumentError
     nil
   end
 
@@ -50,10 +58,23 @@ class StripeWebhooksController < ActionController::Base
         # account.updated events, so no `event.account` check is needed to
         # tell this apart from Subscriptions' platform-level events above.
         StripeConnectAccountUpdatedHandler.call(event.data.object)
+      when V2_RECIPIENT_CAPABILITY_EVENT
+        handle_v2_connect_capability_updated(event)
       when "refund.created", "refund.updated", "refund.failed"
         StripeStoreRefundHandler.call(event.data.object)
       end
     end
+  end
+
+  # Accounts created through Stripe's v2 API emit thin notifications rather
+  # than v1 snapshot events. The notification is signed but intentionally
+  # carries only a reference, so re-read the account through the existing
+  # refresher instead of trusting incomplete event data. That read asks for
+  # the recipient capability explicitly and drives the same status handler
+  # used by the Payments page fallback.
+  def handle_v2_connect_capability_updated(event)
+    band = Band.find_by(stripe_connect_account_id: event.related_object.id)
+    StripeConnectStatusRefresher.call(band) if band
   end
 
   # Store checkout (ADR-007) and Subscription checkout both complete as

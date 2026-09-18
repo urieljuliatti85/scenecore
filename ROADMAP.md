@@ -267,6 +267,10 @@ buy from. That is a separate, larger piece of work — see §8.1 Store below.
   reverses both the band's transfer and SceneCore's application fee; signed
   refund webhooks confirm the final order state, and inventory remains a
   manual adjustment after a physical return (ADR-009).
+- Band Administrators can see their connected account's available and pending
+  Stripe balance, next pending payout, and open a fresh single-use Express
+  Dashboard login link. Stripe API failures degrade only this financial
+  summary and never expose another band's data or block the rest of the panel.
 - Ticket benefits remain deferred until the ticketing integration described
   in `docs/band-admin.md` §20 exists.
 

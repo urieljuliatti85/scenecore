@@ -12,6 +12,17 @@ class BandPaymentsController < ApplicationController
 
     @active_subscribers = @band.subscriptions.where(status: Subscription::BILLING_STATUSES).count
     @published_products = @band.products.published.count
+    load_financial_summary
+  end
+
+  def stripe_dashboard
+    authorize @band, :update?, policy_class: BandPolicy
+
+    url = StripeExpressDashboardLink.call(@band)
+    redirect_to url, allow_other_host: true
+  rescue StripeExpressDashboardLink::Error => e
+    Rails.logger.warn("Could not create Stripe dashboard link for band #{@band.id}: #{e.cause&.class || e.class}")
+    redirect_to band_payments_path(@band), alert: e.message
   end
 
   private
@@ -28,6 +39,15 @@ class BandPaymentsController < ApplicationController
     @band.reload
   rescue StripeConnectStatusRefresher::Error => e
     Rails.logger.warn("Could not refresh Stripe Connect status for band #{@band.id}: #{e.message}")
+  end
+
+  def load_financial_summary
+    return unless @band.payouts_ready?
+
+    @financial_summary = StripeConnectedAccountFinancials.call(@band)
+  rescue StripeConnectedAccountFinancials::Error => e
+    Rails.logger.warn("Could not read Stripe financials for band #{@band.id}: #{e.cause&.class || e.class}")
+    @financial_summary_unavailable = true
   end
 
   def set_band

@@ -3,7 +3,17 @@ require "rails_helper"
 RSpec.describe "Stripe webhooks", type: :request do
   def post_webhook(event)
     allow(Stripe::Webhook).to receive(:construct_event).and_return(event)
-    post stripe_webhooks_path, params: "{}", headers: { "Stripe-Signature" => "t=1,v1=fake" }
+    post stripe_webhooks_path, params: '{"object":"event"}',
+      headers: { "Stripe-Signature" => "t=1,v1=fake", "CONTENT_TYPE" => "application/json" }
+  end
+
+  def post_v2_webhook(event)
+    stripe_client = instance_double(Stripe::StripeClient)
+    allow(StripeClient).to receive(:instance).and_return(stripe_client)
+    allow(stripe_client).to receive(:parse_event_notification).and_return(event)
+    allow(Stripe::Webhook).to receive(:construct_event)
+    post stripe_webhooks_path, params: '{"object":"v2.core.event"}',
+      headers: { "Stripe-Signature" => "t=1,v1=fake", "CONTENT_TYPE" => "application/json" }
   end
 
   describe "POST /stripe/webhooks" do
@@ -11,7 +21,8 @@ RSpec.describe "Stripe webhooks", type: :request do
       allow(Stripe::Webhook).to receive(:construct_event)
         .and_raise(Stripe::SignatureVerificationError.new("bad signature", "sig_header"))
 
-      post stripe_webhooks_path, params: "{}", headers: { "Stripe-Signature" => "invalid" }
+      post stripe_webhooks_path, params: '{"object":"event"}',
+        headers: { "Stripe-Signature" => "invalid", "CONTENT_TYPE" => "application/json" }
 
       expect(response).to have_http_status(:bad_request)
     end
@@ -154,6 +165,55 @@ RSpec.describe "Stripe webhooks", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(band.reload).to be_stripe_connect_active
+    end
+
+    it "verifies and processes the v2 recipient capability event" do
+      band = create(:band, stripe_connect_account_id: "acct_v2", stripe_connect_status: :onboarding)
+      notification = instance_double(
+        Stripe::Events::V2CoreAccountIncludingConfigurationRecipientCapabilityStatusUpdatedEventNotification,
+        id: "evt_v2_connect_1",
+        type: StripeWebhooksController::V2_RECIPIENT_CAPABILITY_EVENT,
+        related_object: double(id: "acct_v2")
+      )
+      allow(StripeConnectStatusRefresher).to receive(:call) do |refreshed_band|
+        refreshed_band.update!(stripe_connect_status: :active)
+      end
+
+      post_v2_webhook(notification)
+
+      expect(response).to have_http_status(:ok)
+      expect(band.reload).to be_stripe_connect_active
+      expect(StripeWebhookEvent.exists?(stripe_event_id: "evt_v2_connect_1")).to be true
+      expect(Stripe::Webhook).not_to have_received(:construct_event)
+    end
+
+    it "returns 400 when a v2 notification signature cannot be verified" do
+      stripe_client = instance_double(Stripe::StripeClient)
+      allow(StripeClient).to receive(:instance).and_return(stripe_client)
+      allow(stripe_client).to receive(:parse_event_notification)
+        .and_raise(Stripe::SignatureVerificationError.new("bad signature", "sig_header"))
+
+      post stripe_webhooks_path, params: '{"object":"v2.core.event"}',
+        headers: { "Stripe-Signature" => "invalid", "CONTENT_TYPE" => "application/json" }
+
+      expect(response).to have_http_status(:bad_request)
+      expect(StripeWebhookEvent.count).to be_zero
+    end
+
+    it "records a v2 capability event for an unknown account without failing" do
+      notification = instance_double(
+        Stripe::Events::V2CoreAccountIncludingConfigurationRecipientCapabilityStatusUpdatedEventNotification,
+        id: "evt_v2_unknown",
+        type: StripeWebhooksController::V2_RECIPIENT_CAPABILITY_EVENT,
+        related_object: double(id: "acct_unknown")
+      )
+      allow(StripeConnectStatusRefresher).to receive(:call)
+
+      post_v2_webhook(notification)
+
+      expect(response).to have_http_status(:ok)
+      expect(StripeConnectStatusRefresher).not_to have_received(:call)
+      expect(StripeWebhookEvent.exists?(stripe_event_id: "evt_v2_unknown")).to be true
     end
 
     it "returns 200 and records the event for an event type it doesn't handle" do
