@@ -130,11 +130,11 @@ Status: Accepted (2026-09-17)
 
 ### Decision
 
-Store checkout (product purchases, ADR-003) uses Stripe Connect, not the
-plain Stripe Checkout Sessions already used for Subscriptions. Each band
-onboards a Stripe Connect account; a Store checkout session's payment is
-split automatically at charge time via `application_fee_amount`: 10% to
-SceneCore, the remaining 90% to the band's connected account.
+Store checkout (product purchases, ADR-003) uses Stripe Connect destination
+charges through Checkout Sessions. Each band onboards a Stripe Connect
+account; a Store checkout session's payment is split automatically at charge
+time via `application_fee_amount`: 10% to SceneCore, the remaining 90% to
+the band's connected account.
 
 ### Reason
 
@@ -153,20 +153,14 @@ Stripe's own dashboard/reports already provide the band.
   products; a band cannot open a Store checkout until its connected
   account is active (Stripe's own capability checks, surfaced to the band
   in Band Admin).
-- Subscriptions (ADR/Phase 10) are unaffected — they keep using the
-  existing plain Stripe Checkout Sessions and SceneCore's own Stripe
-  account; no commission split exists on subscription revenue today and
-  this decision does not introduce one retroactively. A future decision
-  to also split subscription revenue would need its own ADR.
-  *(Superseded on 2026-09-17: ADR-008 sets that split at 85/15. The
-  implementation note above still holds — subscriptions have not moved to
-  Connect yet.)*
-- Store's Stripe webhooks must handle events under the connected account
-  (Stripe sends these with an `account` field identifying which connected
-  account they belong to) in addition to the platform-account events
-  Subscriptions already handles — `StripeWebhooksController` must
-  distinguish the two rather than assuming every webhook is
-  platform-level.
+- ADR-008 supersedes the original subscription consequence: new
+  subscriptions now split revenue 85/15 through Stripe Connect. Legacy
+  subscriptions can be audited and migrated with the `subscriptions:unsplit`
+  and `subscriptions:apply_split` tasks.
+- Store destination-charge checkout completes on the platform webhook.
+  `StripeWebhooksController` distinguishes Store and membership sessions by
+  the persisted checkout session id, while connected-account
+  `account.updated` events keep each band's onboarding status current.
 
 ---
 
@@ -203,11 +197,9 @@ band's 85% is $2.55 before Stripe takes its share of the transaction.
   has a figure for memberships as well as for the Store.
 - The public "How it works" page states both splits. It is the
   band-facing promise, so the page and this ADR must not drift apart.
-- Not yet implemented. Subscriptions still run through plain Stripe
-  Checkout Sessions against SceneCore's own account (ADR-007), which
-  means 100% currently lands with the platform and no band payout
-  happens. Implementing this split — whether by moving subscriptions onto
-  Connect with an `application_fee_amount`, or by paying bands out
-  separately — is outstanding work, and the gap between the published
-  promise and the code should be closed before bands are onboarded onto
-  paid memberships.
+- Implemented. New subscription Checkout Sessions set
+  `application_fee_percent` and route the remainder to the band's active
+  connected account. Bands without a payout-ready account cannot accept a
+  membership payment. The `subscriptions:unsplit` and
+  `subscriptions:apply_split` tasks cover subscriptions created before the
+  split shipped.

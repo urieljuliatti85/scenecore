@@ -762,8 +762,8 @@ This is sufficient for SceneCore to start operating without creating a massive b
 ## 3. Core User Journeys
 
 Each journey below corresponds to a task in ROADMAP.md §0.3. Journeys already
-reachable in the app are noted as such; the rest describe the intended flow
-for phases not yet built (Store, Payments, Subscriptions, Events).
+reachable in the app are noted as such. Events and Tickets is the only domain
+below that describes intended flows rather than a shipped feature.
 
 ### Journey 1 — Discover a Band
 
@@ -816,22 +816,20 @@ are.
 
 ### Journey 6 — Access Exclusive Content
 
-*Partially built (Phase 7): Public and Follower visibility are built;
-Subscriber visibility is not yet reachable (see ROADMAP.md Phase 7 note —
-blocked on Phase 10).*
+*Built (Phase 7, extended by the membership benefits work).*
 
-1. Band publishes a post with Public, Followers, or Subscribers visibility.
+1. Band publishes a post with Public, Followers, Fan, Supporter, or Core
+   Member visibility.
 2. A Visitor can see only Public posts.
 3. A Fan who follows the band can additionally see Follower posts.
-4. A Fan who subscribes to the band would additionally see Subscriber
-   posts, once Phase 10 (Subscriptions) exists to establish that
-   relationship.
+4. An active paid membership unlocks content at its own level and all lower
+   levels: Core Member inherits Supporter and Fan; Supporter inherits Fan.
+5. Locked content remains listed with the minimum required membership, while
+   its body and protected attachments remain server-side inaccessible.
 
 ### Journey 7 — Purchase a Product
 
-*Not built (Phase 8 — Store). Payments (Stripe) is available, but Store
-also needs Stripe Connect band onboarding (ADR-007), not yet built.
-Describes the intended flow only.*
+*Built (Phase 8 — Store, using Stripe Connect per ADR-007).*
 
 1. Fan opens a band's store and selects a product (and variant, if
    applicable).
@@ -916,10 +914,11 @@ phase):
 - Follow/unfollow a band
 
 **Exclusive content** (Phase 7)
-- Posts with Public and Followers visibility (built); Subscriber visibility
-  (schema ready; not reachable until Subscriptions exists — see 4.2)
-- Media on posts: images, videos, downloads, with file validation and
-  storage (not yet built — ROADMAP.md 10.2)
+- Posts support Public, Followers, Fan, Supporter, and Core Member
+  visibility with inherited, server-side membership access.
+- Posts support an image plus validated WAV, MP3, and PDF attachments.
+  Audio is playable inline; self-hosted video streaming remains explicitly
+  excluded, while private streams use protected external session links.
 
 **Store** (Phase 8)
 - Products, variants (SKU-level price and stock, per-product min. one
@@ -966,10 +965,9 @@ post to a given country.
 - Stripe is the approved and already-integrated payment provider
   (`docs/architecture.md` §5) — the "not yet named" status below Phase 9
   in earlier drafts of this document is outdated as of 2026-09-17.
-- Built and in production use for Subscriptions (Checkout Sessions,
-  webhooks, idempotency — see `docs/architecture.md`). Store's use of
-  Payments (Stripe Connect, destination charges, per-band onboarding) is
-  not yet built — see Store above and ADR-007.
+- Built for Subscriptions and Store: Checkout Sessions, Connect onboarding,
+  destination charges, membership revenue splits, authenticated/idempotent
+  webhooks, and per-band payout readiness (see `docs/architecture.md`).
 
 **Subscriptions** (Phase 10)
 - Plans, recurring billing, subscriber content access
@@ -985,8 +983,9 @@ post to a given country.
 **Platform administration** (Phase 12)
 - Band moderation, administrative audit log, admin panel (bands/users/
   privileges)
-- Content moderation (unpublish) implemented; reported-content review is
-  deferred (see 4.2 — no reporting/flagging system is defined).
+- Content moderation and reported-content review are implemented for posts
+  and comments, including platform-admin resolution/dismissal. Platform
+  content removals and unpublishing remain audit-logged.
 
 A domain being "mandatory" means it is approved MVP scope, not that it must
 be implemented before every other domain — ROADMAP.md 2.1 governs sequencing
@@ -999,8 +998,6 @@ approved (see ROADMAP.md §22 Future Features for the authoritative list):
 
 - Follower notifications (channel, trigger, and UI undefined)
 - Fan-facing feed of followed bands' activity (undefined scope)
-- Content moderation via user reports (no reporting/flagging system
-  defined)
 - Advanced band metrics/analytics beyond follower count
 - Band member history across bands (e.g., "played in Band A 2022–2024,
   now in Band B")
@@ -1010,14 +1007,11 @@ approved (see ROADMAP.md §22 Future Features for the authoritative list):
   through the band's Store, ADR-007) rather than handing off to Discogs'
   own checkout — that checkout-ownership decision was made 2026-09-17,
   approving the larger of the two integration shapes originally proposed.
-  Still blocked, not merely deferred: it depends on Store (Phase 8)
-  existing first, including the Stripe Connect band-onboarding flow
-  (ADR-007) — Payments (Stripe) itself is no longer the blocker, that part
-  was already built for Subscriptions, but Store's Connect-specific
-  checkout is not. Once Store is built, this still needs its own scoping
-  pass for the Discogs-specific parts: order/inventory sync with Discogs'
-  own API, and how a Discogs-sourced listing maps onto
-  `docs/database.md`'s Product/ProductVariant model.
+  The Store and its Stripe Connect onboarding now exist, so that dependency
+  is satisfied. Marketplace synchronization remains deferred and still
+  needs its own scoping pass: order/inventory sync with Discogs' API and how
+  a Marketplace listing maps onto `docs/database.md`'s
+  Product/ProductVariant model.
 
 ### 4.3 Explicitly Excluded Functionality
 
@@ -1144,9 +1138,9 @@ tracks.
 - No complete card data or sensitive payment payloads are logged or stored.
 - Payment state transitions follow `docs/payments.md`'s defined states;
   the payment provider (Stripe) is the source of truth for payment status.
-- Built and verified for Subscriptions. Store's Stripe Connect flow is not
-  yet built — its webhooks must additionally distinguish connected-account
-  events from platform-account events (ADR-007).
+- Built and verified for Subscriptions and Store. Checkout completion is
+  dispatched by the persisted session id, while connected-account
+  `account.updated` events synchronize each band's payout status (ADR-007).
 
 ### Subscriptions
 

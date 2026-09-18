@@ -103,12 +103,15 @@ RSpec.describe "Pages", type: :request do
         expect(response.body).to include("href=\"#{subscriptions_path}\"")
       end
 
-      # Neither feature exists yet, so the home page must not imply it does.
-      it "keeps Exclusive Content and Tickets disabled with a Soon badge" do
+      it "links Exclusive Content to band discovery and keeps Tickets disabled" do
         create(:band, :approved, name: "Farscape")
 
         get root_path
 
+        doc = Nokogiri::HTML(response.body)
+        exclusive_content = doc.xpath("//a[.//span[normalize-space()='Exclusive Content']]")
+
+        expect(exclusive_content.first["href"]).to eq(discover_bands_path)
         expect(response.body).to include("Soon")
         expect(response.body).to include("cursor-not-allowed")
       end

@@ -16,9 +16,11 @@ Payments support:
 Stripe (already integrated — see `docs/architecture.md` §5). Two distinct
 flows exist:
 
-- **Subscriptions** (band memberships): plain Stripe Checkout Sessions
-  against SceneCore's own Stripe account. No platform commission on this
-  revenue today.
+- **Subscriptions** (band memberships, ADR-008): Stripe Checkout Sessions
+  create subscriptions with `application_fee_percent` and
+  `transfer_data`, so SceneCore's 15% commission and the band's 85% are
+  split on every invoice. The band must have an active connected account
+  before it can accept a subscription.
 - **Store** (product purchases, ADR-007): Stripe Connect. Each band has
   its own connected Stripe account; checkout uses a destination charge
   with `application_fee_amount` so SceneCore's 10% commission and the
@@ -94,13 +96,10 @@ All payment webhooks must:
   to SceneCore — `rake subscriptions:unsplit` lists them and
   `rake subscriptions:apply_split` routes them to their band from the
   next invoice.
-- `PlatformSetting#platform_fee_percentage` exists as an admin-editable
-  override and currently reads 0. Nothing consumes it yet — no checkout
-  computes a fee from it — so the rates above are documented figures, not
-  values the running system applies. It also holds a single percentage
-  while there are now two rates, so it cannot express both. Resolve that
-  when Store checkout is built rather than leaving them disagreeing.
-  disagreeing.
+- `PlatformSetting#membership_fee_percentage` and
+  `PlatformSetting#store_fee_percentage` are admin-editable, defaulting to
+  15% and 10% respectively. Subscription checkout reads the membership
+  rate and Store checkout records and sends the Store rate to Stripe.
 - Refund behavior: not yet defined for Store (open question — does a
   refund also reverse the platform's application fee, and who initiates
   it: the band from its connected account, or SceneCore on the band's

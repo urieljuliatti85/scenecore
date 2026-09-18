@@ -123,23 +123,28 @@ app/policies/ (Pundit, one policy per model — see CLAUDE.md)
 
 ### Stripe
 
-- Purpose: subscription billing for band memberships (checkout,
-  recurring charges, cancellations, plan switches).
+- Purpose: subscription billing for band memberships and Store checkout,
+  including Stripe Connect onboarding and revenue splits.
 - Authentication: server-to-server via a secret key
   (`Rails.application.credentials.dig(:stripe, :secret_key)`), wrapped
   in `StripeClient.instance` (a configured `Stripe::StripeClient`, not
   the deprecated global `Stripe.api_key =` pattern). No user-level
   OAuth.
 - API: Stripe Checkout Sessions (`StripeCheckoutCompletedHandler`,
-  `StripeCustomerResolver`, `StripePriceResolver`) and the Subscriptions
-  API (`StripeSubscriptionSwitcher` for plan changes).
+  `StripeStorePaymentHandler`, `StoreCheckoutSessionCreator`,
+  `StripeCustomerResolver`, `StripePriceResolver`), Connect onboarding,
+  and the Subscriptions API (`StripeSubscriptionSwitcher` for plan
+  changes). Membership payments split 85/15 and Store payments split
+  90/10 through the band's connected account.
 - Webhooks: `StripeWebhooksController` (`POST /stripe/webhooks`, no
   session/CSRF — Stripe calls this directly). Authenticity is verified
   via `Stripe::Webhook.construct_event` against the
   `Stripe-Signature` header and the configured endpoint secret; an
   unverifiable payload gets `400` and nothing is processed. Handled
   event types: `checkout.session.completed`,
-  `customer.subscription.updated`, `customer.subscription.deleted`.
+  `customer.subscription.updated`, `customer.subscription.deleted`, and
+  connected-account `account.updated`. A completed checkout is dispatched
+  to the Store or membership handler by its persisted session id.
   Idempotency: `StripeWebhookEvent.record!` uniquely constrains on
   `stripe_event_id` before any handler runs, so a redelivered event
   (Stripe's own retry policy, or a duplicate send) is recognized and
