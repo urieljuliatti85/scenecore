@@ -855,8 +855,8 @@ both implemented as of 2026-09-16/17 — see `docs/architecture.md` §5).*
 
 ### Journey 9 — Purchase an Event Ticket
 
-*Not built (Phase 11 — Events and Tickets). Payments (Stripe) is
-available; this phase has not been scoped/implemented yet.*
+*Built (Phase 11 — Events and Tickets MVP, 2026-09-18). A purchaser must be
+signed in; guest ticket checkout, transfers and automated refunds are deferred.*
 
 1. Fan opens a band's published event.
 2. Fan selects a ticket batch and quantity.
@@ -866,11 +866,12 @@ available; this phase has not been scoped/implemented yet.*
 
 ### Journey 10 — Validate a Ticket
 
-*Not built (Phase 11 — Events and Tickets). Describes the intended flow
-only.*
+*Built (Phase 11 — Events and Tickets MVP, 2026-09-18). In this first
+version, a Band Member or Band Administrator of the hosting band is the door
+staff; there is no separate door-staff role.*
 
-1. Door staff (a Band Member/Administrator or designated role — not yet
-   defined) scans a ticket's QR code at check-in.
+1. A Band Member or Band Administrator of the hosting band scans a ticket's
+   QR code at check-in.
 2. The system verifies the ticket belongs to the event and has not already
    been used.
 3. A valid, unused ticket is marked used and check-in succeeds.
@@ -977,8 +978,9 @@ post to a given country.
 
 **Events and tickets** (Phase 11)
 - Events, ticket batches, QR-coded tickets, check-in/validation
-- Not yet built. Payments (Stripe) is available; this phase itself has
-  not been scoped/implemented yet.
+- Built as an authenticated-fan MVP: batches and bounded reservations,
+  Stripe Connect checkout (or local fulfillment for free batches), opaque QR
+  identifiers, purchaser ticket wallet, and atomic single-use check-in.
 
 **Platform administration** (Phase 12)
 - Band moderation, administrative audit log, admin panel (bands/users/
@@ -1159,12 +1161,18 @@ tracks.
   `StripeSubscriptionDeletedHandler`) — confirm current test coverage
   against this list rather than treating these as unimplemented.
 
-### Events and Tickets (not yet built)
+### Events and Tickets
 
 - A ticket has a unique identifier and is associated with exactly one
   event and one purchaser.
 - A used ticket cannot be validated (checked in) a second time.
 - Ticket data is not guessable/enumerable from its public identifier.
+- A paid checkout reserves inventory for approximately 30 minutes. Paid
+  tickets are issued only from the signed Stripe webhook; expired pending
+  reservations stop counting against the batch.
+- Only a Band Member or Band Administrator belonging to the event's own band
+  can check in the ticket. A Platform Administrator has no implicit check-in
+  permission.
 
 ### Platform Administration
 
@@ -1182,13 +1190,10 @@ tracks.
 The following acceptance criteria above depend on product decisions not
 yet made, tracked in §7 Open Questions:
 
-- Store/Events checkout flow for unauthenticated visitors (§7: can a cart
-  be started before account creation?).
+- Store checkout flow for unauthenticated visitors (§7). Ticket checkout is
+  explicitly signed-in-only in the Events MVP.
 - Subscription cancellation/failed-payment grace-period rule (referenced
   in ROADMAP.md Phase 10 but not yet defined).
-- Door/check-in role for ticket validation (ROADMAP.md 11.5 assumes
-  someone validates tickets, but that role isn't in `docs/permissions.md`
-  yet — likely a Band Member/Administrator action, to be confirmed).
 
 ---
 
@@ -1201,12 +1206,9 @@ yet made, tracked in §7 Open Questions:
 
 ## 7. Open Questions
 
-- Can a visitor start a product or ticket purchase without an account and
-  create one during checkout?
+- Can a visitor start a product purchase without an account and create one
+  during checkout? Ticket checkout is signed-in-only in the current MVP.
 - After the band-home proposition is validated, should SceneCore formally expand
   toward scene-level discovery and community?
 - What is the subscription cancellation/failed-payment grace-period rule
   (referenced by ROADMAP.md Phase 10 but not yet defined)?
-- Who is authorized to validate (check in) an event ticket — a Band
-  Member/Administrator of the hosting band, or a separate door-staff role
-  not yet in `docs/permissions.md`?

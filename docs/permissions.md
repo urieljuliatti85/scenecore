@@ -37,6 +37,7 @@ Can:
 - view their band's private/draft data
 - manage their band's content (music, posts, etc., as those areas are
   implemented)
+- validate QR-coded tickets for their own band's events
 
 Cannot:
 
@@ -61,6 +62,8 @@ A Band Member with elevated permissions within their own band. Can:
   countries the band's Store sells to at all)
 - issue full refunds for their own band's paid Store orders
 - manage band's events
+- manage ticket batches for the band's events
+- validate QR-coded tickets for the band's events
 - invite, remove, and change the role of their band's members
 
 Cannot:
@@ -78,6 +81,10 @@ Can:
 - approve bands
 - moderate content
 - manage platform-level resources
+
+A Platform Administrator cannot validate an event ticket merely because of
+the platform role. Ticket check-in is an operational action of the hosting
+band; the user must also have a Band Membership in that band.
 
 Granted via the boolean `User#platform_admin` column — there is no
 self-service UI or approval flow for it. Use the rake tasks in

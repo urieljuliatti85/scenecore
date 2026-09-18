@@ -1,0 +1,5 @@
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-2xl mx-auto">
+  <%= link_to "← #{@event.title}", band_event_path(@band, @event), class: "text-sm text-neutral-400 hover:text-white transition" %>
+  <h1 class="text-3xl font-extrabold tracking-tight mt-4 mb-8">Edit ticket batch</h1>
+  <%= render "form", band: @band, event: @event, ticket_batch: @ticket_batch, submit_label: "Save batch" %>
+</section>

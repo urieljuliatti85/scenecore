@@ -67,6 +67,10 @@ gem "sentry-rails"
 # Payment processing (subscriptions/Checkout/webhooks) [https://github.com/stripe/stripe-ruby]
 gem "stripe", "~> 19.6"
 
+# Generates ticket QR codes locally. No purchaser or ticket data is sent to
+# a third-party QR service.
+gem "rqrcode", "~> 3.1"
+
 # Reads traffic reports from the Google Analytics Data API for the admin dashboard
 gem "google-analytics-data", "~> 0.9"
 

@@ -1,0 +1,24 @@
+<% content_for :title, "Ticket order — SceneCore" %>
+
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-2xl mx-auto">
+  <h1 class="text-3xl font-extrabold tracking-tight">Ticket order</h1>
+  <p class="text-neutral-400 mt-2"><%= @ticket_order.event.title %> · <%= @ticket_order.band.name %></p>
+
+  <div class="mt-8 rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
+    <% if @ticket_order.paid? %>
+      <p class="text-green-300 font-semibold">Payment confirmed. Your tickets are ready.</p>
+      <div class="mt-5 space-y-3">
+        <% @ticket_order.tickets.each_with_index do |ticket, index| %>
+          <%= link_to "Open ticket #{index + 1}", ticket_path(ticket.public_token), class: "block rounded-xl border border-neutral-700 px-4 py-3 text-yellow-300 hover:border-yellow-500/50" %>
+        <% end %>
+      </div>
+    <% elsif @ticket_order.payment_pending? %>
+      <p class="text-yellow-300 font-semibold">Payment confirmation is pending.</p>
+      <p class="text-sm text-neutral-500 mt-2">This page updates after Stripe sends the signed payment confirmation. Refresh in a moment.</p>
+    <% else %>
+      <p class="text-neutral-400 font-semibold">This checkout reservation expired.</p>
+    <% end %>
+  </div>
+
+  <%= link_to "View all your tickets", tickets_path, class: "inline-block mt-6 text-sm text-neutral-300 hover:text-white" %>
+</section>

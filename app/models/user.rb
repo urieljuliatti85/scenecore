@@ -12,6 +12,10 @@ class User < ApplicationRecord
   has_many :subscriptions, dependent: :destroy
   has_many :carts, dependent: :destroy
   has_many :orders, dependent: :destroy
+  has_many :ticket_orders, dependent: :restrict_with_error
+  has_many :tickets, dependent: :restrict_with_error
+  has_many :checked_in_tickets, class_name: "Ticket", foreign_key: :checked_in_by_id,
+           inverse_of: :checked_in_by, dependent: :restrict_with_error
   has_many :ratings, dependent: :destroy
   has_many :poll_votes, dependent: :destroy
   has_many :comments, dependent: :destroy

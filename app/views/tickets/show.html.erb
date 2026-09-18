@@ -1,0 +1,22 @@
+<% content_for :title, "#{@ticket.event.title} ticket — SceneCore" %>
+
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-lg mx-auto">
+  <%= link_to "← Your tickets", tickets_path, class: "text-sm text-neutral-400 hover:text-white transition" %>
+  <article class="mt-6 rounded-3xl border border-neutral-800 bg-neutral-900 p-6 text-center">
+    <p class="text-xs uppercase tracking-[0.2em] text-yellow-400"><%= @ticket.event.band.name %></p>
+    <h1 class="text-3xl font-extrabold tracking-tight mt-2"><%= @ticket.event.title %></h1>
+    <p class="text-sm text-neutral-400 mt-3"><%= @ticket.event.starts_at.strftime("%d %b %Y · %H:%M") %></p>
+    <p class="text-sm text-neutral-400"><%= @ticket.event.location %></p>
+
+    <div class="bg-white rounded-2xl p-4 mt-7 mx-auto max-w-sm <%= "opacity-40" if @ticket.used? %>">
+      <%= ticket_qr_svg(@ticket) %>
+    </div>
+
+    <% if @ticket.used? %>
+      <p class="mt-5 text-neutral-400 font-semibold">Checked in <%= time_ago_in_words(@ticket.used_at) %> ago</p>
+    <% else %>
+      <p class="mt-5 text-green-300 font-semibold">Ready for check-in</p>
+      <p class="text-xs text-neutral-500 mt-1">Show this QR code at the door. Do not share it.</p>
+    <% end %>
+  </article>
+</section>

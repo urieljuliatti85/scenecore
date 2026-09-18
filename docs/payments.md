@@ -27,6 +27,12 @@ flows exist:
   band's 90% are split automatically in the same payment. A band must
   complete Stripe Connect onboarding (handled by Stripe's own hosted
   flow) before its Store can accept checkout.
+- **Event tickets**: the same Stripe Connect destination-charge path as a
+  one-time Store purchase. `TicketOrder` snapshots price, quantity and the
+  platform fee before redirecting to Checkout; a signed
+  `checkout.session.completed` event issues the individual QR-coded tickets.
+  Free ticket batches are fulfilled locally and do not create a Stripe
+  Checkout Session.
 
 ---
 
@@ -90,7 +96,7 @@ state before changing local payment readiness.
 ## Financial Rules
 
 - Money is stored in integer cents.
-- Platform commission must be explicit: 10% on Store orders, computed as
+- Platform commission must be explicit: 10% on Store and paid ticket orders, computed as
   `application_fee_amount` in the Stripe Connect destination charge and
   also recorded on the `Order` itself (`platform_fee_cents`) so it is
   auditable independent of Stripe's own records. Memberships carry 15%
@@ -109,7 +115,9 @@ state before changing local payment readiness.
 - `PlatformSetting#membership_fee_percentage` and
   `PlatformSetting#store_fee_percentage` are admin-editable, defaulting to
   15% and 10% respectively. Subscription checkout reads the membership
-  rate and Store checkout records and sends the Store rate to Stripe.
+  rate and Store/ticket checkout records and sends the Store rate to Stripe.
+  The Events MVP deliberately reuses this one-time-commerce rate rather than
+  adding a second fee setting before ticket economics are validated.
 - A Band Administrator can read the connected account's available and pending
   balances and its next pending payout from Band Admin. Every request is
   scoped to that band's Stripe account, and a Stripe outage degrades the

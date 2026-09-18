@@ -1,0 +1,48 @@
+<% content_for :title, "#{@event.title} — #{@band.name}" %>
+
+<section class="px-4 sm:px-6 py-12 sm:py-16 max-w-3xl mx-auto">
+  <%= link_to "← #{@band.name}", public_band_path(@band.slug), class: "text-sm text-neutral-400 hover:text-white transition" %>
+
+  <p class="text-xs uppercase tracking-[0.2em] text-yellow-400 mt-8">Live event</p>
+  <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mt-2"><%= @event.title %></h1>
+  <p class="text-neutral-300 mt-4"><%= time_tag @event.starts_at, @event.starts_at.strftime("%d %b %Y · %H:%M") %> · <%= @event.location %></p>
+  <% if @event.description.present? %>
+    <p class="text-neutral-400 mt-5 whitespace-pre-line"><%= @event.description %></p>
+  <% end %>
+
+  <section class="mt-10">
+    <h2 class="text-2xl font-bold mb-4">Tickets</h2>
+    <% if @ticket_batches.any? %>
+      <div class="space-y-4">
+        <% @ticket_batches.each do |batch| %>
+          <article class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h3 class="font-semibold text-lg"><%= batch.name %></h3>
+                <p class="text-yellow-300 mt-1"><%= number_to_currency(batch.price_cents / 100.0, unit: "US$") %></p>
+                <p class="text-xs text-neutral-500 mt-1"><%= pluralize(batch.remaining_quantity, "ticket") %> remaining</p>
+              </div>
+              <% if batch.on_sale? %>
+                <% if user_signed_in? %>
+                  <%= form_with url: public_event_ticket_orders_path(@band.slug, @event), method: :post, class: "flex items-center gap-2" do |form| %>
+                    <%= form.hidden_field :ticket_batch_id, value: batch.id %>
+                    <%= form.number_field :quantity, value: 1, min: 1, max: [ batch.remaining_quantity, TicketBatch::MAXIMUM_PER_ORDER ].min, class: "w-20 rounded-lg bg-black border border-neutral-700 text-white px-3 py-2" %>
+                    <%= form.submit "Buy tickets", class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2 hover:bg-yellow-300 transition cursor-pointer" %>
+                  <% end %>
+                <% else %>
+                  <%= link_to "Sign in to buy", new_user_session_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2 hover:bg-yellow-300 transition" %>
+                <% end %>
+              <% else %>
+                <span class="text-sm text-neutral-500">Not on sale</span>
+              <% end %>
+            </div>
+          </article>
+        <% end %>
+      </div>
+    <% elsif @event.ticket_link %>
+      <%= link_to "Buy from the ticket partner", @event.ticket_link, target: "_blank", rel: "noopener noreferrer", class: "inline-flex rounded-full bg-yellow-400 text-black font-semibold px-6 py-2.5 hover:bg-yellow-300 transition" %>
+    <% else %>
+      <p class="rounded-2xl border border-dashed border-neutral-800 p-5 text-neutral-500">Tickets are not on sale yet.</p>
+    <% end %>
+  </section>
+</section>

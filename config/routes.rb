@@ -167,6 +167,7 @@ Rails.application.routes.draw do
         patch :publish
         patch :unpublish
       end
+      resources :ticket_batches, except: [ :index, :show ], path: "ticket-batches"
     end
     resources :polls, only: [ :new, :create, :show, :edit, :update, :destroy ] do
       member do
@@ -208,6 +209,10 @@ Rails.application.routes.draw do
   end
   resource :checkout, only: [ :new, :create ], controller: "checkouts"
   resources :orders, only: [ :index, :show ]
+  resources :ticket_orders, only: [ :show ], path: "ticket-orders"
+  resources :tickets, only: [ :index, :show ], param: :public_token
+  get "/tickets/:public_token/check-in", to: "ticket_check_ins#show", as: :ticket_check_in
+  patch "/tickets/:public_token/check-in", to: "ticket_check_ins#update"
 
   get "/about", to: "pages#about", as: :about
   get "/how-it-works", to: "pages#how_it_works", as: :how_it_works
@@ -219,6 +224,8 @@ Rails.application.routes.draw do
   # so they don't shadow any of the routes declared above.
   constraints(slug: /[a-z0-9\-]+/) do
     get "/:slug", to: "public_bands#show", as: :public_band
+    get "/:slug/events/:id", to: "public_events#show", as: :public_event
+    post "/:slug/events/:event_id/ticket-orders", to: "ticket_orders#create", as: :public_event_ticket_orders
     get "/:slug/subscriptions", to: "public_bands#subscriptions", as: :public_band_subscriptions
     get "/:slug/credits", to: "public_bands#credits", as: :public_band_credits
     get "/:slug/messages", to: "band_direct_messages#show", as: :my_band_direct_messages

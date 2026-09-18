@@ -92,6 +92,37 @@ RSpec.describe "Stripe webhooks", type: :request do
       expect(variant.reload.stock_quantity).to eq(3)
     end
 
+    it "issues tickets for a paid ticket checkout session" do
+      order = create(:ticket_order, quantity: 2, stripe_checkout_session_id: "cs_ticket_9")
+      session = instance_double(Stripe::Checkout::Session, id: "cs_ticket_9", payment_status: "paid",
+                                                          payment_intent: "pi_ticket_9")
+      event = instance_double(Stripe::Event, id: "evt_ticket_1", type: "checkout.session.completed",
+        data: instance_double(Stripe::Event::Data, object: session))
+
+      expect { post_webhook(event) }.to change(Ticket, :count).by(2)
+
+      expect(response).to have_http_status(:ok)
+      expect(order.reload).to be_paid
+    end
+
+    it "uses ticket-order metadata when Stripe completes before the session id is saved" do
+      order = create(:ticket_order)
+      session = instance_double(
+        Stripe::Checkout::Session,
+        id: "cs_ticket_race",
+        payment_status: "paid",
+        payment_intent: "pi_ticket_race",
+        metadata: { "ticket_order_id" => order.id.to_s }
+      )
+      event = instance_double(Stripe::Event, id: "evt_ticket_race", type: "checkout.session.completed",
+        data: instance_double(Stripe::Event::Data, object: session))
+
+      expect { post_webhook(event) }.to change(Ticket, :count).by(1)
+
+      expect(response).to have_http_status(:ok)
+      expect(order.reload.stripe_checkout_session_id).to eq("cs_ticket_race")
+    end
+
     it "marks a Store order refunded only after Stripe confirms the refund" do
       order = create(:order, :paid, stripe_checkout_session_id: "cs_store_refund",
                      stripe_payment_intent_id: "pi_store_refund", stripe_refund_id: "re_store_1",
