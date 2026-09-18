@@ -78,6 +78,19 @@ Can:
 - moderate content
 - manage platform-level resources
 
+Granted via the boolean `User#platform_admin` column — there is no
+self-service UI or approval flow for it. Use the rake tasks in
+`lib/tasks/users.rake`:
+
+```bash
+bin/rails "users:promote_admin[user@example.com]"
+bin/rails "users:demote_admin[user@example.com]"
+```
+
+A `platform_admin` cannot be demoted or destroyed while they are the last
+one (`User#ensure_not_demoting_last_platform_admin`,
+`User#ensure_not_last_platform_admin`) — at least one must always remain.
+
 ---
 
 ## Authorization Rules
