@@ -18,14 +18,26 @@
   </div>
 
   <div>
+    <%= form.label :audience_level, "Audience", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.select :audience_level, CoreSession::AUDIENCE_LEVELS.map { |level| [ "#{level.humanize} and above", level ] }, {}, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    <p class="text-xs text-neutral-500 mt-1">Higher membership levels inherit access automatically.</p>
+  </div>
+
+  <div>
     <%= form.label :starts_at, "Date and time", class: "block text-sm font-medium text-neutral-300 mb-1" %>
     <%= form.datetime_local_field :starts_at, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
   </div>
 
   <div>
     <%= form.label :capacity, class: "block text-sm font-medium text-neutral-300 mb-1" %>
-    <p class="text-xs text-neutral-500 mb-1">Maximum number of Core Members who can RSVP. Leave blank for no limit.</p>
+    <p class="text-xs text-neutral-500 mb-1">Maximum number of eligible members who can RSVP. Leave blank for no limit.</p>
     <%= form.number_field :capacity, min: 1, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+  </div>
+
+  <div>
+    <%= form.label :access_url, "Private access link (optional)", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+    <%= form.url_field :access_url, placeholder: "https://…", class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+    <p class="text-xs text-neutral-500 mt-1">Use your existing livestream, meeting, or replay provider. The link appears only to eligible members.</p>
   </div>
 
   <div>

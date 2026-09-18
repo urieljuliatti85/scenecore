@@ -16,6 +16,27 @@ RSpec.describe "Core Sessions", type: :request do
       expect(response).to redirect_to(band_path(band))
     end
 
+    it "creates a Supporter session with an external private access link" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      sign_in user
+
+      post band_core_sessions_path(band), params: {
+        core_session: {
+          title: "Members stream",
+          session_type: "video",
+          audience_level: "supporter",
+          starts_at: 1.week.from_now,
+          access_url: "https://stream.example.com/members"
+        }
+      }
+
+      session = CoreSession.last
+      expect(session.audience_level).to eq("supporter")
+      expect(session.access_url).to eq("https://stream.example.com/members")
+    end
+
     it "prevents a member of another band from creating a session" do
       band = create(:band)
       outsider = create(:user)

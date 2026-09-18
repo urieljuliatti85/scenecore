@@ -166,7 +166,7 @@
 
   <% if @core_sessions.any? %>
     <div class="mt-10">
-      <h2 class="text-lg font-semibold text-neutral-300 mb-4">Core Sessions</h2>
+      <h2 class="text-lg font-semibold text-neutral-300 mb-4">Member Sessions</h2>
       <div class="flex flex-col gap-4">
         <% @core_sessions.each do |core_session| %>
           <article class="rounded-2xl border border-neutral-800 bg-neutral-900/60 px-5 py-5">
@@ -175,7 +175,7 @@
                 <div>
                   <p class="font-semibold text-white"><%= core_session.title %></p>
                   <p class="text-sm text-neutral-400 mt-1">
-                    <%= core_session.session_type.humanize %> · <%= time_tag core_session.starts_at, core_session.starts_at.strftime("%d %b %Y · %H:%M") %>
+                    <%= core_session.session_type.humanize %> · <%= core_session.audience_level.humanize %> and above · <%= time_tag core_session.starts_at, core_session.starts_at.strftime("%d %b %Y · %H:%M") %>
                   </p>
                   <% if core_session.description.present? %>
                     <p class="text-sm text-neutral-500 mt-2 whitespace-pre-line"><%= core_session.description %></p>
@@ -187,6 +187,9 @@
                       <%= pluralize(core_session.rsvps.count, "person") %> confirmed
                     <% end %>
                   </p>
+                  <% if core_session.access_link %>
+                    <%= link_to "Open private session", core_session.access_link, target: "_blank", rel: "noopener noreferrer", class: "inline-block mt-3 text-sm text-yellow-400 hover:text-yellow-300 transition" %>
+                  <% end %>
                 </div>
 
                 <% if core_session.rsvped_by?(current_user) %>
@@ -200,7 +203,7 @@
               </div>
             <% else %>
               <p class="font-semibold text-white"><%= core_session.title %></p>
-              <%= render "shared/locked_content_notice", required_level: "core_member" %>
+              <%= render "shared/locked_content_notice", required_level: core_session.audience_level %>
             <% end %>
           </article>
         <% end %>
@@ -217,10 +220,8 @@
             <% if post.image.attached? %>
               <%= image_tag post.image, class: "w-full max-h-96 object-cover rounded-2xl mb-4" %>
             <% end %>
-            <% if post.composition_journal? %>
-              <span class="inline-block text-[10px] uppercase tracking-wide text-yellow-400 border border-yellow-400/40 rounded-full px-2 py-0.5 mb-2">Composition Journal</span>
-            <% elsif post.rehearsal_recording? %>
-              <span class="inline-block text-[10px] uppercase tracking-wide text-yellow-400 border border-yellow-400/40 rounded-full px-2 py-0.5 mb-2">Rehearsal Recording</span>
+            <% unless post.announcement? %>
+              <span class="inline-block text-[10px] uppercase tracking-wide text-yellow-400 border border-yellow-400/40 rounded-full px-2 py-0.5 mb-2"><%= post.post_type.titleize %></span>
             <% end %>
             <h3 class="text-white font-semibold mb-2"><%= post.title %></h3>
             <%# No text-sm here: .trix-content sets its own base size, and

@@ -48,6 +48,21 @@
     <%= form.text_area :description, rows: 5, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
   </div>
 
+  <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5">
+    <h2 class="text-lg font-semibold text-white">Member priority access</h2>
+    <p class="text-sm text-neutral-500 mt-1 mb-5">Optionally let members buy this limited item before it opens to everyone. The same stock is shared; this only controls when each level can add it to the cart.</p>
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div>
+        <%= form.label :early_access_level, "Available first to", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+        <%= form.select :early_access_level, Membership::LEVELS.map { |level| [ level.humanize, level ] }, { include_blank: "Everyone" }, class: "w-full rounded-lg bg-neutral-950 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+      </div>
+      <div>
+        <%= form.label :early_access_until, "Priority window ends", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+        <%= form.datetime_local_field :early_access_until, class: "w-full rounded-lg bg-neutral-950 border border-neutral-800 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+      </div>
+    </div>
+  </div>
+
   <div>
     <%= form.label :image, "Photo", class: "block text-sm font-medium text-neutral-300 mb-1" %>
     <%# A Discogs import brings the release's front cover with it, so this

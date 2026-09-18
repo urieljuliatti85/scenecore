@@ -16,6 +16,13 @@ class CheckoutsController < ApplicationController
       return redirect_to cart_path, alert: "#{@cart.band.name} can't take payments yet."
     end
 
+    # A product may have entered a members-only priority window after it
+    # was put in the cart. Re-check on the server before charging so a
+    # cached cart or crafted request cannot bypass that window.
+    unless @cart.cart_items.all? { |item| item.product_variant.product.published? && item.product_variant.product.available_to?(current_user) }
+      return redirect_to cart_path, alert: "One or more products in your cart aren't available to you yet."
+    end
+
     # A band lists the destinations it serves, so an unlisted country is a
     # refusal rather than a rate of zero. Checked here on the server: the
     # country select only narrows what is easy to pick, and an address for
@@ -94,7 +101,7 @@ class CheckoutsController < ApplicationController
         product_variant: item.product_variant,
         product_name: item.product_variant.product.name,
         variant_name: item.product_variant.name,
-        unit_price_cents: item.product_variant.price_cents,
+        unit_price_cents: @cart.discounted_unit_price_cents(item.product_variant),
         quantity: item.quantity
       )
     end

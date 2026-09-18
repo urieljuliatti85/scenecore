@@ -28,6 +28,21 @@ RSpec.describe CoreSession, type: :model do
     expect(build(:core_session, capacity: nil)).to be_valid
   end
 
+  it "defaults its audience to Core Member" do
+    expect(build(:core_session).audience_level).to eq("core_member")
+  end
+
+  it "limits private sessions to Supporter or Core Member audiences" do
+    session = build(:core_session)
+    session.audience_level = "fan"
+
+    expect(session).not_to be_valid
+  end
+
+  it "accepts a valid external access link" do
+    expect(build(:core_session, access_url: "https://meet.example.com/session")).to be_valid
+  end
+
   describe "#seats_available?" do
     it "is true when capacity is nil" do
       session = create(:core_session, capacity: nil)
@@ -101,6 +116,18 @@ RSpec.describe CoreSession, type: :model do
       create(:membership, :supporter, band: band, user: user)
 
       expect(session.visible_to?(user)).to be false
+    end
+
+    it "is true for a Supporter and Core Member when the audience starts at Supporter" do
+      band = create(:band)
+      session = create(:core_session, band: band, audience_level: :supporter)
+      supporter = create(:user)
+      core_member = create(:user)
+      create(:membership, :supporter, band: band, user: supporter)
+      create(:membership, :core_member, band: band, user: core_member)
+
+      expect(session.visible_to?(supporter)).to be true
+      expect(session.visible_to?(core_member)).to be true
     end
 
     it "is false for a user with no membership" do

@@ -159,6 +159,8 @@ class ProductsController < ApplicationController
       :description,
       :image,
       :shipping_cents,
+      :early_access_level,
+      :early_access_until,
       variants_attributes: [ :id, :sku, :name, :price_cents, :stock_quantity ],
       shipping_rates_attributes: [ :id, :shipping_zone_id, :shipping_cents ]
     )

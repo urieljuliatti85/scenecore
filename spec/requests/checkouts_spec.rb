@@ -178,6 +178,19 @@ RSpec.describe "Checkouts", type: :request do
       expect(item.unit_price_cents).to eq(12_000)
     end
 
+    it "snapshots the active member discount into the order item and total" do
+      create(:membership, :supporter, band: band, user: user)
+      create(:merch_discount, band: band, level: :supporter, percentage: 10)
+
+      post checkout_path, params: { shipping_address: address_params }
+
+      order = Order.last
+      expect(order.order_items.sole.unit_price_cents).to eq(10_800)
+      expect(order.subtotal_cents).to eq(10_800)
+      expect(order.total_cents).to eq(12_300)
+      expect(order.platform_fee_cents).to eq(1_080)
+    end
+
     it "re-renders and creates nothing when the address is incomplete" do
       expect {
         post checkout_path, params: { shipping_address: address_params.merge(city: "") }

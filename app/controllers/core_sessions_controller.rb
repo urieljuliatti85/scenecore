@@ -68,6 +68,6 @@ class CoreSessionsController < ApplicationController
   end
 
   def core_session_params
-    params.require(:core_session).permit(:title, :session_type, :starts_at, :capacity, :description)
+    params.require(:core_session).permit(:title, :session_type, :audience_level, :starts_at, :capacity, :description, :access_url)
   end
 end

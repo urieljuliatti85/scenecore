@@ -48,4 +48,22 @@ RSpec.describe MerchDiscount, type: :model do
 
     expect(build(:merch_discount, band: band, level: :supporter)).to be_valid
   end
+
+  describe ".percentage_for" do
+    it "returns the highest discount available through the member's level" do
+      band = create(:band)
+      create(:merch_discount, band: band, level: :fan, percentage: 5)
+      create(:merch_discount, band: band, level: :supporter, percentage: 10)
+      core_member = create(:membership, :core_member, band: band)
+
+      expect(described_class.percentage_for(core_member)).to eq(10)
+    end
+
+    it "returns zero for an inactive membership" do
+      membership = create(:membership, :cancelled)
+      create(:merch_discount, band: membership.band, level: :fan, percentage: 10)
+
+      expect(described_class.percentage_for(membership)).to eq(0)
+    end
+  end
 end

@@ -55,6 +55,25 @@ RSpec.describe "Carts", type: :request do
       expect(flash[:alert]).to include("isn't available")
       expect(Cart.count).to be_zero
     end
+
+    it "refuses a priority product until the user has the required membership" do
+      product.update!(early_access_level: :supporter, early_access_until: 1.day.from_now)
+      create(:membership, band: band, user: user, level: :fan)
+
+      post add_cart_path, params: { product_variant_id: variant.id }
+
+      expect(flash[:alert]).to include("isn't available")
+      expect(Cart.count).to be_zero
+    end
+
+    it "allows a Core Member to buy a priority product available to Supporters" do
+      product.update!(early_access_level: :supporter, early_access_until: 1.day.from_now)
+      create(:membership, :core_member, band: band, user: user)
+
+      post add_cart_path, params: { product_variant_id: variant.id }
+
+      expect(user.carts.sole.cart_items.sole.product_variant).to eq(variant)
+    end
   end
 
   # A cart holds one band's products at a time (ADR-003). The fan confirms

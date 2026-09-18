@@ -12,11 +12,14 @@ class Product < ApplicationRecord
 
   enum :status, { draft: "draft", published: "published" }, default: :draft, validate: true
   enum :source, { manual: "manual", discogs: "discogs" }, default: :manual, validate: true
+  enum :early_access_level, Membership::LEVELS.index_with(&:itself), prefix: :early_access, validate: { allow_nil: true }
 
   validates :name, presence: true
   validates :shipping_cents, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :discogs_release_id, uniqueness: { scope: :band_id }, allow_nil: true
   validates :discogs_release_id, presence: true, if: :discogs?
+  validates :early_access_until, presence: true, if: :early_access_level?
+  validates :early_access_level, presence: true, if: :early_access_until?
 
   scope :published, -> { where(status: :published) }
 
@@ -43,6 +46,25 @@ class Product < ApplicationRecord
   # the rate used while the band has defined none.
   def ships_by_zone?
     band.shipping_zones.exists?
+  end
+
+  # A priority window is a temporary membership gate layered over a
+  # published product. Once it ends, the same product becomes available to
+  # everyone; the band never has to duplicate stock or listings per plan.
+  def in_early_access?
+    early_access_level.present? && early_access_until.present? && early_access_until > Time.current
+  end
+
+  def available_to?(user)
+    return true unless in_early_access?
+    return false if user.nil?
+
+    membership = band.memberships.find_by(user: user)
+    membership.present? && membership.can_access?(early_access_level)
+  end
+
+  def required_level
+    early_access_level if in_early_access?
   end
 
   def discogs_url

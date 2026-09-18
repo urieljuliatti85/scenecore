@@ -28,6 +28,18 @@ RSpec.describe "Core Session RSVPs", type: :request do
       }.not_to change(CoreSessionRsvp, :count)
     end
 
+    it "lets a Supporter RSVP to a published Supporter session" do
+      band = create(:band, :approved)
+      session = create(:core_session, :published, band: band, audience_level: :supporter)
+      user = create(:user)
+      create(:membership, :supporter, band: band, user: user)
+      sign_in user
+
+      expect {
+        post core_session_rsvp_path(band.slug, session)
+      }.to change(CoreSessionRsvp, :count).by(1)
+    end
+
     it "does not let a Core Member RSVP to a fully booked session" do
       band = create(:band, :approved)
       session = create(:core_session, :published, band: band, capacity: 1)

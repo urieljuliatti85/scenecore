@@ -19,6 +19,15 @@ RSpec.describe CoreSessionRsvp, type: :model do
     expect(build(:core_session_rsvp, core_session: session, user: user)).not_to be_valid
   end
 
+  it "allows a Supporter to RSVP when a session's audience starts at Supporter" do
+    band = create(:band)
+    session = create(:core_session, band: band, audience_level: :supporter)
+    user = create(:user)
+    create(:membership, :supporter, band: band, user: user)
+
+    expect(build(:core_session_rsvp, core_session: session, user: user)).to be_valid
+  end
+
   it "is invalid when the user has no membership with the session's band" do
     session = create(:core_session)
     user = create(:user)

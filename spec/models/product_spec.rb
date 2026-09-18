@@ -20,6 +20,37 @@ RSpec.describe Product do
     end
   end
 
+  describe "member priority access" do
+    let(:band) { create(:band) }
+
+    it "requires both a level and an end time" do
+      expect(build(:product, early_access_level: :core_member)).not_to be_valid
+      expect(build(:product, early_access_until: 1.day.from_now)).not_to be_valid
+    end
+
+    it "lets only the configured level and higher access a priority product" do
+      product = create(:product, band: band, early_access_level: :supporter, early_access_until: 1.day.from_now)
+      fan = create(:user)
+      supporter = create(:user)
+      core_member = create(:user)
+      create(:membership, band: band, user: fan, level: :fan)
+      create(:membership, band: band, user: supporter, level: :supporter)
+      create(:membership, band: band, user: core_member, level: :core_member)
+
+      expect(product.available_to?(nil)).to be false
+      expect(product.available_to?(fan)).to be false
+      expect(product.available_to?(supporter)).to be true
+      expect(product.available_to?(core_member)).to be true
+    end
+
+    it "opens the product to everyone after the priority window" do
+      product = create(:product, band: band, early_access_level: :core_member, early_access_until: 1.minute.ago)
+
+      expect(product.available_to?(nil)).to be true
+      expect(product.required_level).to be_nil
+    end
+  end
+
   it "destroys its variants when destroyed" do
     product = create(:product)
     create(:product_variant, product: product)

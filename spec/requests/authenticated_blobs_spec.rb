@@ -65,6 +65,36 @@ RSpec.describe "Authenticated blob access", type: :request do
 
       expect(response).to have_http_status(:redirect)
     end
+
+    it "blocks a Fan from an early-release cover reserved for Supporters" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band, early_access_level: :supporter, early_access_until: 1.day.from_now)
+      image = attach_image(album, :cover)
+      fan = create(:user)
+      create(:membership, band: band, user: fan, level: :fan)
+      sign_in fan
+
+      get rails_blob_path(image, only_path: true)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "allows a Supporter and Core Member to access a Supporter early-release cover" do
+      band = create(:band, :approved)
+      album = create(:album, :published, band: band, early_access_level: :supporter, early_access_until: 1.day.from_now)
+      image = attach_image(album, :cover)
+
+      [ :supporter, :core_member ].each do |level|
+        user = create(:user)
+        create(:membership, band: band, user: user, level: level)
+        sign_in user
+
+        get rails_blob_path(image, only_path: true)
+
+        expect(response).to have_http_status(:redirect)
+        sign_out user
+      end
+    end
   end
 
   describe "a post image" do
@@ -156,6 +186,34 @@ RSpec.describe "Authenticated blob access", type: :request do
       create(:band_membership, band: band, user: user)
       image = attach_image(post_record, :image)
       sign_in user
+
+      get rails_blob_path(image, only_path: true)
+
+      expect(response).to have_http_status(:redirect)
+    end
+  end
+
+  describe "a priority product image" do
+    it "is not reachable by a Fan before the product opens to Supporters" do
+      band = create(:band, :approved)
+      product = create(:product, :published, band: band, early_access_level: :supporter, early_access_until: 1.day.from_now)
+      image = attach_image(product, :image)
+      fan = create(:user)
+      create(:membership, band: band, user: fan, level: :fan)
+      sign_in fan
+
+      get rails_blob_path(image, only_path: true)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "is reachable by a Core Member during a Supporter priority window" do
+      band = create(:band, :approved)
+      product = create(:product, :published, band: band, early_access_level: :supporter, early_access_until: 1.day.from_now)
+      image = attach_image(product, :image)
+      core_member = create(:user)
+      create(:membership, :core_member, band: band, user: core_member)
+      sign_in core_member
 
       get rails_blob_path(image, only_path: true)
 

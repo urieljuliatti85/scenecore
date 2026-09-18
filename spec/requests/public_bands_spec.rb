@@ -578,6 +578,19 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).to include("How this song was born")
     end
 
+    it "labels a production journal entry visible to a Supporter" do
+      band = create(:band, :approved)
+      create(:post, :published, band: band, post_type: :production_journal, visibility: :supporter, title: "Mix decisions")
+      user = create(:user)
+      create(:membership, band: band, user: user, level: :supporter)
+      sign_in user
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Production Journal")
+      expect(response.body).to include("Mix decisions")
+    end
+
     it "does not label a locked composition journal entry the viewer cannot see" do
       band = create(:band, :approved)
       create(:post, :published, :composition_journal, band: band, title: "How this song was born")

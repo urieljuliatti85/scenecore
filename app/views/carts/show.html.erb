@@ -36,7 +36,13 @@
           <div class="min-w-0">
             <p class="font-semibold text-white truncate"><%= item.product_variant.product.name %></p>
             <p class="text-sm text-neutral-500 mt-1">
-              <%= item.product_variant.name %> · <%= number_to_currency(item.product_variant.price_cents / 100.0) %> each
+              <%= item.product_variant.name %> ·
+              <% if @cart.membership_discount_percentage.positive? %>
+                <span class="line-through"><%= number_to_currency(item.product_variant.price_cents / 100.0) %></span>
+                <span class="text-emerald-400"><%= number_to_currency(@cart.discounted_unit_price_cents(item.product_variant) / 100.0) %> each</span>
+              <% else %>
+                <%= number_to_currency(item.product_variant.price_cents / 100.0) %> each
+              <% end %>
             </p>
           </div>
 
@@ -50,7 +56,7 @@
             <% end %>
 
             <p class="text-white font-bold w-20 text-right">
-              <%= number_to_currency(item.quantity * item.product_variant.price_cents / 100.0) %>
+              <%= number_to_currency(item.quantity * @cart.discounted_unit_price_cents(item.product_variant) / 100.0) %>
             </p>
 
             <%= button_to "Remove", remove_item_cart_path, method: :delete,
@@ -63,6 +69,16 @@
 
     <div class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 mb-6">
       <dl class="flex flex-col gap-2 text-sm">
+        <% if @cart.membership_discount_cents.positive? %>
+          <div class="flex items-center justify-between">
+            <dt class="text-neutral-400">Merch subtotal</dt>
+            <dd class="text-neutral-400 line-through"><%= number_to_currency(@cart.undiscounted_subtotal_cents / 100.0) %></dd>
+          </div>
+          <div class="flex items-center justify-between">
+            <dt class="text-emerald-400"><%= @cart.membership_discount_percentage %>% member discount</dt>
+            <dd class="text-emerald-400">−<%= number_to_currency(@cart.membership_discount_cents / 100.0) %></dd>
+          </div>
+        <% end %>
         <div class="flex items-center justify-between">
           <dt class="text-neutral-400">Subtotal</dt>
           <dd class="text-white"><%= number_to_currency(@cart.subtotal_cents / 100.0) %></dd>

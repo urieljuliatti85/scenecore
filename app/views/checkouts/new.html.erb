@@ -19,13 +19,19 @@
             <span class="text-neutral-500">(<%= item.product_variant.name %>)</span>
           </span>
           <span class="text-white shrink-0">
-            <%= number_to_currency(item.quantity * item.product_variant.price_cents / 100.0) %>
+            <%= number_to_currency(item.quantity * @cart.discounted_unit_price_cents(item.product_variant) / 100.0) %>
           </span>
         </li>
       <% end %>
     </ul>
 
     <dl class="flex flex-col gap-2 text-sm border-t border-neutral-800 pt-4">
+      <% if @cart.membership_discount_cents.positive? %>
+        <div class="flex items-center justify-between">
+          <dt class="text-neutral-400">Member discount (<%= @cart.membership_discount_percentage %>%)</dt>
+          <dd class="text-emerald-400">−<%= number_to_currency(@cart.membership_discount_cents / 100.0) %></dd>
+        </div>
+      <% end %>
       <div class="flex items-center justify-between">
         <dt class="text-neutral-400">Subtotal</dt>
         <dd class="text-white"><%= number_to_currency(@cart.subtotal_cents / 100.0) %></dd>

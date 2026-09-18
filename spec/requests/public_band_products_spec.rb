@@ -42,4 +42,19 @@ RSpec.describe "Public band products", type: :request do
     expect(response.body).to include("Sold Out Tee")
     expect(response.body).to include("Sold out")
   end
+
+  it "shows a locked priority product to a Fan without exposing its image or purchase control" do
+    band = create(:band, :approved)
+    product = create(:product, :published, band: band, name: "Core Vinyl", early_access_level: :core_member, early_access_until: 1.day.from_now)
+    create(:product_variant, product: product, price_cents: 12_000, stock_quantity: 8)
+    fan = create(:user)
+    create(:membership, band: band, user: fan, level: :fan)
+    sign_in fan
+
+    get public_band_path(band.slug)
+
+    expect(response.body).to include("Core Vinyl")
+    expect(response.body).to include("Available first to Core member")
+    expect(response.body).not_to include("Add to cart")
+  end
 end

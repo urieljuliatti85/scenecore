@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_18_011116) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_18_020001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -221,6 +221,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_011116) do
   end
 
   create_table "core_sessions", force: :cascade do |t|
+    t.string "access_url"
+    t.string "audience_level", default: "core_member", null: false
     t.bigint "band_id", null: false
     t.integer "capacity"
     t.datetime "created_at", null: false
@@ -231,6 +233,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_011116) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["band_id"], name: "index_core_sessions_on_band_id"
+    t.check_constraint "audience_level::text = ANY (ARRAY['supporter'::character varying, 'core_member'::character varying]::text[])", name: "core_sessions_audience_level_check"
     t.check_constraint "capacity IS NULL OR capacity > 0", name: "core_sessions_capacity_check"
     t.check_constraint "session_type::text = ANY (ARRAY['video'::character varying, 'audio'::character varying, 'qa'::character varying, 'listening_party'::character varying, 'meet_greet'::character varying]::text[])", name: "core_sessions_session_type_check"
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "core_sessions_status_check"
@@ -410,7 +413,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_011116) do
     t.index ["band_id", "status", "visibility"], name: "index_posts_on_band_id_and_status_and_visibility"
     t.index ["band_id"], name: "index_posts_on_band_id"
     t.check_constraint "early_access_level IS NULL OR (early_access_level::text = ANY (ARRAY['fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[]))", name: "posts_early_access_level_check"
-    t.check_constraint "post_type::text = ANY (ARRAY['announcement'::character varying, 'composition_journal'::character varying, 'rehearsal_recording'::character varying]::text[])", name: "posts_post_type_check"
+    t.check_constraint "post_type::text = ANY (ARRAY['announcement'::character varying, 'demo'::character varying, 'alternative_version'::character varying, 'composition_journal'::character varying, 'production_journal'::character varying, 'rehearsal_recording'::character varying, 'exclusive_video'::character varying, 'exclusive_stream'::character varying, 'rare_archive'::character varying]::text[])", name: "posts_post_type_check"
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "posts_status_check"
     t.check_constraint "visibility::text = ANY (ARRAY['public'::character varying, 'followers'::character varying, 'fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[])", name: "posts_visibility_check"
   end
@@ -451,6 +454,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_011116) do
     t.jsonb "discogs_metadata", default: {}, null: false
     t.bigint "discogs_release_id"
     t.datetime "discogs_synced_at"
+    t.string "early_access_level"
+    t.datetime "early_access_until"
     t.string "label_name"
     t.string "name", null: false
     t.string "release_format"
@@ -461,6 +466,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_011116) do
     t.datetime "updated_at", null: false
     t.index ["band_id", "discogs_release_id"], name: "index_products_on_band_and_discogs_release", unique: true, where: "(discogs_release_id IS NOT NULL)"
     t.index ["band_id"], name: "index_products_on_band_id"
+    t.check_constraint "early_access_level IS NULL OR (early_access_level::text = ANY (ARRAY['fan'::character varying, 'supporter'::character varying, 'core_member'::character varying]::text[]))", name: "products_early_access_level_check"
     t.check_constraint "shipping_cents >= 0", name: "products_shipping_cents_check"
     t.check_constraint "source::text = ANY (ARRAY['manual'::character varying, 'discogs'::character varying]::text[])", name: "products_source_check"
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])", name: "products_status_check"

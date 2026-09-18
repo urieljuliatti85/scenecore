@@ -32,6 +32,10 @@
       <dd class="mt-1"><%= @core_session.session_type.humanize %></dd>
     </div>
     <div>
+      <dt class="text-xs uppercase tracking-wide text-neutral-500">Audience</dt>
+      <dd class="mt-1"><%= @core_session.audience_level.humanize %> and above</dd>
+    </div>
+    <div>
       <dt class="text-xs uppercase tracking-wide text-neutral-500">When</dt>
       <dd class="mt-1"><%= time_tag @core_session.starts_at, @core_session.starts_at.strftime("%d %b %Y · %H:%M") %></dd>
     </div>

@@ -87,6 +87,17 @@ RSpec.describe "Posts", type: :request do
       expect(Post.last.post_type).to eq("composition_journal")
     end
 
+    it "creates a production journal entry" do
+      user = create(:user)
+      band = create(:band)
+      create(:band_membership, band: band, user: user)
+      sign_in user
+
+      post band_posts_path(band), params: { post: { title: "Mix notes", body: "Production details.", visibility: "supporter", post_type: "production_journal" } }
+
+      expect(Post.last.post_type).to eq("production_journal")
+    end
+
     it "defaults post_type to announcement when not specified" do
       user = create(:user)
       band = create(:band)

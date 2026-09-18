@@ -36,7 +36,7 @@ RSpec.describe Post, type: :model do
     expect(create(:post).post_type).to eq("announcement")
   end
 
-  it "restricts post_type to announcement, composition_journal, or rehearsal_recording" do
+  it "restricts post_type to the supported membership content types" do
     post = build(:post)
     post.post_type = "interview"
 
@@ -45,6 +45,12 @@ RSpec.describe Post, type: :model do
 
   it "accepts rehearsal_recording as a post_type" do
     expect(build(:post, post_type: :rehearsal_recording)).to be_valid
+  end
+
+  it "accepts production journals, exclusive streams, and rare archives" do
+    expect(build(:post, post_type: :production_journal)).to be_valid
+    expect(build(:post, post_type: :exclusive_stream)).to be_valid
+    expect(build(:post, post_type: :rare_archive)).to be_valid
   end
 
   it "restricts visibility to public, followers, fan, supporter, or core_member" do

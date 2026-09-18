@@ -11,7 +11,23 @@ class Cart < ApplicationRecord
        default: :active, validate: true
 
   def subtotal_cents
+    cart_items.sum { |item| item.quantity * discounted_unit_price_cents(item.product_variant) }
+  end
+
+  def undiscounted_subtotal_cents
     cart_items.sum { |item| item.quantity * item.product_variant.price_cents }
+  end
+
+  def membership_discount_cents
+    undiscounted_subtotal_cents - subtotal_cents
+  end
+
+  def membership_discount_percentage
+    @membership_discount_percentage ||= MerchDiscount.percentage_for(band.memberships.find_by(user: user))
+  end
+
+  def discounted_unit_price_cents(variant)
+    (variant.price_cents * (100 - membership_discount_percentage) / 100.0).round
   end
 
   # Charged once per distinct product, not per unit — two copies of the same

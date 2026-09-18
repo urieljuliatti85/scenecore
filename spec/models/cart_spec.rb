@@ -39,6 +39,20 @@ RSpec.describe Cart do
     it "is zero for an empty cart" do
       expect(create(:cart).subtotal_cents).to eq(0)
     end
+
+    it "applies the best discount inherited through an active membership" do
+      band = create(:band)
+      cart = create(:cart, band: band)
+      create(:membership, :core_member, band: band, user: cart.user)
+      create(:merch_discount, band: band, level: :supporter, percentage: 10)
+      product = create(:product, band: band)
+      variant = create(:product_variant, product: product, price_cents: 1_000)
+      create(:cart_item, cart: cart, product_variant: variant, quantity: 2)
+
+      expect(cart.membership_discount_percentage).to eq(10)
+      expect(cart.subtotal_cents).to eq(1_800)
+      expect(cart.membership_discount_cents).to eq(200)
+    end
   end
 
   describe "shipping by destination" do

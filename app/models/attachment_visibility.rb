@@ -18,11 +18,11 @@ module AttachmentVisibility
     when Band
       record.approved?
     when Album
-      record.published? && record.band.approved?
+      record.published? && record.band.approved? && record.visible_to?(user)
     when Post
       record.published? && record.band.approved? && record.visible_to?(user)
     when Product
-      record.published? && record.band.approved?
+      record.published? && record.band.approved? && record.available_to?(user)
     else
       false
     end

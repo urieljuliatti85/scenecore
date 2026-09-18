@@ -15,8 +15,14 @@ class Post < ApplicationRecord
        default: :draft, validate: true
   enum :post_type, {
     announcement: "announcement",
+    demo: "demo",
+    alternative_version: "alternative_version",
     composition_journal: "composition_journal",
-    rehearsal_recording: "rehearsal_recording"
+    production_journal: "production_journal",
+    rehearsal_recording: "rehearsal_recording",
+    exclusive_video: "exclusive_video",
+    exclusive_stream: "exclusive_stream",
+    rare_archive: "rare_archive"
   }, default: :announcement, validate: true
   enum :early_access_level, Membership::LEVELS.index_with(&:itself), prefix: :early_access, validate: { allow_nil: true }
 

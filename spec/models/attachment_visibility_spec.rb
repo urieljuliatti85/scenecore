@@ -32,6 +32,22 @@ RSpec.describe AttachmentVisibility do
         expect(described_class.visible?(album, user: nil)).to be true
       end
 
+      it "enforces the album's early-access level" do
+        band = create(:band, :approved)
+        album = create(:album, :published, band: band, early_access_level: :supporter, early_access_until: 1.day.from_now)
+        fan = create(:user)
+        supporter = create(:user)
+        core_member = create(:user)
+        create(:membership, band: band, user: fan, level: :fan)
+        create(:membership, band: band, user: supporter, level: :supporter)
+        create(:membership, band: band, user: core_member, level: :core_member)
+
+        expect(described_class.visible?(album, user: nil)).to be false
+        expect(described_class.visible?(album, user: fan)).to be false
+        expect(described_class.visible?(album, user: supporter)).to be true
+        expect(described_class.visible?(album, user: core_member)).to be true
+      end
+
       it "is not visible to a visitor when a draft" do
         band = create(:band, :approved)
         album = create(:album, band: band)
