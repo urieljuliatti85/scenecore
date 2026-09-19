@@ -16,7 +16,7 @@ RSpec.describe "Admin::Dashboard", type: :request do
       expect(response.body).to include(">3<")
     end
 
-    it "accents the band and user cards with their section colours" do
+    it "uses the shared yellow treatment for platform status actions" do
       admin = create(:user, :platform_admin)
       sign_in admin
 
@@ -25,9 +25,24 @@ RSpec.describe "Admin::Dashboard", type: :request do
       cards = Nokogiri::HTML(response.body).css("#platform-counts > div")
 
       expect(cards.size).to eq(3)
-      expect(cards[0].to_html).to include("text-emerald-400")
-      expect(cards[1].to_html).to include("text-emerald-400")
-      expect(cards[2].to_html).to include("text-sky-400")
+      expect(cards).to all(satisfy { |card| card.to_html.include?("text-yellow-400") })
+    end
+
+    it "renders the grouped platform navigation and administrator header" do
+      admin = create(:user, :platform_admin, name: "Ada Lovelace")
+      sign_in admin
+
+      get admin_root_path
+
+      document = Nokogiri::HTML(response.body)
+      sidebar = document.at_css("#admin-sidebar-panel")
+
+      expect(sidebar.text).to include("Overview")
+      expect(sidebar.text).to include("Platform")
+      expect(sidebar.text).to include("Trust & content")
+      expect(sidebar.text).to include("Operations")
+      expect(response.body).to include("Signed in as Ada Lovelace")
+      expect(response.body).to include('aria-label="Close menu"')
     end
 
     context "traffic section" do

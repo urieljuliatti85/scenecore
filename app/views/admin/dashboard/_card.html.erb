@@ -1,10 +1,13 @@
-<div class="rounded-xl border border-neutral-800 bg-neutral-900/60 px-6 py-5">
-  <span class="inline-flex items-center gap-2 rounded-full border <%= admin_section_accent(section, :border) %> px-3 py-1 mb-4">
-    <span class="h-1.5 w-1.5 rounded-full <%= admin_section_accent(section, :dot) %>" aria-hidden="true"></span>
-    <span class="text-xs font-semibold uppercase tracking-wide <%= admin_section_accent(section, :text) %>"><%= label %></span>
-  </span>
+<div class="border-b border-[#383838] px-3 py-3 last:border-b-0">
+  <div class="flex items-center justify-between gap-3">
+    <div class="min-w-0">
+      <p class="text-[0.68rem] uppercase tracking-[0.12em] text-neutral-600"><%= label %></p>
+      <p class="mt-1 text-2xl font-semibold tracking-tight text-neutral-100"><%= count %></p>
+    </div>
+    <span class="h-7 w-7 rounded-full border border-[#444] bg-[#2a2a2a] flex items-center justify-center text-yellow-400">
+      <%= render "admin/nav_icon", section: section, current: true %>
+    </span>
+  </div>
 
-  <p class="text-3xl font-extrabold"><%= count %></p>
-
-  <%= link_to link_label, link_path, class: "text-sm #{admin_section_accent(section, :text)} hover:text-white transition" %>
+  <%= link_to link_label, link_path, class: "mt-2 inline-flex text-xs font-medium text-yellow-400 hover:text-yellow-200 transition" %>
 </div>
