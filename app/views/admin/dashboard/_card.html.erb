@@ -1,15 +1,13 @@
-<div class="relative overflow-hidden rounded-2xl border border-[#1b2b55] bg-[#0a1230] p-5 sm:p-6">
-  <span class="absolute inset-x-0 top-0 h-px <%= admin_section_accent(section, :dot) %>" aria-hidden="true"></span>
-
-  <div class="flex items-start justify-between gap-4 mb-6">
-    <div>
-      <p class="text-sm text-slate-500 mb-2"><%= label %></p>
-      <p class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white"><%= count %></p>
+<div class="border-b border-[#383838] px-3 py-3 last:border-b-0">
+  <div class="flex items-center justify-between gap-3">
+    <div class="min-w-0">
+      <p class="text-[0.68rem] uppercase tracking-[0.12em] text-neutral-600"><%= label %></p>
+      <p class="mt-1 text-2xl font-semibold tracking-tight text-neutral-100"><%= count %></p>
     </div>
-    <span class="h-10 w-10 rounded-xl border <%= admin_section_accent(section, :border) %> bg-white/[0.03] flex items-center justify-center <%= admin_section_accent(section, :text) %>">
-      <%= render "admin/nav_icon", section: section, current: false %>
+    <span class="h-7 w-7 rounded-full border border-[#444] bg-[#2a2a2a] flex items-center justify-center text-yellow-400">
+      <%= render "admin/nav_icon", section: section, current: true %>
     </span>
   </div>
 
-  <%= link_to link_label, link_path, class: "inline-flex items-center gap-1.5 text-sm font-semibold #{admin_section_accent(section, :text)} hover:text-white transition" %>
+  <%= link_to link_label, link_path, class: "mt-2 inline-flex text-xs font-medium text-yellow-400 hover:text-yellow-200 transition" %>
 </div>

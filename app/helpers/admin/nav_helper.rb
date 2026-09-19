@@ -1,10 +1,10 @@
 module Admin::NavHelper
   def admin_nav_link(label, path, current:, section: nil)
-    classes = [ "group flex items-center gap-3 rounded-r-xl border-l-2 px-3 py-2.5 text-sm font-medium transition" ]
+    classes = [ "group flex items-center gap-2 rounded-md border-l-2 px-2.5 py-2 text-xs font-medium transition" ]
     classes << if current
-      "border-fuchsia-400 bg-fuchsia-500/15 text-fuchsia-100"
+      "border-yellow-400 bg-[#393939] text-white"
     else
-      "border-transparent text-slate-400 hover:border-cyan-400/60 hover:bg-white/5 hover:text-white"
+      "border-transparent text-neutral-500 hover:border-yellow-400/50 hover:bg-[#292929] hover:text-neutral-100"
     end
 
     link_to path, class: classes.join(" "), aria: { current: ("page" if current) } do

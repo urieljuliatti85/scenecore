@@ -12,29 +12,29 @@ RSpec.describe Admin::NavHelper, type: :helper do
       html = helper.admin_nav_link("Bands", "/admin/bands", current: false, section: :bands)
 
       expect(html).to include("<svg")
-      expect(html).to include("group-hover:text-cyan-300")
+      expect(html).to include("group-hover:text-yellow-300")
     end
 
     it "keeps an idle item quiet until hover" do
       html = helper.admin_nav_link("Bands", "/admin/bands", current: false, section: :bands)
 
       expect(html).to include("border-transparent")
-      expect(html).to include("text-slate-400")
+      expect(html).to include("text-neutral-500")
     end
 
-    it "uses the shared magenta treatment when the item is current" do
+    it "uses the shared yellow treatment when the item is current" do
       html = helper.admin_nav_link("Bands", "/admin/bands", current: true, section: :bands)
 
-      expect(html).to include("border-fuchsia-400")
-      expect(html).to include("bg-fuchsia-500/15")
-      expect(html).to include("text-fuchsia-100")
+      expect(html).to include("border-yellow-400")
+      expect(html).to include("bg-[#393939]")
+      expect(html).to include("text-white")
       expect(html).to include('aria-current="page"')
     end
 
     it "uses the active icon tone on the current item" do
       html = helper.admin_nav_link("Bands", "/admin/bands", current: true, section: :bands)
 
-      expect(html).to include("text-fuchsia-300")
+      expect(html).to include("text-yellow-400")
     end
 
     it "hides the decorative icon from assistive technology" do
@@ -47,7 +47,7 @@ RSpec.describe Admin::NavHelper, type: :helper do
       html = helper.admin_nav_link("Somewhere", "/admin/somewhere", current: true)
 
       expect(html).to include("<rect")
-      expect(html).to include("bg-fuchsia-500/15")
+      expect(html).to include("bg-[#393939]")
     end
   end
 end

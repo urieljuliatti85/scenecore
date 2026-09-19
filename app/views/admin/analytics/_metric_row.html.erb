@@ -1,13 +1,13 @@
 <%# Compact KPI panels mirror the dashboard reference while preserving the
     exact metrics and their existing Google Analytics source. %>
-<div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+<div class="grid grid-cols-2 lg:grid-cols-5 border-y border-[#383838] divide-x divide-y lg:divide-y-0 divide-[#383838]">
   <% metrics.each_with_index do |(label, value), index| %>
-    <div class="rounded-2xl border border-[#1b2b55] bg-[#0a1230] p-4 sm:p-5">
-      <div class="flex items-center gap-2 mb-3">
-        <span class="h-1.5 w-1.5 rounded-full <%= index.even? ? "bg-fuchsia-400" : "bg-cyan-400" %>" aria-hidden="true"></span>
-        <p class="text-xs sm:text-sm text-slate-500"><%= label %></p>
+    <div class="bg-[#222] px-3 py-3.5">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="h-1.5 w-1.5 rounded-full <%= index.even? ? "bg-yellow-400" : "bg-neutral-500" %>" aria-hidden="true"></span>
+        <p class="text-[0.68rem] uppercase tracking-[0.08em] text-neutral-600"><%= label %></p>
       </div>
-      <p class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white"><%= value %></p>
+      <p class="text-xl sm:text-2xl font-semibold tracking-tight text-neutral-100"><%= value %></p>
     </div>
   <% end %>
 </div>

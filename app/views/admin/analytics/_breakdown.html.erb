@@ -10,19 +10,19 @@
 <% rows = Array(rows).first(local_assigns.fetch(:limit, 6)) %>
 <% largest = rows.map { |r| r.public_send(count_method) }.max.to_i %>
 
-<div class="rounded-2xl border border-[#1b2b55] bg-[#0a1230] p-5">
-  <div class="flex items-baseline justify-between gap-4 mb-4">
-    <h2 class="text-sm font-semibold text-white"><%= title %></h2>
-    <span class="text-[0.65rem] uppercase tracking-[0.16em] text-slate-600"><%= count_header %></span>
+<div class="border-b border-[#383838] bg-[#202020] p-3.5 last:border-b-0">
+  <div class="flex items-baseline justify-between gap-4 mb-3">
+    <h2 class="text-xs font-semibold text-neutral-200"><%= title %></h2>
+    <span class="text-[0.6rem] uppercase tracking-[0.14em] text-neutral-600"><%= count_header %></span>
   </div>
 
   <% if rows.empty? %>
-    <p class="text-slate-500 text-sm">No data for this period.</p>
+    <p class="text-neutral-600 text-xs">No data for this period.</p>
   <% else %>
     <ul class="flex flex-col gap-1.5">
       <% rows.each do |row| %>
         <% count = row.public_send(count_method).to_i %>
-        <li class="relative flex items-center justify-between gap-4 rounded-lg px-3 py-2 overflow-hidden">
+        <li class="relative flex items-center justify-between gap-4 rounded px-2 py-1.5 overflow-hidden">
           <%# The bar sits behind the text rather than beside it, so a long
               label never squeezes the bar into an unreadable sliver. %>
           <span
@@ -33,8 +33,8 @@
 
           <% label = row.public_send(label_method).to_s %>
           <% label = label.capitalize if capitalize_labels %>
-          <span class="relative text-sm text-slate-200 truncate" title="<%= label %>"><%= label %></span>
-          <span class="relative text-sm font-semibold text-white shrink-0"><%= number_with_delimiter(count) %></span>
+          <span class="relative text-xs text-neutral-300 truncate" title="<%= label %>"><%= label %></span>
+          <span class="relative text-xs font-semibold text-neutral-100 shrink-0"><%= number_with_delimiter(count) %></span>
         </li>
       <% end %>
     </ul>

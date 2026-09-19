@@ -13,26 +13,26 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-[#030718] text-slate-100 min-h-screen lg:flex" data-controller="mobile-menu">
+  <body class="bg-[#171717] text-neutral-100 min-h-screen lg:flex" data-controller="mobile-menu">
     <aside
       id="admin-sidebar-panel"
       data-mobile-menu-target="panel"
-      class="hidden lg:flex w-72 shrink-0 bg-[#070d24] border-r border-[#172554] flex-col fixed lg:static inset-y-0 left-0 z-40 lg:h-screen lg:sticky lg:top-0"
+      class="hidden lg:flex w-44 shrink-0 bg-[#171717] border-r border-[#343434] flex-col fixed lg:static inset-y-0 left-0 z-40 lg:h-screen lg:sticky lg:top-0"
     >
       <div class="min-h-0 flex-1 overflow-y-auto">
-        <div class="px-5 py-5 border-b border-[#172554] flex items-center justify-between gap-3">
-          <%= link_to admin_root_path, class: "flex items-center gap-3 min-w-0" do %>
-            <%= image_tag "logo.png", alt: "SceneCore", class: "h-11 w-auto" %>
-            <span class="h-9 w-px bg-[#22325f]" aria-hidden="true"></span>
+        <div class="px-3 py-3 border-b border-[#343434] flex items-center justify-between gap-2">
+          <%= link_to admin_root_path, class: "flex items-center gap-2 min-w-0" do %>
+            <%= image_tag "logo.png", alt: "SceneCore", class: "h-7 w-auto" %>
+            <span class="h-6 w-px bg-[#3b3b3b]" aria-hidden="true"></span>
             <span>
-              <span class="block text-xs font-bold uppercase tracking-[0.16em] text-white">Control</span>
-              <span class="block text-[0.65rem] uppercase tracking-[0.18em] text-fuchsia-300">Center</span>
+              <span class="block text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-neutral-200">Admin</span>
+              <span class="block text-[0.52rem] uppercase tracking-[0.12em] text-yellow-400">Platform</span>
             </span>
           <% end %>
 
           <button
             type="button"
-            class="lg:hidden h-9 w-9 rounded-xl border border-[#243563] flex items-center justify-center text-slate-400 hover:text-white hover:border-fuchsia-400/60 shrink-0"
+            class="lg:hidden h-7 w-7 rounded-md border border-[#444] flex items-center justify-center text-neutral-500 hover:text-white hover:border-yellow-400/60 shrink-0"
             aria-label="Close menu"
             data-action="mobile-menu#close"
           >
@@ -42,9 +42,9 @@
           </button>
         </div>
 
-        <nav class="px-4 py-5 flex flex-col gap-6" aria-label="Platform administration">
+        <nav class="px-2 py-3 flex flex-col gap-4" aria-label="Platform administration">
           <section>
-            <p class="px-3 mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-600">Overview</p>
+            <p class="px-2 mb-1 text-[0.55rem] font-medium uppercase tracking-[0.14em] text-neutral-700">Overview</p>
             <div class="flex flex-col gap-1">
               <%= admin_nav_link "Dashboard", admin_root_path, current: request.path == admin_root_path, section: :dashboard %>
               <%= admin_nav_link "Analytics", admin_analytics_path, current: request.path.start_with?(admin_analytics_path), section: :analytics %>
@@ -52,7 +52,7 @@
           </section>
 
           <section>
-            <p class="px-3 mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-600">Platform</p>
+            <p class="px-2 mb-1 text-[0.55rem] font-medium uppercase tracking-[0.14em] text-neutral-700">Platform</p>
             <div class="flex flex-col gap-1">
               <%= admin_nav_link "Bands", admin_bands_path, current: request.path.start_with?(admin_bands_path), section: :bands %>
               <%= admin_nav_link "Users", admin_users_path, current: request.path.start_with?(admin_users_path), section: :users %>
@@ -62,7 +62,7 @@
           </section>
 
           <section>
-            <p class="px-3 mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-600">Trust &amp; content</p>
+            <p class="px-2 mb-1 text-[0.55rem] font-medium uppercase tracking-[0.14em] text-neutral-700">Trust &amp; content</p>
             <div class="flex flex-col gap-1">
               <%= admin_nav_link "Moderation", admin_albums_path, current: request.path.start_with?(admin_albums_path), section: :moderation %>
               <%= admin_nav_link "Reports", admin_reports_path, current: request.path.start_with?(admin_reports_path), section: :reports %>
@@ -71,7 +71,7 @@
           </section>
 
           <section>
-            <p class="px-3 mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-600">Operations</p>
+            <p class="px-2 mb-1 text-[0.55rem] font-medium uppercase tracking-[0.14em] text-neutral-700">Operations</p>
             <div class="flex flex-col gap-1">
               <%= admin_nav_link "Admin requests", admin_band_admin_requests_path, current: request.path.start_with?(admin_band_admin_requests_path), section: :band_admin_requests %>
               <%= admin_nav_link "Audit log", admin_audit_logs_path, current: request.path.start_with?(admin_audit_logs_path), section: :audit_logs %>
@@ -81,33 +81,33 @@
         </nav>
       </div>
 
-      <div class="border-t border-[#172554] p-4">
-        <div class="rounded-2xl border border-[#1b2b55] bg-[#0b1433] p-3">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="h-9 w-9 rounded-full bg-fuchsia-400 text-[#070d24] text-sm font-extrabold flex items-center justify-center shrink-0">
+      <div class="border-t border-[#343434] p-2.5">
+        <div class="rounded-lg border border-[#383838] bg-[#202020] p-2.5">
+          <div class="flex items-center gap-2 mb-2.5">
+            <div class="h-7 w-7 rounded-full bg-yellow-400 text-black text-[0.68rem] font-bold flex items-center justify-center shrink-0">
               <%= current_user.name.first.upcase %>
             </div>
             <div class="min-w-0">
-              <p class="text-sm font-semibold text-white truncate"><%= current_user.name %></p>
-              <p class="text-xs text-slate-500 truncate"><%= current_user.email %></p>
+              <p class="text-xs font-medium text-neutral-100 truncate"><%= current_user.name %></p>
+              <p class="text-[0.62rem] text-neutral-600 truncate"><%= current_user.email %></p>
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2">
-            <%= link_to "View site", root_path, class: "rounded-lg border border-[#243563] px-3 py-2 text-center text-xs font-semibold text-slate-300 hover:border-cyan-400/60 hover:text-cyan-200 transition" %>
-            <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "w-full rounded-lg border border-[#243563] px-3 py-2 text-xs font-semibold text-slate-300 hover:border-fuchsia-400/60 hover:text-fuchsia-200 transition cursor-pointer" %>
+            <%= link_to "Site", root_path, class: "rounded-md bg-yellow-400 px-2 py-1.5 text-center text-[0.62rem] font-semibold text-black hover:bg-yellow-300 transition" %>
+            <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "w-full rounded-md border border-[#444] px-2 py-1.5 text-[0.62rem] font-medium text-neutral-400 hover:border-neutral-500 hover:text-white transition cursor-pointer" %>
           </div>
         </div>
       </div>
     </aside>
 
     <div class="flex-1 flex flex-col min-w-0 min-h-screen">
-      <header class="sticky top-0 z-30 border-b border-[#172554] bg-[#050a1d]/95 backdrop-blur px-4 sm:px-6 lg:px-8 py-4">
-        <div class="max-w-[96rem] mx-auto flex items-center justify-between gap-4">
+      <header class="sticky top-0 z-30 border-b border-[#343434] bg-[#181818]/95 backdrop-blur px-3 sm:px-4 py-2">
+        <div class="flex items-center justify-between gap-4">
           <div class="flex items-center gap-3 min-w-0">
             <button
               type="button"
-              class="lg:hidden h-10 w-10 rounded-xl border border-[#243563] flex items-center justify-center text-slate-300 hover:text-white hover:border-fuchsia-400/60 shrink-0"
+              class="lg:hidden h-8 w-8 rounded-md border border-[#444] flex items-center justify-center text-neutral-400 hover:text-white hover:border-yellow-400/60 shrink-0"
               aria-label="Open menu"
               aria-expanded="false"
               aria-controls="admin-sidebar-panel"
@@ -120,23 +120,23 @@
             </button>
 
             <div class="min-w-0">
-              <p class="text-base sm:text-lg font-bold text-white truncate">
-                Welcome back, <%= current_user.name.to_s.split.first.presence || "Administrator" %>
+              <p class="text-xs font-medium text-neutral-200 truncate">
+                SceneCore <span class="px-1 text-neutral-600">/</span> Platform administration
               </p>
-              <p class="hidden sm:block text-xs text-slate-500">Monitor the SceneCore platform and keep its community healthy.</p>
+              <p class="hidden sm:block text-[0.62rem] text-neutral-600">Signed in as <%= current_user.name %></p>
             </div>
           </div>
 
           <div class="flex items-center gap-3 shrink-0">
-            <%= link_to root_path, class: "hidden sm:flex items-center gap-2 rounded-xl border border-[#243563] px-3 py-2 text-xs font-semibold text-slate-300 hover:border-cyan-400/60 hover:text-cyan-200 transition" do %>
+            <%= link_to root_path, class: "hidden sm:flex items-center gap-2 rounded-md bg-yellow-400 px-3 py-1.5 text-[0.68rem] font-semibold text-black hover:bg-yellow-300 transition" do %>
               <span>View site</span>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5" aria-hidden="true">
                 <path d="M14 3h7v7M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" />
               </svg>
             <% end %>
 
-            <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-fuchsia-400 to-cyan-400 p-[1px]">
-              <div class="h-full w-full rounded-[0.7rem] bg-[#0b1433] text-sm font-extrabold text-white flex items-center justify-center">
+            <div class="h-7 w-7 rounded-full border border-[#555] bg-[#2b2b2b] p-[1px]">
+              <div class="h-full w-full rounded-full bg-[#232323] text-[0.65rem] font-bold text-neutral-100 flex items-center justify-center">
                 <%= current_user.name.first.upcase %>
               </div>
             </div>
@@ -145,14 +145,14 @@
       </header>
 
       <% if notice %>
-        <p class="border-b border-emerald-500/20 bg-emerald-500/10 text-emerald-300 text-sm text-center py-2 px-4"><%= notice %></p>
+        <p class="border-b border-yellow-500/20 bg-yellow-500/10 text-yellow-300 text-xs text-center py-2 px-4"><%= notice %></p>
       <% end %>
       <% if alert %>
-        <p class="border-b border-rose-500/20 bg-rose-500/10 text-rose-300 text-sm text-center py-2 px-4"><%= alert %></p>
+        <p class="border-b border-red-500/20 bg-red-500/10 text-red-300 text-xs text-center py-2 px-4"><%= alert %></p>
       <% end %>
 
-      <main class="flex-1 px-4 sm:px-6 lg:px-8 py-7 sm:py-9">
-        <div class="max-w-[96rem] mx-auto">
+      <main class="flex-1 p-2 sm:p-3">
+        <div class="w-full">
           <%= yield %>
         </div>
       </main>
