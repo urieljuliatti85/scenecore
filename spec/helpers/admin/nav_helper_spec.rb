@@ -8,43 +8,46 @@ RSpec.describe Admin::NavHelper, type: :helper do
       expect(html).to have_link("Bands", href: "/admin/bands")
     end
 
-    it "tints an idle item's dot with the section accent" do
+    it "renders the section icon beside the label" do
       html = helper.admin_nav_link("Bands", "/admin/bands", current: false, section: :bands)
 
-      expect(html).to include("bg-emerald-400")
-      expect(html).to include("text-neutral-300")
+      expect(html).to include("<svg")
+      expect(html).to include("group-hover:text-cyan-300")
     end
 
-    it "gives each section a different accent" do
-      bands = helper.admin_nav_link("Bands", "/admin/bands", current: false, section: :bands)
-      users = helper.admin_nav_link("Users", "/admin/users", current: false, section: :users)
+    it "keeps an idle item quiet until hover" do
+      html = helper.admin_nav_link("Bands", "/admin/bands", current: false, section: :bands)
 
-      expect(bands).to include("bg-emerald-400")
-      expect(users).to include("bg-sky-400")
+      expect(html).to include("border-transparent")
+      expect(html).to include("text-slate-400")
     end
 
-    it "moves the accent to the background when the item is current" do
+    it "uses the shared magenta treatment when the item is current" do
       html = helper.admin_nav_link("Bands", "/admin/bands", current: true, section: :bands)
 
-      expect(html).to include("bg-emerald-400 text-black")
+      expect(html).to include("border-fuchsia-400")
+      expect(html).to include("bg-fuchsia-500/15")
+      expect(html).to include("text-fuchsia-100")
+      expect(html).to include('aria-current="page"')
     end
 
-    it "keeps the current item's dot legible against its accent background" do
+    it "uses the active icon tone on the current item" do
       html = helper.admin_nav_link("Bands", "/admin/bands", current: true, section: :bands)
 
-      expect(html).to include("bg-black/40")
+      expect(html).to include("text-fuchsia-300")
     end
 
-    it "hides the decorative dot from assistive technology" do
+    it "hides the decorative icon from assistive technology" do
       html = helper.admin_nav_link("Bands", "/admin/bands", current: false, section: :bands)
 
       expect(html).to include('aria-hidden="true"')
     end
 
-    it "falls back to the neutral accent when no section is given" do
+    it "falls back to the dashboard icon when no section is given" do
       html = helper.admin_nav_link("Somewhere", "/admin/somewhere", current: true)
 
-      expect(html).to include("bg-white text-black")
+      expect(html).to include("<rect")
+      expect(html).to include("bg-fuchsia-500/15")
     end
   end
 end

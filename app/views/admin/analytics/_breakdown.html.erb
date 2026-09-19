@@ -10,14 +10,14 @@
 <% rows = Array(rows).first(local_assigns.fetch(:limit, 6)) %>
 <% largest = rows.map { |r| r.public_send(count_method) }.max.to_i %>
 
-<div class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5">
+<div class="rounded-2xl border border-[#1b2b55] bg-[#0a1230] p-5">
   <div class="flex items-baseline justify-between gap-4 mb-4">
     <h2 class="text-sm font-semibold text-white"><%= title %></h2>
-    <span class="text-xs uppercase tracking-wide text-neutral-600"><%= count_header %></span>
+    <span class="text-[0.65rem] uppercase tracking-[0.16em] text-slate-600"><%= count_header %></span>
   </div>
 
   <% if rows.empty? %>
-    <p class="text-neutral-500 text-sm">No data for this period.</p>
+    <p class="text-slate-500 text-sm">No data for this period.</p>
   <% else %>
     <ul class="flex flex-col gap-1.5">
       <% rows.each do |row| %>
@@ -33,7 +33,7 @@
 
           <% label = row.public_send(label_method).to_s %>
           <% label = label.capitalize if capitalize_labels %>
-          <span class="relative text-sm text-neutral-200 truncate" title="<%= label %>"><%= label %></span>
+          <span class="relative text-sm text-slate-200 truncate" title="<%= label %>"><%= label %></span>
           <span class="relative text-sm font-semibold text-white shrink-0"><%= number_with_delimiter(count) %></span>
         </li>
       <% end %>

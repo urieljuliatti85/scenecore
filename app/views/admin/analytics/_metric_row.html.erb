@@ -1,11 +1,13 @@
-<%# The reference sets the headline numbers in a single row separated by
-    rules rather than in boxes, so the period's totals read as one statement
-    instead of five competing cards. %>
-<div class="grid grid-cols-2 lg:grid-cols-5 divide-y divide-neutral-800 lg:divide-y-0 lg:divide-x lg:divide-neutral-800 border-y border-neutral-800">
-  <% metrics.each do |label, value| %>
-    <div class="px-0 lg:px-6 py-5 first:lg:pl-0">
-      <p class="text-sm text-neutral-500 mb-1"><%= label %></p>
-      <p class="text-3xl font-extrabold tracking-tight text-white"><%= value %></p>
+<%# Compact KPI panels mirror the dashboard reference while preserving the
+    exact metrics and their existing Google Analytics source. %>
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+  <% metrics.each_with_index do |(label, value), index| %>
+    <div class="rounded-2xl border border-[#1b2b55] bg-[#0a1230] p-4 sm:p-5">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="h-1.5 w-1.5 rounded-full <%= index.even? ? "bg-fuchsia-400" : "bg-cyan-400" %>" aria-hidden="true"></span>
+        <p class="text-xs sm:text-sm text-slate-500"><%= label %></p>
+      </div>
+      <p class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white"><%= value %></p>
     </div>
   <% end %>
 </div>

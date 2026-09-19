@@ -1,25 +1,17 @@
 module Admin::NavHelper
   def admin_nav_link(label, path, current:, section: nil)
-    classes = [ "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition" ]
+    classes = [ "group flex items-center gap-3 rounded-r-xl border-l-2 px-3 py-2.5 text-sm font-medium transition" ]
     classes << if current
-      admin_section_accent(section, :active)
+      "border-fuchsia-400 bg-fuchsia-500/15 text-fuchsia-100"
     else
-      "text-neutral-300 hover:text-white hover:bg-neutral-900"
+      "border-transparent text-slate-400 hover:border-cyan-400/60 hover:bg-white/5 hover:text-white"
     end
 
-    link_to path, class: classes.join(" ") do
-      safe_join([ admin_nav_dot(section, current: current), label ])
+    link_to path, class: classes.join(" "), aria: { current: ("page" if current) } do
+      safe_join([
+        render("admin/nav_icon", section: section || :dashboard, current: current),
+        tag.span(label, class: "truncate")
+      ])
     end
-  end
-
-  private
-
-  # The dot carries the section's colour when the item is idle. On the active
-  # item the accent has already moved to the background, so the dot switches
-  # to a neutral tone that stays legible against it.
-  def admin_nav_dot(section, current:)
-    tone = current ? "bg-black/40" : admin_section_accent(section, :dot)
-
-    tag.span("", class: "h-1.5 w-1.5 rounded-full shrink-0 #{tone}", aria: { hidden: true })
   end
 end

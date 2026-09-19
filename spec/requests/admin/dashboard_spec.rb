@@ -30,6 +30,23 @@ RSpec.describe "Admin::Dashboard", type: :request do
       expect(cards[2].to_html).to include("text-sky-400")
     end
 
+    it "renders the grouped platform navigation and administrator header" do
+      admin = create(:user, :platform_admin, name: "Ada Lovelace")
+      sign_in admin
+
+      get admin_root_path
+
+      document = Nokogiri::HTML(response.body)
+      sidebar = document.at_css("#admin-sidebar-panel")
+
+      expect(sidebar.text).to include("Overview")
+      expect(sidebar.text).to include("Platform")
+      expect(sidebar.text).to include("Trust & content")
+      expect(sidebar.text).to include("Operations")
+      expect(response.body).to include("Welcome back, Ada")
+      expect(response.body).to include('aria-label="Close menu"')
+    end
+
     context "traffic section" do
       def stub_analytics(summary)
         allow(GoogleAnalyticsClient).to receive(:configured?).and_return(true)
