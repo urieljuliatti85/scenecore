@@ -176,7 +176,7 @@ jobs:
       # that passed on the second attempt, the only one where the flake
       # leaves a trace worth keeping.
       - name: Keep evidence from a retried system test run
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: system-test-first-attempt
@@ -184,7 +184,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Keep screenshots and server log from a failed system test run
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: system-test-screenshots
