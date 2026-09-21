@@ -69,6 +69,7 @@ Rails.application.routes.draw do
 
   namespace :admin do
     root to: "dashboard#index"
+    resource :financial_status, only: [ :show ], controller: "financial_status"
     resources :bands, only: [ :index ] do
       resources :privileges, only: [ :index, :create, :update ]
     end

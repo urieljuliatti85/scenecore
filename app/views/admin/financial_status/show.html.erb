@@ -1,0 +1,111 @@
+<% content_for :title, "Financial status — Admin — SceneCore" %>
+
+<div id="financial-status" class="min-h-[calc(100vh-4.5rem)] overflow-hidden rounded-lg border border-[#383838] bg-[#202020]">
+  <header class="flex flex-wrap items-end justify-between gap-3 border-b border-[#383838] px-3 py-3">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="h-2 w-2 rounded-sm bg-yellow-400" aria-hidden="true"></span>
+        <h1 class="text-sm font-semibold text-neutral-100">Financial status</h1>
+      </div>
+      <p class="mt-1 text-[0.65rem] text-neutral-600">Stripe platform, webhooks and connected band accounts.</p>
+    </div>
+
+    <%= link_to "Open Stripe", "https://dashboard.stripe.com/", target: "_blank", rel: "noopener", class: "rounded-md bg-yellow-400 px-3 py-1.5 text-[0.65rem] font-semibold text-black transition hover:bg-yellow-300" %>
+  </header>
+
+  <div class="grid grid-cols-1 divide-y divide-[#383838] lg:grid-cols-3 lg:divide-x lg:divide-y-0">
+    <% account = @stripe_status.account %>
+    <% mode_state = { live: :ok, test: :warning, unconfigured: :error }.fetch(@stripe_status.mode, :unknown) %>
+    <% account_state = account.reachable ? :ok : :error %>
+
+    <article class="bg-[#1d1d1d] p-3" aria-labelledby="stripe-account-heading">
+      <div class="mb-2">
+        <h2 id="stripe-account-heading" class="text-xs font-semibold text-neutral-200">Platform account</h2>
+        <p class="mt-1 text-[0.62rem] text-neutral-600">SceneCore's own Stripe account</p>
+      </div>
+
+      <%= render "status_row", label: "Mode", value: @stripe_status.mode.to_s.humanize, state: mode_state %>
+      <%= render "status_row", label: "Stripe API", value: account.reachable ? "Connected" : "Unavailable", state: account_state, detail: account.error %>
+      <%= render "status_row", label: "Payments", value: account.charges_enabled ? "Enabled" : "Blocked", state: account.reachable && account.charges_enabled ? :ok : :error %>
+      <%= render "status_row", label: "Payouts", value: account.payouts_enabled ? "Enabled" : "Blocked", state: account.reachable && account.payouts_enabled ? :ok : :error %>
+      <%= render "status_row",
+            label: "Verification",
+            value: account.details_submitted && account.pending_requirements_count.zero? ? "Complete" : "Action required",
+            state: account.reachable && account.details_submitted && account.pending_requirements_count.zero? ? :ok : :warning,
+            detail: account.disabled_reason&.humanize || "#{account.pending_requirements_count} pending requirement(s)" %>
+    </article>
+
+    <% snapshot = @stripe_status.snapshot_webhook %>
+    <% connect = @stripe_status.connect_webhook %>
+    <% snapshot_state = snapshot.error ? :unknown : (snapshot.secret_configured && snapshot.endpoint_enabled ? :ok : :error) %>
+    <% connect_state = connect.error ? :unknown : (connect.secret_configured && connect.endpoint_enabled ? :ok : :error) %>
+
+    <article class="bg-[#1d1d1d] p-3" aria-labelledby="stripe-integration-heading">
+      <div class="mb-2">
+        <h2 id="stripe-integration-heading" class="text-xs font-semibold text-neutral-200">Integration health</h2>
+        <p class="mt-1 text-[0.62rem] text-neutral-600">Credentials and event delivery</p>
+      </div>
+
+      <%= render "status_row", label: "Secret key", value: @stripe_status.secret_key_configured ? "Configured" : "Missing", state: @stripe_status.secret_key_configured ? :ok : :error %>
+      <%= render "status_row",
+            label: "Snapshot webhook",
+            value: snapshot.error ? "Unavailable" : (snapshot.secret_configured && snapshot.endpoint_enabled ? "Active" : "Action required"),
+            state: snapshot_state,
+            detail: snapshot.error || (snapshot.secret_configured ? "Signing secret configured" : "Signing secret missing") %>
+      <%= render "status_row",
+            label: "Connect webhook",
+            value: connect.error ? "Unavailable" : (connect.secret_configured && connect.endpoint_enabled ? "Active" : "Action required"),
+            state: connect_state,
+            detail: connect.error || (connect.secret_configured ? "Signing secret configured" : "Signing secret missing") %>
+      <%= render "status_row",
+            label: "Last processed event",
+            value: @stripe_status.last_webhook_at ? time_ago_in_words(@stripe_status.last_webhook_at) + " ago" : "No events",
+            state: @stripe_status.last_webhook_at ? :ok : :warning,
+            detail: @stripe_status.last_webhook_at&.in_time_zone&.strftime("%d/%m/%Y %H:%M %Z") %>
+    </article>
+
+    <% active_accounts = @stripe_connect_counts.fetch("active", 0) %>
+    <% onboarding_accounts = @stripe_connect_counts.fetch("onboarding", 0) %>
+    <% restricted_accounts = @stripe_connect_counts.fetch("restricted", 0) %>
+    <% unconnected_accounts = @stripe_connect_counts.fetch("not_started", 0) %>
+
+    <article class="bg-[#1d1d1d] p-3" aria-labelledby="stripe-bands-heading">
+      <div class="mb-2">
+        <h2 id="stripe-bands-heading" class="text-xs font-semibold text-neutral-200">Connected accounts</h2>
+        <p class="mt-1 text-[0.62rem] text-neutral-600">Approved bands only</p>
+      </div>
+
+      <%= render "status_row", label: "Ready", value: active_accounts, state: active_accounts.positive? ? :ok : :warning %>
+      <%= render "status_row", label: "Onboarding", value: onboarding_accounts, state: onboarding_accounts.zero? ? :ok : :warning %>
+      <%= render "status_row", label: "Restricted", value: restricted_accounts, state: restricted_accounts.zero? ? :ok : :error %>
+      <%= render "status_row", label: "Not connected", value: unconnected_accounts, state: unconnected_accounts.zero? ? :ok : :warning %>
+    </article>
+  </div>
+
+  <section class="border-t border-[#383838] bg-[#202020]" aria-labelledby="stripe-pending-bands-heading">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#383838] px-3 py-3">
+      <div>
+        <h2 id="stripe-pending-bands-heading" class="text-xs font-semibold text-neutral-200">Bands requiring action</h2>
+        <p class="mt-1 text-[0.62rem] text-neutral-600"><%= @stripe_pending_bands_count %> approved band(s) cannot receive payments yet.</p>
+      </div>
+      <%= link_to "Manage bands", admin_bands_path(status: "approved"), class: "text-[0.65rem] font-semibold text-yellow-400 transition hover:text-yellow-200" %>
+    </div>
+
+    <% if @stripe_pending_bands.empty? %>
+      <p class="px-3 py-4 text-xs text-emerald-300">Every approved band is ready to receive payments.</p>
+    <% else %>
+      <ul class="divide-y divide-[#383838]" id="stripe-pending-bands">
+        <% @stripe_pending_bands.each do |band| %>
+          <% status_class = band.stripe_connect_restricted? ? "border-red-500/30 bg-red-500/10 text-red-300" : "border-yellow-500/30 bg-yellow-500/10 text-yellow-300" %>
+          <li class="flex items-center justify-between gap-3 px-3 py-2.5">
+            <div class="min-w-0">
+              <%= link_to band.name, band_path(band), class: "truncate text-xs font-medium text-neutral-200 transition hover:text-yellow-400" %>
+              <p class="mt-0.5 text-[0.6rem] text-neutral-600">Updated <%= time_ago_in_words(band.updated_at) %> ago</p>
+            </div>
+            <span class="shrink-0 rounded border px-2 py-1 text-[0.56rem] font-semibold uppercase tracking-wide <%= status_class %>"><%= band.stripe_connect_status.humanize %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </section>
+</div>

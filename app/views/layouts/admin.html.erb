@@ -47,6 +47,7 @@
             <p class="px-2 mb-1 text-[0.55rem] font-medium uppercase tracking-[0.14em] text-neutral-700">Overview</p>
             <div class="flex flex-col gap-1">
               <%= admin_nav_link "Dashboard", admin_root_path, current: request.path == admin_root_path, section: :dashboard %>
+              <%= admin_nav_link "Financial", admin_financial_status_path, current: request.path.start_with?(admin_financial_status_path), section: :financial_status %>
               <%= admin_nav_link "Analytics", admin_analytics_path, current: request.path.start_with?(admin_analytics_path), section: :analytics %>
             </div>
           </section>
