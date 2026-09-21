@@ -52,7 +52,7 @@ gem "ruby-vips", "~> 2.0"
 # Pinned below 3.0: json 3.x dropped the legacy positional-opts JSON.parse
 # signature that this version of Rails' session cookie decoding still calls,
 # breaking every request with an existing session cookie.
-gem "json", "~> 2.7"
+gem "json", "~> 3.0"
 
 # Flexible authentication solution for Rails [https://github.com/heartcombo/devise]
 gem "devise"
