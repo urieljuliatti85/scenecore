@@ -125,6 +125,13 @@ state before changing local payment readiness.
   creates a fresh single-use Stripe Express login link after the same
   band-scoped authorization check; SceneCore does not store that link and
   cannot move funds or change bank details.
+- A Platform Administrator can inspect a read-only financial health summary on
+  `/admin/financial_status`: the platform account's payment, payout and verification status;
+  whether both Stripe event destinations and their signing secrets are
+  configured; the most recent locally processed event; and approved bands
+  whose connected account is not active. The summary never renders credential
+  values, document data or bank details, and a Stripe API outage degrades only
+  this summary instead of taking down the administration dashboard.
 - Store refunds are full-only in the MVP and are initiated in SceneCore by
   an administrator of the band that owns the order. SceneCore creates the
   Stripe refund on the destination charge with both `reverse_transfer` and

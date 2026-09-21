@@ -41,6 +41,8 @@ RSpec.describe "Admin::Dashboard", type: :request do
       expect(sidebar.text).to include("Platform")
       expect(sidebar.text).to include("Trust & content")
       expect(sidebar.text).to include("Operations")
+      expect(sidebar.at_css("a[href='#{admin_financial_status_path}']").text).to include("Financial")
+      expect(document.at_css("#financial-status")).to be_nil
       expect(response.body).to include("Signed in as Ada Lovelace")
       expect(response.body).to include('aria-label="Close menu"')
     end
