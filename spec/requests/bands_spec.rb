@@ -279,6 +279,77 @@ RSpec.describe "Bands", type: :request do
       end
     end
 
+    describe "the First Steps tab" do
+      def administrator_of(band)
+        admin = create(:user)
+        create(:band_membership, :administrator, band: band, user: admin)
+        sign_in admin
+      end
+
+      def page
+        Nokogiri::HTML(response.body)
+      end
+
+      it "shows a new band's progress and every step as pending" do
+        band = create(:band)
+        administrator_of(band)
+
+        get band_path(band, tab: "first_steps")
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("0 of 4")
+        expect(page.css("h4").map { |h| h.text.strip }).to eq([
+          "Get approved by SceneCore", "Add your first release",
+          "Connect Stripe to get paid", "Write to your followers"
+        ])
+        expect(page.css("[data-step]").map { |s| s["data-status"] }).to all(eq("pending"))
+      end
+
+      it "counts what the band has already done" do
+        band = create(:band, :approved, :payouts_ready)
+        create(:album, band: band)
+        administrator_of(band)
+
+        get band_path(band, tab: "first_steps")
+
+        expect(response.body).to include("3 of 4")
+        expect(page.css("a").map { |a| a.text.strip }).to include("New post")
+        expect(page.css("a").map { |a| a.text.strip }).not_to include("Add album", "Set up payments")
+      end
+
+      it "shows the remaining count beside the tab and hides it once everything is done" do
+        band = create(:band)
+        administrator_of(band)
+
+        get band_path(band)
+        tab = page.at_css("a[href='#{band_path(band, tab: 'first_steps')}']")
+        expect(tab.text.squish).to eq("First Steps 4")
+
+        band.update!(status: :approved, stripe_connect_status: :active, stripe_connect_account_id: "acct_done")
+        create(:album, band: band)
+        create(:post, band: band)
+
+        get band_path(band)
+        tab = page.at_css("a[href='#{band_path(band, tab: 'first_steps')}']")
+        expect(tab.text.squish).to eq("First Steps")
+      end
+
+      # The checklist is band administration, so a plain member neither sees
+      # the tab nor can open it by URL.
+      it "is not available to a plain member" do
+        band = create(:band)
+        member = create(:user)
+        create(:band_membership, band: band, user: member, role: :member)
+        sign_in member
+
+        get band_path(band)
+        expect(response.body).not_to include("First Steps")
+
+        get band_path(band, tab: "first_steps")
+        expect(response).to redirect_to(root_path)
+      end
+    end
+
     describe "the overview's figures" do
       it "shows shares of the membership only once there are members" do
         band = create(:band)

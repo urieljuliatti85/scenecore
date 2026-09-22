@@ -1,0 +1,68 @@
+<%# Checklist of what makes a band fully available on SceneCore: approved,
+    with music, payments connected, and a first post out. Read-only over
+    BandOnboardingChecklist — this view doesn't decide what's done, it just
+    shows it. %>
+<% completed = @onboarding_steps.count(&:done) %>
+<% total = @onboarding_steps.size %>
+
+<div class="flex flex-col gap-4">
+  <div class="relative overflow-hidden rounded-2xl border border-yellow-500/30 bg-neutral-950 p-6 sm:p-7">
+    <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-yellow-400/10 blur-3xl pointer-events-none" aria-hidden="true"></div>
+
+    <div class="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <span class="inline-flex items-center gap-2 rounded-full border border-yellow-500/30 px-3 py-1 mb-3">
+          <span class="h-1.5 w-1.5 rounded-full bg-yellow-400" aria-hidden="true"></span>
+          <span class="font-mono text-xs uppercase tracking-wider text-yellow-300">First steps</span>
+        </span>
+        <h3 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Get your page fully available</h3>
+        <p class="text-sm text-neutral-400 max-w-lg mt-2">
+          These are the steps SceneCore needs before fans can find, follow, and support your band.
+        </p>
+      </div>
+
+      <div class="shrink-0 sm:min-w-48">
+        <div class="flex items-baseline justify-between gap-4 mb-2">
+          <span class="text-sm text-neutral-400">Progress</span>
+          <span class="text-lg font-extrabold text-white"><%= completed %> of <%= total %></span>
+        </div>
+        <div class="h-2 rounded-full bg-neutral-800 overflow-hidden">
+          <div class="h-full rounded-full bg-yellow-400" style="width: <%= total.positive? ? (100.0 * completed / total).round : 0 %>%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% @onboarding_steps.each_with_index do |step, index| %>
+    <div data-step="<%= step.key %>" data-status="<%= step.done ? "done" : "pending" %>"
+         class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 sm:p-7">
+      <div class="flex items-start gap-4">
+        <span class="shrink-0 h-8 w-8 rounded-full bg-neutral-800 text-neutral-300 font-mono text-sm font-semibold flex items-center justify-center">
+          <%= index + 1 %>
+        </span>
+
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between gap-3 mb-1">
+            <h4 class="text-lg font-bold text-white"><%= step.title %></h4>
+
+            <% if step.done %>
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-400/10 text-emerald-300 border border-emerald-500/30 text-xs font-semibold px-3 py-1 shrink-0">
+                <span aria-hidden="true">&check;</span> Done
+              </span>
+            <% else %>
+              <span class="inline-flex items-center rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-xs font-semibold px-3 py-1 shrink-0">
+                Pending
+              </span>
+            <% end %>
+          </div>
+
+          <p class="text-sm text-neutral-400"><%= step.body %></p>
+
+          <% if !step.done && step.cta_label %>
+            <%= link_to step.cta_label, step.cta_path, class: "mt-4 inline-block rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-sm font-semibold px-5 py-2.5 hover:bg-yellow-400/20 hover:text-yellow-200 transition" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

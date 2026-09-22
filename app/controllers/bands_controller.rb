@@ -54,7 +54,7 @@ class BandsController < ApplicationController
   # than navigating away, though each still has its own page for deep links
   # and for the forms that live there.
   CONTENT_TABS = %w[overview music posts shows community].freeze
-  MANAGE_TABS = %w[profile members supporters products orders payments].freeze
+  MANAGE_TABS = %w[first_steps profile members supporters products orders payments].freeze
   TABS = (CONTENT_TABS + MANAGE_TABS).freeze
 
   def show
@@ -76,7 +76,13 @@ class BandsController < ApplicationController
         month = months_ago.months.ago.beginning_of_month
         [ month, @band.memberships.where(created_at: month..month.end_of_month).count ]
       end
-      @next_step = next_step_for(@band)
+    end
+
+    if policy(@band).update?
+      @onboarding_steps = BandOnboardingChecklist.call(@band, view_context: view_context)
+      # Approval is the platform's move, not the band's, so the overview
+      # only points at steps the band can act on.
+      @next_step = pending_orders_step || @onboarding_steps.find { |step| !step.done && step.cta_path }
     end
   end
 
@@ -129,31 +135,19 @@ class BandsController < ApplicationController
 
   private
 
-  # The overview opens with whatever the band most needs to do next. A new
-  # band's panel is otherwise a wall of zeros that says nothing about how
-  # to change them, so the order here is the order the work actually has
-  # to happen in: a page with no music is not ready for an audience, and
-  # an audience cannot pay without Stripe.
-  def next_step_for(band)
-    return nil unless policy(band).update?
+  # Orders to send are operational, not onboarding — they take priority over
+  # the checklist even once a band is fully set up.
+  def pending_orders_step
+    return unless @band.orders.awaiting_band.any?
 
-    if band.albums.none?
-      { title: "Add your first release",
-        body: "Bring an album over from Spotify, or add one by hand. Music is what the rest of the page is built around.",
-        label: "Add album", path: new_band_album_path(band), tab: "music" }
-    elsif !band.payouts_ready?
-      { title: "Connect Stripe to get paid",
-        body: "Fans cannot start a membership or buy from your Store until Stripe has cleared your account.",
-        label: "Set up payments", path: band_path(band, tab: "payments"), tab: "payments" }
-    elsif band.posts.none?
-      { title: "Write to your followers",
-        body: "A post is how the people following you hear from you directly, without an algorithm deciding who sees it.",
-        label: "New post", path: new_band_post_path(band), tab: "posts" }
-    elsif band.orders.awaiting_band.any?
-      { title: "You have orders to send",
-        body: "#{helpers.pluralize(band.orders.awaiting_band.size, 'order')} paid for and waiting to be packed.",
-        label: "View orders", path: band_path(band, tab: "orders"), tab: "orders" }
-    end
+    BandOnboardingChecklist::Step.new(
+      key: "orders",
+      title: "You have orders to send",
+      body: "#{helpers.pluralize(@band.orders.awaiting_band.size, 'order')} paid for and waiting to be packed.",
+      done: false,
+      cta_label: "View orders",
+      cta_path: band_path(@band, tab: "orders")
+    )
   end
 
   # Each manage tab needs what its own controller loads. Authorization is
@@ -182,7 +176,7 @@ class BandsController < ApplicationController
       @active_subscribers = @band.subscriptions.where(status: Subscription::BILLING_STATUSES).count
       @published_products = @band.products.published.count
       load_financial_summary
-    when "profile"
+    when "profile", "first_steps"
       authorize @band, :update?, policy_class: BandPolicy
     end
   end
