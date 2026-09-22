@@ -27,6 +27,24 @@ RSpec.describe "Mobile navigation", type: :system do
     expect(page).to have_content("Signed in successfully")
   end
 
+  # The button is in the HTML before Stimulus connects mobile-menu, and a
+  # click in that gap does nothing — right after a navigation (sign-in) the
+  # test would otherwise click straight into it.
+  def open_menu
+    page.document.synchronize(Capybara.default_max_wait_time, errors: [ Capybara::ExpectationNotMet ]) do
+      connected = page.evaluate_script(<<~JS)
+        (() => {
+          const element = document.querySelector("[data-controller~='mobile-menu']")
+          return !!(element && window.Stimulus &&
+            window.Stimulus.getControllerForElementAndIdentifier(element, "mobile-menu"))
+        })()
+      JS
+      raise Capybara::ExpectationNotMet, "mobile-menu controller is not connected yet" unless connected
+    end
+
+    find("button[aria-label='Open menu']").click
+  end
+
   it "opens the mobile menu panel and exposes Bands and auth links" do
     visit root_path
 
@@ -34,7 +52,7 @@ RSpec.describe "Mobile navigation", type: :system do
     expect(button["aria-expanded"]).to eq("false")
     expect(find("#mobile-menu-panel", visible: :all)).not_to be_visible
 
-    button.click
+    open_menu
 
     expect(button["aria-expanded"]).to eq("true")
 
@@ -49,7 +67,7 @@ RSpec.describe "Mobile navigation", type: :system do
     user = create(:user)
     sign_in_via_form(user)
 
-    find("button[aria-label='Open menu']").click
+    open_menu
 
     within("#mobile-menu-panel") do
       expect(page).to have_link("Your bands")
@@ -63,7 +81,7 @@ RSpec.describe "Mobile navigation", type: :system do
     admin = create(:user, :platform_admin)
     sign_in_via_form(admin)
 
-    find("button[aria-label='Open menu']").click
+    open_menu
 
     within("#mobile-menu-panel") do
       expect(page).to have_link("Admin")
