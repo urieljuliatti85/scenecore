@@ -20,6 +20,7 @@
           [ "shows", "Shows", @events.size ],
           [ "community", "Community", @polls.size + @core_sessions.size ]
         ], manage: (policy(@band).update? ? [
+          [ "first_steps", "First Steps", @onboarding_steps.size - @onboarding_steps.count(&:done) ],
           [ "profile", "Profile", nil ],
           [ "members", "Members", nil ],
           [ "supporters", "Supporters", nil ],
@@ -30,6 +31,9 @@
 
     <div class="flex-1 min-w-0 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 sm:p-8">
       <% case @tab %>
+    <% when "first_steps" %>
+      <%= render "first_steps_section" %>
+
     <% when "music" %>
       <%= render "tab_actions", actions: [
             [ "Add album", new_band_album_path(@band), true ]
