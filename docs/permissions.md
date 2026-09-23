@@ -151,6 +151,13 @@ Only an approved band sells. A pending, rejected, or suspended band's
 products cannot be added to a cart or checked out, even through a direct
 link, and a cart filled before a band was suspended is refused at checkout.
 
+Suspending a band also cancels every fan subscription still billing for it
+(`BandSubscriptionsCanceller`): Stripe stops charging, and the Subscription
+and Membership records are marked cancelled, the same as a fan cancelling
+directly. Reactivating a band does not restore them — a cancelled Stripe
+subscription cannot be un-cancelled — so a fan who wants back in checks out
+again.
+
 ---
 
 ## Band Isolation
