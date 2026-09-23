@@ -1014,12 +1014,12 @@ approved (see ROADMAP.md §22 Future Features for the authoritative list):
   needs its own scoping pass: order/inventory sync with Discogs' API and how
   a Marketplace listing maps onto `docs/database.md`'s
   Product/ProductVariant model.
-- "Verified Band" badge (proposed 2026-09-23, scope clarified 2026-09-23):
-  a `Band#verified` boolean, set only through a two-party verification
+- "Verified Band" badge (proposed 2026-09-23, fully scoped 2026-09-23): a
+  `Band#verified` boolean, set only through a two-party verification
   process, shown as a badge on the band's public page. Still not
   authorized for implementation — recorded here so the shape is not lost,
-  but the mechanics below need an implementation plan and approval before
-  any code, per the Mandatory Workflow.
+  but this still needs an implementation plan and approval before any
+  code, per the Mandatory Workflow.
   - **Meaning**: the badge is meant to give a fan confidence to pay — a
     stronger claim than identity confirmation alone. It tells a fan "this
     is confirmed to be the real band" before they subscribe or buy, which
@@ -1030,36 +1030,61 @@ approved (see ROADMAP.md §22 Future Features for the authoritative list):
   - **Relationship to existing status/flags**: distinct from
     `Band#featured` (editorial curation, home page placement, can be lent
     and withdrawn on taste) and from `Band#status` (visibility gating).
-    `verified` is a third, independent boolean.
-  - **Process** (described 2026-09-23): two parties, two steps —
+    `verified` is a third, independent boolean, and is not reset when a
+    band is suspended — it asserts an identity fact ("this is genuinely
+    the band"), independent of whether the band is currently visible. A
+    Platform Administrator who suspends a band for identity fraud
+    specifically revokes `verified` as a separate action (below), the
+    same way `suspend?` and `feature?`/`unfeature?` are already
+    independent actions on `BandPolicy`.
+  - **Process**: two parties, two steps —
     1. From the band's own panel, a Band Administrator submits an email
        address for verification. This creates a pending verification
        request, visible to Platform Administrators (mirrors
        `BandAdminRequest`'s pending/approve/reject shape).
     2. A Platform Administrator reviews the request — checking, outside
        SceneCore, that the submitted address is genuinely the band's own
-       (official site, verified social accounts, etc.) — and approves it.
+       (official site, verified social accounts, etc.) — and approves it,
+       or rejects it (visible to the band on its own panel, the same way
+       a rejected `BandAdminRequest` is, with no further notification
+       needed beyond that).
     3. Approval sends an email to that address containing a "Verify Your
-       Band" link/token.
+       Band" link, generated with Rails' built-in `generates_token_for`
+       (the same mechanism Devise's own password reset already relies
+       on), expiring after a fixed window (proposed: 3 days, matching the
+       commented-out `confirm_within` default already sitting in
+       `config/initializers/devise.rb`).
     4. Only when that link is opened does `Band#verified` become `true`.
     The two steps guard against two different failures: the admin's
     review catches an email that is not really the band's; the emailed
     link catches a submitted address the requester does not actually
     control. Neither step alone would catch both.
-  - **Still undecided, needed before an implementation plan**: token
-    expiry and re-send; what happens if verification is never completed
-    (does the request just go stale, like an unused invite); whether a
-    Platform Administrator can revoke `verified` later (mirroring
-    `feature?`/`unfeature?`), and what happens to `verified` if the
-    band's verified email is changed afterward or the band is suspended;
-    whether rejecting the initial request should be visible to the band
-    or logged anywhere the fan admin-request flow doesn't already cover.
+  - **Expiry and re-send**: if the link expires unused, the request stays
+    at "awaiting the band's click" indefinitely — nothing is deleted or
+    auto-rejected, since this is a badge, not an access grant, so a stale
+    request is low-risk. A Platform Administrator can re-send (mint a
+    fresh token, invalidating the previous one); the band itself cannot
+    trigger a re-send, to keep this from becoming an email-spam vector
+    against an address the band doesn't actually control.
+  - **Revocation**: a Platform Administrator can revoke `verified` later,
+    mirroring `feature?`/`unfeature?` on `BandPolicy` — same
+    `AdminActionLog` pattern as `unfeature_band`. This is the intended
+    path for "a band was verified, then turned out to be fraudulent."
+  - **Changing the verified email afterward**: submitting a new
+    verification email revokes the current `verified` (a `before_save`
+    reaction to the email changing, same shape as `BandMembership`'s
+    existing callbacks reacting to state changes) — the badge asserts
+    that specific address, so changing it without re-verifying would
+    silently keep a claim the process no longer supports. The band goes
+    through the same two-step process again for the new address.
   - **Where it would live**: a new model close to `BandAdminRequest`'s
-    shape (pending/approved/rejected, plus the emailed token step), a
+    shape (pending/approved/rejected, plus the emailed-token step as a
+    distinct state — e.g. `email_sent` — before `verified`), a
     `BandPolicy`-scoped action for the band's submission, `Admin::*`
-    actions for review/approval logged in `AdminActionLog` (mirroring
-    `Admin::BandAdminRequestsController`), and a badge rendered wherever
-    the band's public page already renders.
+    actions for review/approval/revoke logged in `AdminActionLog`
+    (mirroring `Admin::BandAdminRequestsController`), a mailer alongside
+    `BandAdminRequestMailer`, and a badge rendered wherever the band's
+    public page already renders.
 
 ### 4.3 Explicitly Excluded Functionality
 
