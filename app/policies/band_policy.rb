@@ -7,8 +7,11 @@ class BandPolicy < ApplicationPolicy
     user.present?
   end
 
+  # Editing a band's own profile is day-to-day band work: a platform
+  # admin only reaches it by holding an administrator membership here,
+  # same bar as #manage_payments? below.
   def update?
-    administrator? || user&.platform_admin?
+    administrator?
   end
 
   # The band's Stripe account is the band's own money, so only an

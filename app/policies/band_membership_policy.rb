@@ -24,6 +24,6 @@ class BandMembershipPolicy < ApplicationPolicy
   def administrator_of_band?
     return false if user.nil?
 
-    user.platform_admin? || band.band_memberships.exists?(user_id: user.id, role: :administrator)
+    band.band_memberships.exists?(user_id: user.id, role: :administrator)
   end
 end

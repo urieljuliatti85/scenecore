@@ -30,7 +30,7 @@ RSpec.describe DirectMessageThreadPolicy do
       expect(described_class.new(outsider, thread).show?).to be false
     end
 
-    it "is true for a platform administrator" do
+    it "is true for a platform administrator, for moderation triage" do
       expect(described_class.new(create(:user, :platform_admin), thread).show?).to be true
     end
   end
@@ -86,8 +86,11 @@ RSpec.describe DirectMessageThreadPolicy do
         expect(described_class.new(create(:user), thread).public_send(action)).to be false
       end
 
-      it "is true for a platform administrator" do
-        expect(described_class.new(create(:user, :platform_admin), thread).public_send(action)).to be true
+      # #block? is the audited platform-moderation path (blocking a fan
+      # abusing a band's DMs, logged by the controller); archiving and
+      # unblocking are ordinary band housekeeping and need a membership.
+      it "is #{action == :block? ? 'true' : 'false'} for a platform administrator, matching whether this is the moderation action" do
+        expect(described_class.new(create(:user, :platform_admin), thread).public_send(action)).to be(action == :block?)
       end
     end
   end

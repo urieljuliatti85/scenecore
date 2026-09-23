@@ -78,20 +78,44 @@ Cannot:
 
 Can:
 
-- approve bands
-- moderate content
-- manage platform-level resources
+- approve, reject, suspend, reactivate, and feature/unfeature any band
+- read any band's profile, content, and orders (for support and disputes)
+- unpublish an album or a post, delete a post or a comment, and block a
+  direct message thread on any band, as platform moderation
+- resolve or dismiss a report
+- manage platform-level resources: users, categories, platform-wide
+  Membership moderation (`/admin/memberships`), audit logs, analytics,
+  financial status, band admin requests
+- grant themselves (or anyone) an administrator `BandMembership` on any
+  band, from `/admin/bands/:id/privileges`
 
-A Platform Administrator cannot reach a band's payment settings or its
-Stripe account (the Payments tab, the Stripe Express dashboard link, or
-Stripe Connect onboarding) merely because of the platform role. That is
-the band's own money: as with refunds, the platform does not act as the
-band's merchant (see the refunds ADR in `docs/decisions.md`). The user must
-be an administrator of that band.
+Cannot, merely because of the platform role — these require an
+administrator `BandMembership` in that specific band, the same as a Band
+Administrator:
 
-A Platform Administrator cannot validate an event ticket merely because of
-the platform role. Ticket check-in is an operational action of the hosting
-band; the user must also have a Band Membership in that band.
+- create, edit, or publish a band's albums, posts, events, polls, Core
+  Sessions, or album credits
+- edit a band's own profile
+- manage a band's products, product variants, or shipping zones/rates
+- invite, remove, or change the role of a band's team, or manage its fan
+  memberships from the band's own panel (`/bands/:id/supporters` —
+  `/admin/memberships` is the audited platform-wide path for that)
+- reply in, or unblock, a band's direct message threads (reading a thread
+  and blocking it, for moderation, are the exceptions above)
+- advance a Store order's fulfilment
+- reach a band's payment settings or its Stripe account (the Payments tab,
+  the Stripe Express dashboard link, or Stripe Connect onboarding). That is
+  the band's own money: as with refunds, the platform does not act as the
+  band's merchant (see the refunds ADR in `docs/decisions.md`)
+- validate an event ticket. Ticket check-in is an operational action of
+  the hosting band; the user must also have a Band Membership in that band
+
+This split follows `docs/community.md` §11: platform moderation (auditable,
+via `AdminActionLog`) is a different thing from a band's own day-to-day
+work. When a platform admin genuinely needs to operate inside a band —
+support, an abandoned band, an emergency — the door is granting themselves
+a membership at `/admin/bands/:id/privileges`, which is itself logged
+(`grant_self_band_administrator`), rather than an implicit bypass.
 
 Granted via the boolean `User#platform_admin` column — there is no
 self-service UI or approval flow for it. Use the rake tasks in

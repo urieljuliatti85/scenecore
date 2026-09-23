@@ -214,6 +214,26 @@ RSpec.describe "Band Admin products", type: :request do
       expect(response).to redirect_to(root_path)
     end
 
+    # Managing the Store is day-to-day band work, same bar as payments
+    # (docs/permissions.md) — a platform admin needs a membership.
+    it "does not let a platform administrator without a membership manage products" do
+      band = create(:band)
+      sign_in create(:user, :platform_admin)
+
+      expect {
+        post band_products_path(band), params: {
+          product: {
+            name: "Forbidden",
+            variants_attributes: {
+              "0" => { name: "Default", sku: "NOPE-1", price_cents: 1000, stock_quantity: 1 }
+            }
+          }
+        }
+      }.not_to change(Product, :count)
+
+      expect(response).to redirect_to(root_path)
+    end
+
     it "prevents an administrator from managing another band's product" do
       admin = create(:user)
       own_band = create(:band)

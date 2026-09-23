@@ -72,7 +72,7 @@ RSpec.describe BandPolicy do
     context "when user is a platform admin but not a member" do
       let(:user) { create(:user, :platform_admin) }
 
-      it { is_expected.to be_update }
+      it { is_expected.not_to be_update }
     end
 
     context "when user is an administrator of a different band" do

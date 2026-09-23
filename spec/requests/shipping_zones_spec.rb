@@ -43,6 +43,14 @@ RSpec.describe "Band Admin shipping zones", type: :request do
       expect(response).to redirect_to(root_path)
     end
 
+    it "denies a platform administrator without a membership in the band" do
+      sign_in create(:user, :platform_admin)
+
+      get band_shipping_zones_path(band)
+
+      expect(response).to redirect_to(root_path)
+    end
+
     it "allows the band's administrator" do
       sign_in admin
 

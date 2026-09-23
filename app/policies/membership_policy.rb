@@ -29,6 +29,17 @@ class MembershipPolicy < ApplicationPolicy
     owner? || moderate?
   end
 
+  # The band's own panel (MembershipsController): managing a fan's
+  # membership there is day-to-day band work, not the platform-moderation
+  # path Admin::MembershipsController offers through #update?/#destroy?/
+  # #moderate? above — so no platform-admin bypass here.
+  def manage_supporters?
+    administrator_of_band?
+  end
+  alias_method :create_from_band_panel?, :manage_supporters?
+  alias_method :update_from_band_panel?, :manage_supporters?
+  alias_method :destroy_from_band_panel?, :manage_supporters?
+
   class Scope < Scope
     def resolve
       return scope.none if user.nil?

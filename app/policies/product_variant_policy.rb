@@ -17,6 +17,6 @@ class ProductVariantPolicy < ApplicationPolicy
     return false if user.nil?
 
     band = record.product.band
-    user.platform_admin? || band.band_memberships.exists?(user_id: user.id, role: :administrator)
+    band.band_memberships.exists?(user_id: user.id, role: :administrator)
   end
 end

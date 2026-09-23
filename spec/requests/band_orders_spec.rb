@@ -155,6 +155,18 @@ RSpec.describe "Band orders", type: :request do
       expect(order.reload).to be_paid
     end
 
+    # Fulfilment is packing and shipping the band's own goods, the same
+    # bar as #refund? below — a platform admin without a membership does
+    # not act as the band's merchant.
+    it "does not let a platform administrator without a membership advance it" do
+      sign_in create(:user, :platform_admin)
+      order = order_for(band)
+
+      patch fulfil_band_order_path(band, order)
+
+      expect(order.reload).to be_paid
+    end
+
     it "refuses to advance an order Stripe has not confirmed" do
       sign_in_as_administrator
       order = order_for(band, status: :pending)

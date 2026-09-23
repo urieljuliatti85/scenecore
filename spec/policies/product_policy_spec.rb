@@ -30,11 +30,11 @@ RSpec.describe ProductPolicy do
       actions.each { |action| expect(policy.public_send(action)).to be(false) }
     end
 
-    it "allows a platform administrator" do
+    it "does not allow a platform administrator without a membership in the band" do
       user = create(:user, :platform_admin)
       policy = described_class.new(user, product)
 
-      actions.each { |action| expect(policy.public_send(action)).to be(true) }
+      actions.each { |action| expect(policy.public_send(action)).to be(false) }
     end
   end
 end
