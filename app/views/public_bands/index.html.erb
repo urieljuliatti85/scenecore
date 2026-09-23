@@ -32,7 +32,10 @@
           <% if @featured_band.category %>
             <p class="text-xs uppercase tracking-wide text-neutral-400 mb-1"><%= @featured_band.category.name %></p>
           <% end %>
-          <p class="text-2xl font-bold text-white"><%= @featured_band.name %></p>
+          <p class="text-2xl font-bold text-white flex items-center gap-2">
+            <%= @featured_band.name %>
+            <%= render "shared/verified_badge", band: @featured_band, size: "h-5 w-5" %>
+          </p>
           <p class="text-sm text-neutral-300"><%= pluralize(@featured_band.followers_count, "follower") %></p>
         </div>
       <% end %>
@@ -50,7 +53,10 @@
             <% if band.category %>
               <p class="text-xs uppercase tracking-wide text-neutral-500 mb-1"><%= band.category.name %></p>
             <% end %>
-            <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= band.name %></p>
+            <p class="font-semibold text-white group-hover:text-yellow-400 transition flex items-center gap-1.5">
+              <%= band.name %>
+              <%= render "shared/verified_badge", band: band %>
+            </p>
             <p class="text-sm text-neutral-500"><%= pluralize(band.followers_count, "follower") %></p>
           </div>
         <% end %>

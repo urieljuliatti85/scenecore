@@ -14,8 +14,9 @@
     <div class="relative px-4 sm:px-6 pb-16 sm:pb-24 pt-32 max-w-4xl mx-auto text-center w-full">
       <p class="text-xs sm:text-sm tracking-[0.2em] text-neutral-400 uppercase mb-4">Featured Band</p>
 
-      <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tight mb-6">
+      <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tight mb-6 flex items-center justify-center flex-wrap gap-3">
         <%= @featured_band.name %>
+        <%= render "shared/verified_badge", band: @featured_band, size: "h-8 w-8 sm:h-10 sm:w-10" %>
       </h1>
 
       <% if @featured_band.description.present? %>

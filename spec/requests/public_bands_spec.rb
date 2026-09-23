@@ -31,6 +31,23 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).to include(public_band_path(band.slug))
     end
 
+    it "shows the verified badge for a verified featured band" do
+      create(:band, :approved, name: "The Testers", verified: true, created_at: 1.day.ago)
+
+      get discover_bands_path
+
+      expect(response.body).to include("Verified Band")
+    end
+
+    it "shows the verified badge for a verified band in the grid" do
+      create(:band, :approved, name: "Older Band", created_at: 2.days.ago)
+      create(:band, :approved, name: "Newer Band", verified: true, created_at: 1.day.ago)
+
+      get discover_bands_path
+
+      expect(response.body).to include("Verified Band")
+    end
+
     it "features the most recently added band by default" do
       create(:band, :approved, name: "Older Band", created_at: 2.days.ago)
       create(:band, :approved, name: "Newer Band", created_at: 1.day.ago)
@@ -102,6 +119,22 @@ RSpec.describe "Public band pages", type: :request do
       get public_band_path(band.slug)
 
       expect(response.body).to include("Rock")
+    end
+
+    it "shows the verified badge for a verified band" do
+      band = create(:band, :approved, name: "The Testers", verified: true)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).to include("Verified Band")
+    end
+
+    it "does not show the verified badge for an unverified band" do
+      band = create(:band, :approved, name: "The Testers", verified: false)
+
+      get public_band_path(band.slug)
+
+      expect(response.body).not_to include("Verified Band")
     end
 
     it "returns 404 for a pending band" do

@@ -81,6 +81,22 @@ RSpec.describe "Pages", type: :request do
         expect(response.body).not_to include("Featured Band")
       end
 
+      it "shows the verified badge when the featured band is verified" do
+        create(:band, :approved, name: "Farscape", verified: true)
+
+        get root_path
+
+        expect(response.body).to include("Verified Band")
+      end
+
+      it "does not show the verified badge when the featured band is not verified" do
+        create(:band, :approved, name: "Farscape", verified: false)
+
+        get root_path
+
+        expect(response.body).not_to include("Verified Band")
+      end
+
       it "shows the coming-soon navigation cards" do
         create(:band, :approved, name: "Farscape")
 

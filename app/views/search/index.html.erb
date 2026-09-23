@@ -31,7 +31,10 @@
             <% end %>
           </div>
           <div class="p-4">
-            <p class="font-semibold text-white group-hover:text-yellow-400 transition"><%= band.name %></p>
+            <p class="font-semibold text-white group-hover:text-yellow-400 transition flex items-center gap-1.5">
+              <%= band.name %>
+              <%= render "shared/verified_badge", band: band %>
+            </p>
           </div>
         <% end %>
       <% end %>

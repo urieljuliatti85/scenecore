@@ -1,0 +1,7 @@
+<%# Renders nothing unless the band is verified. `size` is a Tailwind
+    height/width pair (e.g. "h-4 w-4"); defaults to a small inline size
+    fitting next to a band name in body text. %>
+<% if band.verified? %>
+  <%= image_tag "verified_badge.png", alt: "Verified Band", title: "Verified Band",
+        class: "inline-block align-middle shrink-0 #{local_assigns.fetch(:size, "h-4 w-4")}" %>
+<% end %>
