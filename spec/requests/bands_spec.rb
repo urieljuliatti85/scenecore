@@ -521,7 +521,7 @@ RSpec.describe "Bands", type: :request do
           band = create(:band, verified: false)
           sign_in_as_administrator(band)
 
-          get band_path(band, tab: "profile")
+          get band_path(band, tab: "verification")
 
           expect(response.body).to include("Request verification")
         end
@@ -530,10 +530,19 @@ RSpec.describe "Bands", type: :request do
           band = create(:band, verified: true)
           sign_in_as_administrator(band)
 
-          get band_path(band, tab: "profile")
+          get band_path(band, tab: "verification")
 
           expect(response.body).to include("Verified")
           expect(response.body).not_to include("Request verification")
+        end
+
+        it "explains that an unverified band still sells and takes subscriptions" do
+          band = create(:band, verified: false)
+          sign_in_as_administrator(band)
+
+          get band_path(band, tab: "verification")
+
+          expect(response.body).to include("still shows up publicly, sells, and takes subscriptions")
         end
 
         it "shows band members in the panel" do
@@ -616,12 +625,26 @@ RSpec.describe "Bands", type: :request do
           labels = Nokogiri::HTML(response.body).css("a[href*='tab=']").map(&:text)
           expect(labels.join).not_to include("Profile")
           expect(labels.join).not_to include("Payments")
+          expect(labels.join).not_to include("Band Verification")
 
           get band_path(band, tab: "payments")
           expect(response).to redirect_to(root_path)
 
           get band_path(band, tab: "profile")
           expect(response).to redirect_to(root_path)
+
+          get band_path(band, tab: "verification")
+          expect(response).to redirect_to(root_path)
+        end
+
+        it "lists Band Verification among the manage tabs for the band's own administrator" do
+          band = create(:band)
+          sign_in_as_administrator(band)
+
+          get band_path(band)
+
+          labels = Nokogiri::HTML(response.body).css("a[href*='tab=']").map(&:text)
+          expect(labels.join).to include("Band Verification")
         end
 
         # Payments is the one tab that needs attention before it is opened,
