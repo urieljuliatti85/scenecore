@@ -1014,34 +1014,52 @@ approved (see ROADMAP.md §22 Future Features for the authoritative list):
   needs its own scoping pass: order/inventory sync with Discogs' API and how
   a Marketplace listing maps onto `docs/database.md`'s
   Product/ProductVariant model.
-- "Verified Band" badge (proposed 2026-09-23): a `Band#verified` boolean,
-  toggled only by a Platform Administrator from `/admin`, shown as a badge
-  on the band's public page. Scope, and open questions, are undecided —
-  none of the following is authorized yet:
-  - **Meaning**: what "verified" is meant to signal to a fan is not
-    defined. Approval already gates who can publish at all
-    (`Band.approved`), so verification would need a distinct meaning —
-    e.g. identity confirmation (this is genuinely the band it claims to
-    be) rather than a quality or trust signal, to avoid implying SceneCore
-    vouches for the band's conduct.
-  - **Relationship to existing status/flags**: confirmed distinct from
-    `Band#featured` (2026-09-23) — `featured` is editorial curation (home
-    page placement, can be lent and withdrawn on taste), while `verified`
-    is meant to represent something closer to identity confirmation. They
-    are independent axes: a verified band need not be featured, and a
-    featured band need not be verified. Both stay separate from
-    `Band#status` (pending/approved/rejected/suspended), which gates
-    whether the band is visible at all. `verified` is a second,
-    independent boolean alongside `featured`, not folded into either.
-  - **Process**: nothing here proposes a verification process (documents,
-    identity checks, criteria) — only the toggle and its display. Whether
-    a process is needed is a separate, larger product question.
-  - **Where it would live**: mirrors `feature?`/`unfeature?` in
-    `BandPolicy` and `BandsController` if approved — a boolean column, an
-    admin-only action logged in `AdminActionLog`, and a badge rendered
-    wherever the band's public page already renders (see
-    `docs/permissions.md`'s Platform Administrator "Can" list for where
-    that kind of action is documented).
+- "Verified Band" badge (proposed 2026-09-23, scope clarified 2026-09-23):
+  a `Band#verified` boolean, set only through a two-party verification
+  process, shown as a badge on the band's public page. Still not
+  authorized for implementation — recorded here so the shape is not lost,
+  but the mechanics below need an implementation plan and approval before
+  any code, per the Mandatory Workflow.
+  - **Meaning**: the badge is meant to give a fan confidence to pay — a
+    stronger claim than identity confirmation alone. It tells a fan "this
+    is confirmed to be the real band" before they subscribe or buy, which
+    is a claim SceneCore is making about the band, not just about who
+    holds an email inbox. `Band.approved` already gates whether the band
+    is visible at all; `verified` is additionally about the fan's
+    confidence to pay once it is.
+  - **Relationship to existing status/flags**: distinct from
+    `Band#featured` (editorial curation, home page placement, can be lent
+    and withdrawn on taste) and from `Band#status` (visibility gating).
+    `verified` is a third, independent boolean.
+  - **Process** (described 2026-09-23): two parties, two steps —
+    1. From the band's own panel, a Band Administrator submits an email
+       address for verification. This creates a pending verification
+       request, visible to Platform Administrators (mirrors
+       `BandAdminRequest`'s pending/approve/reject shape).
+    2. A Platform Administrator reviews the request — checking, outside
+       SceneCore, that the submitted address is genuinely the band's own
+       (official site, verified social accounts, etc.) — and approves it.
+    3. Approval sends an email to that address containing a "Verify Your
+       Band" link/token.
+    4. Only when that link is opened does `Band#verified` become `true`.
+    The two steps guard against two different failures: the admin's
+    review catches an email that is not really the band's; the emailed
+    link catches a submitted address the requester does not actually
+    control. Neither step alone would catch both.
+  - **Still undecided, needed before an implementation plan**: token
+    expiry and re-send; what happens if verification is never completed
+    (does the request just go stale, like an unused invite); whether a
+    Platform Administrator can revoke `verified` later (mirroring
+    `feature?`/`unfeature?`), and what happens to `verified` if the
+    band's verified email is changed afterward or the band is suspended;
+    whether rejecting the initial request should be visible to the band
+    or logged anywhere the fan admin-request flow doesn't already cover.
+  - **Where it would live**: a new model close to `BandAdminRequest`'s
+    shape (pending/approved/rejected, plus the emailed token step), a
+    `BandPolicy`-scoped action for the band's submission, `Admin::*`
+    actions for review/approval logged in `AdminActionLog` (mirroring
+    `Admin::BandAdminRequestsController`), and a badge rendered wherever
+    the band's public page already renders.
 
 ### 4.3 Explicitly Excluded Functionality
 
