@@ -244,3 +244,58 @@ The band must inspect the return before changing stock.
   already-refunded, or already-requested orders are not.
 - Partial refunds, automatic returns, and automatic restocking remain outside
   the MVP.
+
+---
+
+## ADR-010 — Suspending a Band Cancels Its Fan Subscriptions
+
+Status: Accepted (2026-09-23)
+
+### Decision
+
+Suspending a band (`BandsController#suspend`) cancels every fan subscription
+still billing for it, in the same request. Each active or past-due
+subscription goes through `SubscriptionCanceller` — the same path a fan
+cancelling directly, or a platform administrator acting through
+`/admin/memberships`, already uses — so Stripe stops charging and both the
+Subscription and the Membership it granted are marked `cancelled`. One
+subscription's Stripe call failing does not stop the rest from being
+cancelled; the band is suspended either way, and the admin is told how many
+subscriptions could not be reached.
+
+Reactivating a band (`BandsController#reactivate`) does not reverse any of
+this. No subscription is recreated or restored.
+
+### Reason
+
+Suspension takes a band's pages down immediately (`Band.approved` gates
+every public route). Nothing else stopped Stripe from continuing to charge
+fans for access the band no longer provides — an oversight found while
+reviewing platform-admin privileges (see the scope changes in #213/#214).
+Leaving billing running is the worst version of this gap: SceneCore would
+keep processing payments on behalf of a band it suspended, potentially for
+abuse or a policy violation.
+
+`SubscriptionCanceller` and the underlying cancel semantics already existed
+(`docs/database.md`, `Subscription.orphaned`) for exactly this shape of
+problem — a subscription still billing without an active membership behind
+it. This decision closes the one path that produced orphans without
+anyone running `rake subscriptions:cancel_orphaned` to notice.
+
+Reactivation does not restore subscriptions because a cancelled Stripe
+subscription cannot be un-cancelled; recreating one means a new Checkout
+Session, which only the fan can complete. Silently billing a fan again
+without their action would be worse than requiring them to resubscribe.
+
+### Consequence
+
+- A suspended band has no fans billing for it once suspension completes.
+- A fan who was subscribed loses access at the moment of suspension, not at
+  the end of a billing period they already paid for.
+- If a suspended band is reactivated, none of its former subscribers are
+  automatically re-billed; each has to subscribe again if they still want
+  in.
+- `Subscription.orphaned` and the `subscriptions:orphaned`/
+  `subscriptions:cancel_orphaned` rake tasks remain in place for
+  subscriptions that fall out of sync some other way (their original
+  purpose, predating this ADR).

@@ -975,6 +975,59 @@ RSpec.describe "Bands", type: :request do
 
       expect(response).to have_http_status(:not_found)
     end
+
+    # Suspension takes the band's pages down immediately; billing fans for
+    # access to a band that has none up would be worse than doing nothing.
+    describe "fan subscriptions" do
+      let(:stripe_subscriptions) { instance_double(Stripe::SubscriptionService) }
+
+      before do
+        allow(StripeClient).to receive(:instance)
+          .and_return(instance_double(Stripe::StripeClient, v1: instance_double(Stripe::V1Services, subscriptions: stripe_subscriptions)))
+        allow(stripe_subscriptions).to receive(:cancel)
+      end
+
+      it "cancels every active subscription and says how many" do
+        admin = create(:user, :platform_admin)
+        band = create(:band, :approved)
+        membership = create(:membership, status: :active, band: band)
+        subscription = create(:subscription, :active, band: band, user: membership.user, stripe_subscription_id: "sub_1")
+        sign_in admin
+
+        patch suspend_band_path(band)
+
+        expect(subscription.reload).to be_cancelled
+        expect(membership.reload).to be_cancelled
+        expect(stripe_subscriptions).to have_received(:cancel).with("sub_1")
+        expect(flash[:notice]).to include("1 fan subscription(s) cancelled")
+      end
+
+      it "leaves an already-cancelled subscription alone and mentions nothing was cancelled" do
+        admin = create(:user, :platform_admin)
+        band = create(:band, :approved)
+        create(:subscription, :cancelled, band: band)
+        sign_in admin
+
+        patch suspend_band_path(band)
+
+        expect(stripe_subscriptions).not_to have_received(:cancel)
+        expect(flash[:notice]).to eq("Band suspended.")
+      end
+
+      it "still suspends the band and reports the failure when Stripe cannot be reached" do
+        admin = create(:user, :platform_admin)
+        band = create(:band, :approved)
+        membership = create(:membership, status: :active, band: band)
+        create(:subscription, :active, band: band, user: membership.user, stripe_subscription_id: "sub_1")
+        allow(stripe_subscriptions).to receive(:cancel).and_raise(Stripe::APIConnectionError.new("network down"))
+        sign_in admin
+
+        patch suspend_band_path(band)
+
+        expect(band.reload).to be_suspended
+        expect(flash[:notice]).to include("1 could not be cancelled")
+      end
+    end
   end
 
   describe "PATCH /bands/:id/feature" do
@@ -1130,6 +1183,22 @@ RSpec.describe "Bands", type: :request do
 
       expect(response).to redirect_to(new_user_session_path)
       expect(band.reload.status).to eq("suspended")
+    end
+
+    # A cancelled Stripe subscription cannot be un-cancelled, so reactivating
+    # a band does not undo what suspending it did to fan billing — a fan
+    # who wants back in checks out again.
+    it "does not restore a subscription that suspension cancelled" do
+      admin = create(:user, :platform_admin)
+      band = create(:band, :suspended)
+      membership = create(:membership, status: :cancelled, band: band)
+      subscription = create(:subscription, :cancelled, band: band, user: membership.user)
+      sign_in admin
+
+      patch reactivate_band_path(band)
+
+      expect(subscription.reload).to be_cancelled
+      expect(membership.reload).to be_cancelled
     end
   end
 end

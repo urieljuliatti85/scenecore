@@ -109,12 +109,21 @@ class BandsController < ApplicationController
     redirect_to @band, notice: "Band rejected."
   end
 
+  # Suspension takes the band's pages down immediately; billing fans for
+  # access to a band that has none up would be worse than doing nothing,
+  # so every active subscription is stopped in the same step
+  # (BandSubscriptionsCanceller).
   def suspend
     @band.update!(status: :suspended)
     log_admin_action("suspend_band")
-    redirect_to @band, notice: "Band suspended."
+
+    result = BandSubscriptionsCanceller.call(@band)
+    redirect_to @band, notice: suspend_notice(result)
   end
 
+  # Deliberately does not restore any cancelled subscription: a cancelled
+  # Stripe subscription cannot be un-cancelled, so a fan who wants back in
+  # checks out again.
   def reactivate
     @band.update!(status: :approved)
     log_admin_action("reactivate_band")
@@ -192,6 +201,13 @@ class BandsController < ApplicationController
 
   def log_admin_action(action)
     AdminActionLog.create!(actor: current_user, action: action, subject: @band)
+  end
+
+  def suspend_notice(cancellation_result)
+    notice = "Band suspended."
+    notice += " #{cancellation_result.cancelled_count} fan subscription(s) cancelled." if cancellation_result.cancelled_count.positive?
+    notice += " #{cancellation_result.failed_count} could not be cancelled — check the logs." if cancellation_result.failed_count.positive?
+    notice
   end
 
   # The band is already saved by this point, so a Spotify image that
