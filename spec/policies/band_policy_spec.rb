@@ -83,6 +83,50 @@ RSpec.describe BandPolicy do
     end
   end
 
+  # The band's Stripe account is the band's own money: unlike #update?,
+  # a platform admin does not reach it (docs/permissions.md).
+  describe "#manage_payments?" do
+    context "when user is an administrator of the band" do
+      let(:user) { create(:user) }
+      before { create(:band_membership, :administrator, band: band, user: user) }
+
+      it { is_expected.to be_manage_payments }
+    end
+
+    context "when user is a plain member of the band" do
+      let(:user) { create(:user) }
+      before { create(:band_membership, band: band, user: user) }
+
+      it { is_expected.not_to be_manage_payments }
+    end
+
+    context "when user is a platform admin but not a member" do
+      let(:user) { create(:user, :platform_admin) }
+
+      it { is_expected.not_to be_manage_payments }
+    end
+
+    context "when user is a platform admin who also administers the band" do
+      let(:user) { create(:user, :platform_admin) }
+      before { create(:band_membership, :administrator, band: band, user: user) }
+
+      it { is_expected.to be_manage_payments }
+    end
+
+    context "when user is an administrator of a different band" do
+      let(:user) { create(:user) }
+      before { create(:band_membership, :administrator, band: create(:band), user: user) }
+
+      it { is_expected.not_to be_manage_payments }
+    end
+
+    context "when there is no user" do
+      let(:user) { nil }
+
+      it { is_expected.not_to be_manage_payments }
+    end
+  end
+
   describe "#approve? and #reject?" do
     context "when user is a platform admin" do
       let(:user) { create(:user, :platform_admin) }

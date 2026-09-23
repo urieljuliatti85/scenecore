@@ -220,6 +220,33 @@ RSpec.describe "Checkouts", type: :request do
     end
   end
 
+  # The cart can outlive the band's standing: a fan fills it, then the
+  # platform suspends the band before they pay.
+  describe "POST /checkout when the band is no longer approved" do
+    before do
+      band.update!(stripe_connect_status: :active, stripe_connect_account_id: "acct_1")
+      allow(StripeClient).to receive(:instance)
+      sign_in user
+      add_to_cart
+      band.update!(status: :suspended)
+    end
+
+    it "refuses, creates no order, and never reaches Stripe" do
+      expect { post checkout_path, params: { shipping_address: address_params } }
+        .not_to change(Order, :count)
+
+      expect(response).to redirect_to(cart_path)
+      expect(flash[:alert]).to include("isn't selling right now")
+      expect(StripeClient).not_to have_received(:instance)
+    end
+
+    it "leaves the cart intact" do
+      post checkout_path, params: { shipping_address: address_params }
+
+      expect(user.carts.sole).to be_active
+    end
+  end
+
   describe "POST /checkout when the band cannot take payments" do
     before do
       sign_in user

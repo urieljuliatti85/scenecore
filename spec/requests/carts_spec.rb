@@ -56,6 +56,26 @@ RSpec.describe "Carts", type: :request do
       expect(Cart.count).to be_zero
     end
 
+    # Only an approved band has a public Store, so a direct link to a
+    # pending or suspended band's product must not open a sale either.
+    it "refuses a product from a band that has not been approved" do
+      band.update!(status: :pending)
+
+      post add_cart_path, params: { product_variant_id: variant.id }
+
+      expect(flash[:alert]).to include("isn't available")
+      expect(Cart.count).to be_zero
+    end
+
+    it "refuses a product from a suspended band" do
+      band.update!(status: :suspended)
+
+      post add_cart_path, params: { product_variant_id: variant.id }
+
+      expect(flash[:alert]).to include("isn't available")
+      expect(Cart.count).to be_zero
+    end
+
     it "refuses a priority product until the user has the required membership" do
       product.update!(early_access_level: :supporter, early_access_until: 1.day.from_now)
       create(:membership, band: band, user: user, level: :fan)

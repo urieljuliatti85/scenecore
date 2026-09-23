@@ -172,7 +172,7 @@ class BandsController < ApplicationController
       @orders_settled = @band.orders.where.not(status: [ :paid, :processing ])
                              .includes(:order_items).order(created_at: :desc)
     when "payments"
-      authorize @band, :update?, policy_class: BandPolicy
+      authorize @band, :manage_payments?, policy_class: BandPolicy
       @active_subscribers = @band.subscriptions.where(status: Subscription::BILLING_STATUSES).count
       @published_products = @band.products.published.count
       load_financial_summary

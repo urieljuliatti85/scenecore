@@ -12,7 +12,9 @@ class CartsController < ApplicationController
     variant = ProductVariant.find(params[:product_variant_id])
     band = variant.product.band
 
-    unless variant.product.published? && variant.product.available_to?(current_user)
+    # A band the platform has not approved (or has suspended) has no public
+    # Store, so its products cannot be bought through a direct link either.
+    unless band.approved? && variant.product.published? && variant.product.available_to?(current_user)
       return redirect_back fallback_location: root_path, alert: "That product isn't available."
     end
 

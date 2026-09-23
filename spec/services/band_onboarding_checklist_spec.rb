@@ -3,6 +3,14 @@ require "rails_helper"
 RSpec.describe BandOnboardingChecklist do
   include Rails.application.routes.url_helpers
 
+  # The spec stands in for the view, so it answers `policy` the way a
+  # view does — for whoever is looking at the checklist.
+  attr_accessor :viewer
+
+  def policy(record)
+    Pundit.policy!(viewer, record)
+  end
+
   def steps_for(band)
     described_class.call(band, view_context: self).index_by(&:key)
   end
@@ -54,10 +62,24 @@ RSpec.describe BandOnboardingChecklist do
 
   it "points each actionable step at the page that completes it" do
     band = create(:band)
+    self.viewer = create(:user)
+    create(:band_membership, :administrator, band: band, user: viewer)
     steps = steps_for(band)
 
     expect(steps["album"].cta_path).to eq(new_band_album_path(band))
     expect(steps["stripe"].cta_path).to eq(band_path(band, tab: "payments"))
     expect(steps["post"].cta_path).to eq(new_band_post_path(band))
+  end
+
+  # Payments belong to the band's own administrator, so a platform admin
+  # looking at First Steps is not offered a link they would be refused.
+  it "offers no payments link to someone who cannot manage payments" do
+    band = create(:band)
+    self.viewer = create(:user, :platform_admin)
+
+    step = steps_for(band)["stripe"]
+
+    expect(step.cta_label).to be_nil
+    expect(step.cta_path).to be_nil
   end
 end
