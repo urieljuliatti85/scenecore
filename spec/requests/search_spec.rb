@@ -25,6 +25,22 @@ RSpec.describe "Search", type: :request do
         expect(response.body).to include("Farscape")
       end
 
+      it "shows the verified badge for a verified band" do
+        create(:band, :approved, name: "Farscape", verified: true)
+
+        get search_path(type: "band", q: "farsc")
+
+        expect(response.body).to include("Verified Band")
+      end
+
+      it "does not show the verified badge for an unverified band" do
+        create(:band, :approved, name: "Farscape", verified: false)
+
+        get search_path(type: "band", q: "farsc")
+
+        expect(response.body).not_to include("Verified Band")
+      end
+
       it "does not find a pending band" do
         create(:band, name: "Secretbandname")
 
