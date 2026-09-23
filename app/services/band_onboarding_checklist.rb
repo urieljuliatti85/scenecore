@@ -42,14 +42,18 @@ class BandOnboardingChecklist
     )
   end
 
+  # Only the band's own administrator can reach Payments, so nobody else
+  # is offered a link into it.
   def stripe_step
+    can_manage = @view.policy(@band).manage_payments?
+
     Step.new(
       key: "stripe",
       title: "Connect Stripe to get paid",
       body: "Fans cannot start a membership or buy from your Store until Stripe has cleared your account.",
       done: @band.payouts_ready?,
-      cta_label: "Set up payments",
-      cta_path: @view.band_path(@band, tab: "payments")
+      cta_label: ("Set up payments" if can_manage),
+      cta_path: (@view.band_path(@band, tab: "payments") if can_manage)
     )
   end
 

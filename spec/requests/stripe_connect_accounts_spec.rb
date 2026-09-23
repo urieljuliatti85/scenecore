@@ -50,6 +50,18 @@ RSpec.describe "StripeConnectAccounts", type: :request do
       expect(accounts_service).not_to have_received(:create)
     end
 
+    # Onboarding would register the platform admin's email as the band's
+    # Stripe contact, so it stays with the band's own administrators.
+    it "does not let a platform admin start onboarding for a band they do not administer" do
+      band = create(:band)
+      sign_in create(:user, :platform_admin)
+
+      post band_stripe_connect_account_path(band)
+
+      expect(band.reload.stripe_connect_account_id).to be_nil
+      expect(accounts_service).not_to have_received(:create)
+    end
+
     it "does not let a signed-out visitor start onboarding" do
       band = create(:band)
 

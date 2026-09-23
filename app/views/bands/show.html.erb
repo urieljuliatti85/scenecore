@@ -26,8 +26,8 @@
           [ "supporters", "Supporters", nil ],
           [ "products", "Products", nil ],
           [ "orders", "Orders", @band.orders.awaiting_band.size ],
-          [ "payments", "Payments", nil ]
-        ] : []) %>
+          ([ "payments", "Payments", nil ] if policy(@band).manage_payments?)
+        ].compact : []) %>
 
     <div class="flex-1 min-w-0 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 sm:p-8">
       <% case @tab %>

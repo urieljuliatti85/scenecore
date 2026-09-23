@@ -82,6 +82,13 @@ Can:
 - moderate content
 - manage platform-level resources
 
+A Platform Administrator cannot reach a band's payment settings or its
+Stripe account (the Payments tab, the Stripe Express dashboard link, or
+Stripe Connect onboarding) merely because of the platform role. That is
+the band's own money: as with refunds, the platform does not act as the
+band's merchant (see the refunds ADR in `docs/decisions.md`). The user must
+be an administrator of that band.
+
 A Platform Administrator cannot validate an event ticket merely because of
 the platform role. Ticket check-in is an operational action of the hosting
 band; the user must also have a Band Membership in that band.
@@ -111,6 +118,14 @@ Never rely on:
 - frontend state
 - URLs
 - client-side checks
+
+---
+
+## Band Approval and the Store
+
+Only an approved band sells. A pending, rejected, or suspended band's
+products cannot be added to a cart or checked out, even through a direct
+link, and a cart filled before a band was suspended is refused at checkout.
 
 ---
 

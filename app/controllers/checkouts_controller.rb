@@ -12,6 +12,12 @@ class CheckoutsController < ApplicationController
   def create
     @shipping_address = ShippingAddress.new(shipping_address_params)
 
+    # The cart may have been filled before the band was suspended, so its
+    # standing is checked again at the moment money would move.
+    unless @cart.band.approved?
+      return redirect_to cart_path, alert: "#{@cart.band.name} isn't selling right now."
+    end
+
     unless @cart.band.payouts_ready?
       return redirect_to cart_path, alert: "#{@cart.band.name} can't take payments yet."
     end

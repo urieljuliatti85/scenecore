@@ -18,7 +18,7 @@ class StripeConnectAccountsController < ApplicationController
   private
 
   def start_onboarding
-    authorize @band, :update?, policy_class: BandPolicy
+    authorize @band, :manage_payments?, policy_class: BandPolicy
 
     url = StripeConnectOnboardingResolver.resolve(
       @band,

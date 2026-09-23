@@ -11,6 +11,13 @@ class BandPolicy < ApplicationPolicy
     administrator? || user&.platform_admin?
   end
 
+  # The band's Stripe account is the band's own money, so only an
+  # administrator of this exact band reaches it. Platform administrators
+  # do not act as the band's merchant (docs/decisions.md, refunds ADR).
+  def manage_payments?
+    administrator?
+  end
+
   def approve?
     user&.platform_admin?
   end

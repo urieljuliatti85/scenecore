@@ -6,7 +6,7 @@ class BandPaymentsController < ApplicationController
   before_action :set_band
 
   def show
-    authorize @band, :update?, policy_class: BandPolicy
+    authorize @band, :manage_payments?, policy_class: BandPolicy
 
     refresh_connect_status if @band.stripe_connect_onboarding?
 
@@ -16,7 +16,7 @@ class BandPaymentsController < ApplicationController
   end
 
   def stripe_dashboard
-    authorize @band, :update?, policy_class: BandPolicy
+    authorize @band, :manage_payments?, policy_class: BandPolicy
 
     url = StripeExpressDashboardLink.call(@band)
     redirect_to url, allow_other_host: true

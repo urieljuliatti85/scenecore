@@ -52,6 +52,16 @@ RSpec.describe "Band payments", type: :request do
       expect(response).to redirect_to(root_path)
     end
 
+    # A platform admin moderates bands but does not act as their merchant,
+    # so the band's own money stays out of reach without a membership.
+    it "refuses a platform admin who is not this band's administrator" do
+      sign_in create(:user, :platform_admin)
+
+      get band_payments_path(band)
+
+      expect(response).to redirect_to(root_path)
+    end
+
     it "lets this band's administrator in" do
       sign_in_as_administrator
 
@@ -273,6 +283,16 @@ RSpec.describe "Band payments", type: :request do
       outsider = create(:user)
       create(:band_membership, :administrator, band: create(:band), user: outsider)
       sign_in outsider
+
+      post stripe_dashboard_band_payments_path(band)
+
+      expect(response).to redirect_to(root_path)
+      expect(StripeExpressDashboardLink).not_to have_received(:call)
+    end
+
+    it "refuses a platform admin who is not this band's administrator" do
+      sign_in create(:user, :platform_admin)
+      band.update!(stripe_connect_status: :active, stripe_connect_account_id: "acct_1")
 
       post stripe_dashboard_band_payments_path(band)
 
