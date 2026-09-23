@@ -26,7 +26,8 @@
           [ "supporters", "Supporters", nil ],
           [ "products", "Products", nil ],
           [ "orders", "Orders", @band.orders.awaiting_band.size ],
-          ([ "payments", "Payments", nil ] if policy(@band).manage_payments?)
+          ([ "payments", "Payments", nil ] if policy(@band).manage_payments?),
+          ([ "verification", "Band Verification", nil ] if policy(BandVerificationRequest.new(band: @band)).create?)
         ].compact : []) %>
 
     <div class="flex-1 min-w-0 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 sm:p-8">
@@ -111,6 +112,9 @@
             active_subscribers: @active_subscribers, published_products: @published_products,
             financial_summary: @financial_summary,
             financial_summary_unavailable: @financial_summary_unavailable %>
+
+    <% when "verification" %>
+      <%= render "verification_section" %>
 
     <% else %>
       <%= render "overview_section" %>

@@ -54,7 +54,7 @@ class BandsController < ApplicationController
   # than navigating away, though each still has its own page for deep links
   # and for the forms that live there.
   CONTENT_TABS = %w[overview music posts shows community].freeze
-  MANAGE_TABS = %w[first_steps profile members supporters products orders payments].freeze
+  MANAGE_TABS = %w[first_steps profile members supporters products orders payments verification].freeze
   TABS = (CONTENT_TABS + MANAGE_TABS).freeze
 
   def show
@@ -203,6 +203,8 @@ class BandsController < ApplicationController
       load_financial_summary
     when "profile"
       authorize @band, :update?, policy_class: BandPolicy
+    when "verification"
+      authorize BandVerificationRequest.new(band: @band), :create?
       @open_verification_request = @band.band_verification_requests.where(status: %w[pending email_sent]).order(created_at: :desc).first
     when "first_steps"
       authorize @band, :update?, policy_class: BandPolicy
