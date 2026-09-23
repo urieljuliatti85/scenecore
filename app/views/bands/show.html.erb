@@ -122,7 +122,7 @@
   <%# Moderation belongs to a platform administrator, not to the band's own
       work, so it sits outside the tabs, in a row of its own rather than
       loose under the panel. %>
-  <% if policy(@band).approve? || policy(@band).suspend? || policy(@band).feature? %>
+  <% if policy(@band).approve? || policy(@band).suspend? || policy(@band).feature? || policy(@band).verify? %>
     <div class="mt-6">
       <p class="text-xs uppercase tracking-wide text-neutral-600 mb-3">Platform moderation</p>
       <div class="flex flex-wrap items-center gap-3">
@@ -144,6 +144,14 @@
         <%= button_to "Unfeature", unfeature_band_path(@band), method: :patch, class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition cursor-pointer" %>
       <% else %>
         <%= button_to "Feature on home", feature_band_path(@band), method: :patch, class: "rounded-full border border-yellow-700 text-yellow-400 font-semibold px-5 py-2.5 hover:border-yellow-500 transition cursor-pointer" %>
+      <% end %>
+      <% end %>
+
+      <% if policy(@band).verify? %>
+      <% if @band.verified? %>
+        <%= button_to "Remove verified badge", unverify_band_path(@band), method: :patch, class: "rounded-full border border-neutral-700 text-white font-semibold px-5 py-2.5 hover:border-neutral-500 transition cursor-pointer" %>
+      <% else %>
+        <%= button_to "Mark as verified", verify_band_path(@band), method: :patch, class: "rounded-full border border-yellow-700 text-yellow-400 font-semibold px-5 py-2.5 hover:border-yellow-500 transition cursor-pointer" %>
       <% end %>
       <% end %>
       </div>

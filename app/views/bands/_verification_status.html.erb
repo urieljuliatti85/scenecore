@@ -1,0 +1,21 @@
+<div class="mt-8 pt-6 border-t border-neutral-800">
+  <p class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Verified Band</p>
+
+  <% if band.verified? %>
+    <p class="text-white">
+      <span class="inline-flex items-center gap-1 rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-xs font-semibold px-2.5 py-1">✓ Verified</span>
+    </p>
+    <p class="text-sm text-neutral-500 mt-2">This band's identity has been confirmed by SceneCore.</p>
+  <% elsif @open_verification_request&.pending? %>
+    <p class="text-neutral-300">Verification requested for <%= @open_verification_request.email %> — awaiting review.</p>
+  <% elsif @open_verification_request&.email_sent? %>
+    <p class="text-neutral-300">A verification email was sent to <%= @open_verification_request.email %>. Check that inbox for the "Verify Your Band" link.</p>
+  <% else %>
+    <p class="text-neutral-500 mb-3">Not verified yet. Submit an email SceneCore can use to confirm this is your band.</p>
+    <%= form_with model: BandVerificationRequest.new, url: band_verification_request_path(band), local: true, class: "flex flex-wrap items-center gap-2" do |form| %>
+      <%= form.email_field :email, required: true, placeholder: "official@yourband.com",
+            class: "rounded-lg bg-neutral-900 border border-neutral-800 text-white px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+      <%= form.submit "Request verification", class: "rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-sm font-semibold px-4 py-2 hover:bg-yellow-400/20 hover:text-yellow-200 transition cursor-pointer" %>
+    <% end %>
+  <% end %>
+</div>

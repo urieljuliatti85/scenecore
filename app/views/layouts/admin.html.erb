@@ -75,6 +75,7 @@
             <p class="px-2 mb-1 text-[0.55rem] font-medium uppercase tracking-[0.14em] text-neutral-700">Operations</p>
             <div class="flex flex-col gap-1">
               <%= admin_nav_link "Admin requests", admin_band_admin_requests_path, current: request.path.start_with?(admin_band_admin_requests_path), section: :band_admin_requests %>
+              <%= admin_nav_link "Verification requests", admin_band_verification_requests_path, current: request.path.start_with?(admin_band_verification_requests_path), section: :band_verification_requests %>
               <%= admin_nav_link "Audit log", admin_audit_logs_path, current: request.path.start_with?(admin_audit_logs_path), section: :audit_logs %>
               <%= admin_nav_link "Platform settings", edit_admin_platform_settings_path, current: request.path.start_with?(admin_platform_settings_path), section: :platform_settings %>
             </div>

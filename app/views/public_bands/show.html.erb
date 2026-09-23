@@ -12,8 +12,13 @@
         Band<% if @band.category %> · <%= @band.category.name %><% end %>
       </p>
 
-      <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight mb-6">
+      <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight mb-6 flex items-center flex-wrap gap-3">
         <%= @band.name %>
+        <% if @band.verified? %>
+          <span title="Verified Band" class="inline-flex items-center gap-1 rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-500/30 text-xs sm:text-sm font-semibold px-3 py-1 align-middle">
+            ✓ Verified
+          </span>
+        <% end %>
       </h1>
 
       <% if @band.description.present? %>

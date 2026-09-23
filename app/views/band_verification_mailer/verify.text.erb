@@ -1,0 +1,10 @@
+Hi,
+
+A SceneCore administrator reviewed and approved <%= @band.name %>'s request
+to be verified. To finish, confirm this is your email by opening the link
+below.
+
+<%= band_verification_url(token: @token) %>
+
+This link expires in 3 days. If you didn't request this, you can ignore
+this email.

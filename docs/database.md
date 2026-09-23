@@ -29,8 +29,43 @@ Represents a musical project.
 - slug
 - description
 - status
+- verified (boolean, default false — see BandVerificationRequests)
 - created_at
 - updated_at
+
+---
+
+## BandVerificationRequests
+
+### Purpose
+
+A Band Administrator's request to have their band's identity confirmed,
+granting the "Verified Band" badge (`Band#verified`). Two-party process:
+a Platform Administrator reviews the submitted email off-platform and
+approves or rejects it; approval emails the address a one-time link
+(Rails' `generates_token_for`, 3-day expiry); only opening that link sets
+`Band#verified`. See `docs/product.md` §5 Bands Acceptance Criteria for
+the full process and rules (revocation, re-send, what happens when the
+email changes or the band is suspended).
+
+### Attributes
+
+- id
+- band_id
+- email
+- status (pending / email_sent / verified / rejected)
+- created_at
+- updated_at
+
+### Rules
+
+- A band may have at most one open (pending or email_sent) request at a
+  time.
+- Only a request's own token, generated for the `:band_verification`
+  purpose, resolves it — a token cannot be reused across requests or
+  purposes.
+- Rejecting or the badge later being revoked does not delete the request;
+  it stays as history, and the band can start a new one.
 
 ---
 

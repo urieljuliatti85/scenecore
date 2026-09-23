@@ -45,6 +45,17 @@ class BandPolicy < ApplicationPolicy
     user&.platform_admin?
   end
 
+  # Granting/revoking the "Verified Band" badge directly (as opposed to
+  # the two-party BandVerificationRequest flow that grants it the first
+  # time) is a platform moderation action, same bar as feature?/unfeature?.
+  def verify?
+    user&.platform_admin?
+  end
+
+  def unverify?
+    user&.platform_admin?
+  end
+
   class Scope < Scope
     def resolve
       return scope.none if user.nil?

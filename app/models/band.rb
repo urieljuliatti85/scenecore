@@ -7,6 +7,7 @@ class Band < ApplicationRecord
 
   has_many :band_memberships, dependent: :destroy
   has_many :band_admin_requests, dependent: :destroy
+  has_many :band_verification_requests, dependent: :destroy
   has_many :members, through: :band_memberships, source: :user
   has_many :memberships, dependent: :destroy
   has_many :subscriptions, dependent: :destroy
