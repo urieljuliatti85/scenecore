@@ -1014,6 +1014,32 @@ approved (see ROADMAP.md §22 Future Features for the authoritative list):
   needs its own scoping pass: order/inventory sync with Discogs' API and how
   a Marketplace listing maps onto `docs/database.md`'s
   Product/ProductVariant model.
+- "Verified Band" badge (proposed 2026-09-23): a `Band#verified` boolean,
+  toggled only by a Platform Administrator from `/admin`, shown as a badge
+  on the band's public page. Scope, and open questions, are undecided —
+  none of the following is authorized yet:
+  - **Meaning**: what "verified" is meant to signal to a fan is not
+    defined. Approval already gates who can publish at all
+    (`Band.approved`), so verification would need a distinct meaning —
+    e.g. identity confirmation (this is genuinely the band it claims to
+    be) rather than a quality or trust signal, to avoid implying SceneCore
+    vouches for the band's conduct.
+  - **Relationship to existing status/flags**: `Band#status` already
+    models pending/approved/rejected/suspended, and `Band#featured`
+    already exists as an independent, admin-only editorial flag (home
+    page placement). Whether "verified" is a third, independent axis, or
+    should be folded into one of those, needs a decision before
+    implementation — three overlapping admin-controlled band flags with
+    unclear boundaries would be a worse outcome than one well-defined one.
+  - **Process**: nothing here proposes a verification process (documents,
+    identity checks, criteria) — only the toggle and its display. Whether
+    a process is needed is a separate, larger product question.
+  - **Where it would live**: mirrors `feature?`/`unfeature?` in
+    `BandPolicy` and `BandsController` if approved — a boolean column, an
+    admin-only action logged in `AdminActionLog`, and a badge rendered
+    wherever the band's public page already renders (see
+    `docs/permissions.md`'s Platform Administrator "Can" list for where
+    that kind of action is documented).
 
 ### 4.3 Explicitly Excluded Functionality
 
