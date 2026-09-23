@@ -104,6 +104,13 @@ Rails.application.routes.draw do
         patch :revoke
       end
     end
+    resources :band_verification_requests, only: [ :index ] do
+      member do
+        patch :approve
+        patch :reject
+        patch :resend
+      end
+    end
   end
 
   resources :bands, only: [ :index, :new, :create, :show, :edit, :update ] do
@@ -118,6 +125,8 @@ Rails.application.routes.draw do
       patch :reactivate
       patch :feature
       patch :unfeature
+      patch :verify
+      patch :unverify
     end
 
     resources :band_memberships, only: [ :index, :new, :create, :edit, :update, :destroy ], path: "members"
@@ -157,6 +166,7 @@ Rails.application.routes.draw do
     end
     resource :follow, only: [ :create, :destroy ]
     resource :subscription, only: [ :create, :destroy ]
+    resource :verification_request, only: [ :create ], controller: "band_verification_requests"
     resources :posts, only: [ :new, :create, :show, :edit, :update, :destroy ] do
       member do
         patch :publish
@@ -220,6 +230,13 @@ Rails.application.routes.draw do
   get "/contact", to: "contact_messages#new", as: :contact
   post "/contact", to: "contact_messages#create"
   get "/support", to: "pages#support", as: :support
+
+  # The "Verify Your Band" emailed link: opened from an inbox, not
+  # necessarily a signed-in browser session, so this is intentionally
+  # outside authentication — the token itself (secret, 3-day expiry via
+  # generates_token_for) is what proves control of the address, the same
+  # way Devise's own password reset link works.
+  get "/band-verification/:token", to: "band_verifications#show", as: :band_verification
 
   # Public band page and album detail, resolved by slug. Must stay last
   # so they don't shadow any of the routes declared above.

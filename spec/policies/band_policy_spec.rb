@@ -206,6 +206,37 @@ RSpec.describe BandPolicy do
     end
   end
 
+  describe "#verify? and #unverify?" do
+    context "when user is a platform admin" do
+      let(:user) { create(:user, :platform_admin) }
+
+      it { is_expected.to be_verify }
+      it { is_expected.to be_unverify }
+    end
+
+    context "when user is the band's own administrator" do
+      let(:user) { create(:user) }
+      before { create(:band_membership, :administrator, band: band, user: user) }
+
+      it { is_expected.not_to be_verify }
+      it { is_expected.not_to be_unverify }
+    end
+
+    context "when user is a regular user" do
+      let(:user) { create(:user) }
+
+      it { is_expected.not_to be_verify }
+      it { is_expected.not_to be_unverify }
+    end
+
+    context "when there is no user" do
+      let(:user) { nil }
+
+      it { is_expected.not_to be_verify }
+      it { is_expected.not_to be_unverify }
+    end
+  end
+
   describe "Scope" do
     subject { BandPolicy::Scope.new(user, Band).resolve }
 

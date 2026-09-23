@@ -1,6 +1,6 @@
 class BandsController < ApplicationController
   before_action :set_band_for_member_actions, only: [ :show, :edit, :update ]
-  before_action :set_band_for_admin_actions, only: [ :approve, :reject, :suspend, :reactivate, :feature, :unfeature ]
+  before_action :set_band_for_admin_actions, only: [ :approve, :reject, :suspend, :reactivate, :feature, :unfeature, :verify, :unverify ]
 
   def index
     @bands = policy_scope(Band)
@@ -142,6 +142,22 @@ class BandsController < ApplicationController
     redirect_to @band, notice: "Band removed from the home page."
   end
 
+  # Direct revocation/grant of the badge itself, separate from the
+  # BandVerificationRequest flow that grants it the first time — the
+  # intended path once a verified band turns out to be fraudulent, or to
+  # correct a mistake, without going through email verification again.
+  def verify
+    @band.update!(verified: true)
+    log_admin_action("verify_band")
+    redirect_to @band, notice: "Band marked as verified."
+  end
+
+  def unverify
+    @band.update!(verified: false)
+    log_admin_action("unverify_band")
+    redirect_to @band, notice: "Verified badge removed."
+  end
+
   private
 
   # Orders to send are operational, not onboarding — they take priority over
@@ -185,7 +201,10 @@ class BandsController < ApplicationController
       @active_subscribers = @band.subscriptions.where(status: Subscription::BILLING_STATUSES).count
       @published_products = @band.products.published.count
       load_financial_summary
-    when "profile", "first_steps"
+    when "profile"
+      authorize @band, :update?, policy_class: BandPolicy
+      @open_verification_request = @band.band_verification_requests.where(status: %w[pending email_sent]).order(created_at: :desc).first
+    when "first_steps"
       authorize @band, :update?, policy_class: BandPolicy
     end
   end

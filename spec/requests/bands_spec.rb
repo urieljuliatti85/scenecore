@@ -517,6 +517,25 @@ RSpec.describe "Bands", type: :request do
           expect(response.body).to include("A description")
         end
 
+        it "offers the verification request form when the band is not verified" do
+          band = create(:band, verified: false)
+          sign_in_as_administrator(band)
+
+          get band_path(band, tab: "profile")
+
+          expect(response.body).to include("Request verification")
+        end
+
+        it "shows the verified badge instead of the form once verified" do
+          band = create(:band, verified: true)
+          sign_in_as_administrator(band)
+
+          get band_path(band, tab: "profile")
+
+          expect(response.body).to include("Verified")
+          expect(response.body).not_to include("Request verification")
+        end
+
         it "shows band members in the panel" do
           band = create(:band)
           admin = sign_in_as_administrator(band)
@@ -1140,6 +1159,99 @@ RSpec.describe "Bands", type: :request do
       patch unfeature_band_path(band)
 
       expect(band.reload).to be_featured
+    end
+  end
+
+  describe "PATCH /bands/:id/verify" do
+    it "allows a platform admin to mark a band verified" do
+      admin = create(:user, :platform_admin)
+      band = create(:band, :approved)
+      sign_in admin
+
+      patch verify_band_path(band)
+
+      expect(band.reload).to be_verified
+    end
+
+    it "records an admin action log" do
+      admin = create(:user, :platform_admin)
+      band = create(:band, :approved)
+      sign_in admin
+
+      expect {
+        patch verify_band_path(band)
+      }.to change(AdminActionLog, :count).by(1)
+
+      expect(AdminActionLog.last.action).to eq("verify_band")
+    end
+
+    it "does not allow the band's own administrator to verify it" do
+      admin = create(:user)
+      band = create(:band, :approved)
+      create(:band_membership, :administrator, band: band, user: admin)
+      sign_in admin
+
+      patch verify_band_path(band)
+
+      expect(band.reload).not_to be_verified
+    end
+
+    it "does not allow a regular user to verify a band" do
+      user = create(:user)
+      band = create(:band, :approved)
+      sign_in user
+
+      patch verify_band_path(band)
+
+      expect(band.reload).not_to be_verified
+    end
+  end
+
+  describe "PATCH /bands/:id/unverify" do
+    it "allows a platform admin to remove the verified badge" do
+      admin = create(:user, :platform_admin)
+      band = create(:band, :approved, verified: true)
+      sign_in admin
+
+      patch unverify_band_path(band)
+
+      expect(band.reload).not_to be_verified
+    end
+
+    it "records an admin action log" do
+      admin = create(:user, :platform_admin)
+      band = create(:band, :approved, verified: true)
+      sign_in admin
+
+      expect {
+        patch unverify_band_path(band)
+      }.to change(AdminActionLog, :count).by(1)
+
+      expect(AdminActionLog.last.action).to eq("unverify_band")
+    end
+
+    it "does not allow a regular user to remove the verified badge" do
+      user = create(:user)
+      band = create(:band, :approved, verified: true)
+      sign_in user
+
+      patch unverify_band_path(band)
+
+      expect(band.reload).to be_verified
+    end
+  end
+
+  # Suspension is about visibility; verified is an identity fact and does
+  # not depend on it (docs/product.md §5 Bands Acceptance Criteria).
+  describe "suspension and the verified badge" do
+    it "does not revoke verified when a band is suspended" do
+      admin = create(:user, :platform_admin)
+      band = create(:band, :approved, verified: true)
+      sign_in admin
+
+      patch suspend_band_path(band)
+
+      expect(band.reload).to be_verified
     end
   end
 
