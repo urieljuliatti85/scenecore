@@ -1024,13 +1024,15 @@ approved (see ROADMAP.md §22 Future Features for the authoritative list):
     e.g. identity confirmation (this is genuinely the band it claims to
     be) rather than a quality or trust signal, to avoid implying SceneCore
     vouches for the band's conduct.
-  - **Relationship to existing status/flags**: `Band#status` already
-    models pending/approved/rejected/suspended, and `Band#featured`
-    already exists as an independent, admin-only editorial flag (home
-    page placement). Whether "verified" is a third, independent axis, or
-    should be folded into one of those, needs a decision before
-    implementation — three overlapping admin-controlled band flags with
-    unclear boundaries would be a worse outcome than one well-defined one.
+  - **Relationship to existing status/flags**: confirmed distinct from
+    `Band#featured` (2026-09-23) — `featured` is editorial curation (home
+    page placement, can be lent and withdrawn on taste), while `verified`
+    is meant to represent something closer to identity confirmation. They
+    are independent axes: a verified band need not be featured, and a
+    featured band need not be verified. Both stay separate from
+    `Band#status` (pending/approved/rejected/suspended), which gates
+    whether the band is visible at all. `verified` is a second,
+    independent boolean alongside `featured`, not folded into either.
   - **Process**: nothing here proposes a verification process (documents,
     identity checks, criteria) — only the toggle and its display. Whether
     a process is needed is a separate, larger product question.
