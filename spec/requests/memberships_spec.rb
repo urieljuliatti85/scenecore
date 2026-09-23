@@ -15,7 +15,11 @@ RSpec.describe "Memberships", type: :request do
       expect(response.body).to include(supporter.user.name)
     end
 
-    it "allows a platform administrator to list any band's memberships" do
+    # Managing a band's supporters from its own panel is day-to-day band
+    # work, not platform moderation — the platform-wide equivalent lives
+    # at /admin/memberships, already audited by sitting under Admin::*
+    # (docs/permissions.md).
+    it "does not allow a platform administrator without a membership to list a band's memberships" do
       band = create(:band)
       platform_admin = create(:user, :platform_admin)
       create(:membership, band: band)
@@ -23,7 +27,7 @@ RSpec.describe "Memberships", type: :request do
 
       get band_memberships_path(band)
 
-      expect(response).to have_http_status(:ok)
+      expect(response).to redirect_to(root_path)
     end
 
     it "does not allow a plain band member to list memberships" do

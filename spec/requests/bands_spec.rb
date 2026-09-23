@@ -584,20 +584,24 @@ RSpec.describe "Bands", type: :request do
           expect(labels.join).not_to include("Payments")
         end
 
-        # A platform admin manages the rest of the panel, but the band's
-        # Stripe account is the band's own money (docs/permissions.md).
-        it "keeps the payments tab from a platform admin who is not the band's administrator" do
+        # Day-to-day band work — profile, members, products, payments — is
+        # not platform moderation, so none of the manage tabs are offered
+        # to a platform admin who has not joined this band as a member
+        # (docs/permissions.md).
+        it "keeps every manage tab from a platform admin who is not a member of the band" do
           band = create(:band)
           sign_in create(:user, :platform_admin)
 
           get band_path(band)
 
           labels = Nokogiri::HTML(response.body).css("a[href*='tab=']").map(&:text)
-          expect(labels.join).to include("Profile")
+          expect(labels.join).not_to include("Profile")
           expect(labels.join).not_to include("Payments")
 
           get band_path(band, tab: "payments")
+          expect(response).to redirect_to(root_path)
 
+          get band_path(band, tab: "profile")
           expect(response).to redirect_to(root_path)
         end
 

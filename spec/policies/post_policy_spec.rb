@@ -35,10 +35,13 @@ RSpec.describe PostPolicy do
         it { expect(subject.public_send(action)).to be false }
       end
 
+      # destroy?/unpublish? are the audited platform-moderation path
+      # (log_platform_moderation, docs/community.md §11); the rest is
+      # day-to-day band work and needs a membership.
       context "when user is a platform administrator not in the band" do
         let(:user) { create(:user, :platform_admin) }
 
-        it { expect(subject.public_send(action)).to be true }
+        it { expect(subject.public_send(action)).to be(%i[destroy? unpublish?].include?(action)) }
       end
 
       context "when user is anonymous" do

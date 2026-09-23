@@ -39,6 +39,20 @@ RSpec.describe "BandMemberships", type: :request do
       }.not_to change(BandMembership, :count)
     end
 
+    # Inviting/removing/changing a band's own team is day-to-day band
+    # work; the door for a platform admin who needs to act here is
+    # granting themselves a membership through /admin, which is audited
+    # (Admin::PrivilegesController).
+    it "does not allow a platform administrator without a membership to add members" do
+      band = create(:band)
+      other_user = create(:user)
+      sign_in create(:user, :platform_admin)
+
+      expect {
+        post band_band_memberships_path(band), params: { band_membership: { user_id: other_user.id, role: "member" } }
+      }.not_to change(BandMembership, :count)
+    end
+
     it "rejects adding the same user to a band twice" do
       band = create(:band)
       admin = create(:user)

@@ -6,9 +6,10 @@ class OrderPolicy < ApplicationPolicy
     placed_by_user? || administrator_of_band?
   end
 
-  # Only the band packs and ships, so only the band moves an order along.
+  # Only the band packs and ships, so only the band moves an order along —
+  # same bar as #refund?, no platform-admin bypass.
   def fulfil?
-    administrator_of_band? && record.next_fulfilment_status.present?
+    band_administrator? && record.next_fulfilment_status.present?
   end
 
   # Money is returned on the band's behalf, so only an administrator of

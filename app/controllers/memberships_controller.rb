@@ -3,18 +3,18 @@ class MembershipsController < ApplicationController
   before_action :set_membership, only: [ :edit, :update, :destroy ]
 
   def index
-    authorize Membership.new(band: @band), :index?
+    authorize Membership.new(band: @band), :manage_supporters?
     @memberships = @band.memberships.includes(:user).order(created_at: :desc)
   end
 
   def new
     @membership = @band.memberships.new
-    authorize @membership
+    authorize @membership, :manage_supporters?
   end
 
   def create
     @membership = @band.memberships.new(membership_params)
-    authorize @membership
+    authorize @membership, :manage_supporters?
 
     if @membership.save
       redirect_to band_memberships_path(@band), notice: "Supporter added."
@@ -24,11 +24,11 @@ class MembershipsController < ApplicationController
   end
 
   def edit
-    authorize @membership
+    authorize @membership, :manage_supporters?
   end
 
   def update
-    authorize @membership
+    authorize @membership, :manage_supporters?
 
     if @membership.update(level_and_status_params)
       redirect_to band_memberships_path(@band), notice: "Membership updated."
@@ -38,7 +38,7 @@ class MembershipsController < ApplicationController
   end
 
   def destroy
-    authorize @membership
+    authorize @membership, :manage_supporters?
 
     @membership.destroy
     redirect_to band_memberships_path(@band), notice: "Supporter removed."

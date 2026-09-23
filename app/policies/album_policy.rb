@@ -25,9 +25,13 @@ class AlbumPolicy < ApplicationPolicy
 
   private
 
+  # Album unpublish has no audited platform-moderation path (only
+  # Admin::AlbumsController#unpublish does — a separate action, logged
+  # there), so a platform admin only reaches this policy's actions by
+  # holding a membership in the band.
   def member?
     return false if user.nil?
 
-    user.platform_admin? || record.band.band_memberships.exists?(user_id: user.id)
+    record.band.band_memberships.exists?(user_id: user.id)
   end
 end

@@ -45,9 +45,9 @@ RSpec.describe BandMembershipPolicy do
     context "when user is a platform administrator not in the band" do
       let(:user) { create(:user, :platform_admin) }
 
-      it { is_expected.to be_create }
-      it { is_expected.to be_update }
-      it { is_expected.to be_destroy }
+      it { is_expected.not_to be_create }
+      it { is_expected.not_to be_update }
+      it { is_expected.not_to be_destroy }
     end
 
     context "when user is anonymous" do
@@ -72,7 +72,7 @@ RSpec.describe BandMembershipPolicy do
     context "when user is a platform administrator not in the band" do
       let(:user) { create(:user, :platform_admin) }
 
-      it { is_expected.to be_index }
+      it { is_expected.not_to be_index }
     end
 
     context "when user is not in the band at all" do

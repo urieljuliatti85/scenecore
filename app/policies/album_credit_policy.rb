@@ -12,6 +12,6 @@ class AlbumCreditPolicy < ApplicationPolicy
   def member?
     return false if user.nil?
 
-    user.platform_admin? || record.album.band.band_memberships.exists?(user_id: user.id)
+    record.album.band.band_memberships.exists?(user_id: user.id)
   end
 end

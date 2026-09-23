@@ -66,6 +66,36 @@ RSpec.describe "Admin::Privileges", type: :request do
       expect(band.band_memberships.find_by(user: target).role).to eq("administrator")
     end
 
+    it "does not log an audit entry when granting another user privileges" do
+      admin = create(:user, :platform_admin)
+      band = create(:band)
+      target = create(:user)
+      sign_in admin
+
+      expect {
+        post admin_band_privileges_path(band), params: { user_id: target.id }
+      }.not_to change(AdminActionLog, :count)
+    end
+
+    # This is the door that replaces the platform-admin bypass removed
+    # from band-scoped policies: a platform admin who needs to act inside
+    # a band grants themselves a membership here. That must leave a trail,
+    # the same way blocking a thread or unpublishing a post does.
+    it "logs an audit entry when a platform admin grants themselves privileges" do
+      admin = create(:user, :platform_admin)
+      band = create(:band)
+      sign_in admin
+
+      expect {
+        post admin_band_privileges_path(band), params: { user_id: admin.id }
+      }.to change(AdminActionLog, :count).by(1)
+
+      log = AdminActionLog.last
+      expect(log.actor).to eq(admin)
+      expect(log.action).to eq("grant_self_band_administrator")
+      expect(log.subject).to eq(band)
+    end
+
     it "does not allow a regular user to grant privileges" do
       user = create(:user)
       band = create(:band)
