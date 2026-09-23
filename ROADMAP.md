@@ -99,6 +99,63 @@ Read:
 
 ---
 
+# 3.1 "Verified Band" Badge (approved 2026-09-23)
+
+Implement a `Band#verified` badge, per `docs/product.md` §5 Bands
+Acceptance Criteria ("Verified Band" badge) and `docs/permissions.md`.
+Distinct from `Band#status` (approval/visibility) and `Band#featured`
+(editorial curation) — both already implemented; this is a third,
+independent boolean.
+
+### Requirements
+
+- Two-party process: a Band Administrator submits an email from the
+  band's own panel; a Platform Administrator reviews and
+  approves/rejects the request; approval emails a "Verify Your Band"
+  link; only opening that link sets `verified`.
+- Verification-request model mirrors `BandAdminRequest`'s
+  pending/approved/rejected shape, plus a distinct state for "email sent,
+  awaiting the band's click" before the terminal verified state.
+- Token generation via Rails' `generates_token_for` (already used
+  implicitly through Devise's password reset — no new gem), 3-day expiry.
+- Only a Platform Administrator can re-send the verification email
+  (fresh token, invalidates the previous one). The band cannot trigger
+  a re-send itself.
+- A Platform Administrator can revoke `verified` at any time, mirroring
+  `BandPolicy#feature?`/`#unfeature?`, logged in `AdminActionLog` the
+  same way `unfeature_band` is.
+- Submitting a new verification email revokes the band's current
+  `verified` before the new request is created.
+- Suspending a band does not revoke `verified`.
+- Badge rendered on the band's public page wherever it already renders
+  (see `docs/product.md` §5 Public Band Pages).
+
+### Implementation order
+
+1. Inspect `BandAdminRequest` (model, `Admin::BandAdminRequestsController`,
+   `BandAdminRequestMailer`, the band-panel submission controller/policy)
+   as the pattern to extend, not replace.
+2. Design the verification-request state machine (pending → email_sent →
+   verified, plus rejected) and how it interacts with `Band#verified`
+   being set/unset as a side effect of state transitions.
+3. Implement migration/model for the verification request, plus the
+   `Band#verified` column (see CLAUDE.md's `null: false` column rule if
+   applicable).
+4. Implement the band-panel submission action (`BandPolicy`-scoped).
+5. Implement `Admin::*` review/approve/reject/re-send/revoke actions,
+   logged in `AdminActionLog`.
+6. Implement the mailer and the "Verify Your Band" emailed-token
+   controller action.
+7. Render the badge on the public band page.
+8. Add tests: model (state transitions, token expiry), policy
+   (band-panel submission scoped to the band's own administrator;
+   `Admin::*` actions scoped to platform admin), request (full flow:
+   submit → approve → email → click → verified; expired token; re-send;
+   revoke; email change revokes `verified`; suspension does not).
+9. Update `docs/permissions.md` if the implementation reveals a gap.
+
+---
+
 # 4. Exclusive Content
 
 Implement membership-based content access.
