@@ -12,3 +12,7 @@ services:
 
 volumes:
   scenecore_postgres_data:
+    # Keep local development data outside the Compose project lifecycle.
+    # In particular, `docker compose down -v` must not delete this volume.
+    external: true
+    name: scenecore_scenecore_postgres_data
