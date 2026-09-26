@@ -18,7 +18,7 @@
 
           <% if report.reportable.present? %>
             <p class="text-sm text-neutral-500 mt-2 rounded-lg bg-black/30 px-3 py-2">
-              <% if report.reportable.is_a?(Comment) %>
+              <% if report.reportable.is_a?(Comment) || report.reportable.is_a?(CommunityReply) %>
                 <%= report.reportable.body %>
               <% else %>
                 <%= report.reportable.title %>

@@ -1,0 +1,47 @@
+<% content_for :title, "Community — #{@band.name} — SceneCore" %>
+
+<div class="max-w-4xl mx-auto px-4 py-10">
+  <%= link_to "← Back to #{@band.name}", public_band_path(@band.slug), class: "text-sm text-neutral-400 hover:text-white transition" %>
+
+  <div class="mt-6 mb-8">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-400">Members only</p>
+    <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-white">Community</h1>
+    <p class="mt-2 text-neutral-400">Private topics and conversations for members of <%= @band.name %>.</p>
+  </div>
+
+  <section class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5 mb-8">
+    <h2 class="text-lg font-bold text-white mb-4">Start a topic</h2>
+    <%= form_with model: @topic, url: community_topics_path(@band.slug), class: "space-y-4" do |form| %>
+      <% if @topic.errors.any? %>
+        <p class="text-sm text-red-300"><%= @topic.errors.full_messages.to_sentence %></p>
+      <% end %>
+      <%= form.text_field :title, placeholder: "Topic title", class: "w-full rounded-xl bg-black/40 border border-neutral-700 text-white px-4 py-3 focus:outline-none focus:border-neutral-500" %>
+      <%= form.text_area :body, rows: 4, placeholder: "What would you like to discuss?", class: "w-full rounded-xl bg-black/40 border border-neutral-700 text-white px-4 py-3 focus:outline-none focus:border-neutral-500" %>
+      <%= form.submit "Post topic", class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition cursor-pointer" %>
+    <% end %>
+  </section>
+
+  <% if @topics.empty? %>
+    <div class="rounded-2xl border border-dashed border-neutral-800 p-10 text-center text-neutral-500">No topics yet. Start the conversation.</div>
+  <% else %>
+    <div class="space-y-3">
+      <% @topics.each do |topic| %>
+        <%= link_to community_topic_path(@band.slug, topic), class: "block rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5 hover:border-neutral-600 transition" do %>
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h2 class="font-bold text-white"><%= topic.title %></h2>
+              <div class="mt-2 flex items-center gap-2 text-xs text-neutral-500">
+                <span><%= topic.user.name %></span>
+                <% if (level = @membership_levels[topic.user_id]) %>
+                  <%= render "shared/membership_badge", level: level, band_name: @band.name %>
+                <% end %>
+              </div>
+            </div>
+            <span class="shrink-0 text-xs text-neutral-500"><%= pluralize(topic.community_replies.size, "reply") %></span>
+          </div>
+          <p class="mt-3 text-sm text-neutral-400"><%= truncate(topic.body, length: 180) %></p>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

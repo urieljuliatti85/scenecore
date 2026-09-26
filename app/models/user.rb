@@ -19,6 +19,8 @@ class User < ApplicationRecord
   has_many :ratings, dependent: :destroy
   has_many :poll_votes, dependent: :destroy
   has_many :comments, dependent: :destroy
+  has_many :community_topics, dependent: :destroy
+  has_many :community_replies, dependent: :destroy
   has_many :album_credits, dependent: :destroy
   has_many :core_session_rsvps, dependent: :destroy
   has_many :direct_message_threads, dependent: :destroy

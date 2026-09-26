@@ -204,6 +204,11 @@ They therefore require explicit product validation before implementation.
 
 The current product scope already treats generic fan-to-fan social posting and messaging as excluded pending separate validation.
 
+The band-scoped Community MVP was approved on 2026-09-26 as a narrow exception: active Fans,
+Supporters, and Core Members may create private topics and replies inside a band's community.
+This approval does not include public or cross-band feeds, direct messaging, groups, likes, media,
+or real-time chat.
+
 ---
 
 # 9. Band-to-Fan Communication
@@ -534,6 +539,9 @@ Unless separately approved:
 - karma;
 - follower counts as social ranking;
 - algorithmic social feeds.
+
+The approved band-scoped topic-and-reply MVP described in section 8 is in scope and is not a
+generic social feed.
 
 These should not be introduced simply because the underlying architecture could support them.
 

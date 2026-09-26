@@ -1,0 +1,55 @@
+<% content_for :title, "#{@topic.title} — #{@band.name} Community — SceneCore" %>
+
+<div class="max-w-4xl mx-auto px-4 py-10">
+  <%= link_to "← #{@band.name} Community", public_band_community_path(@band.slug), class: "text-sm text-neutral-400 hover:text-white transition" %>
+
+  <article class="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-extrabold tracking-tight text-white"><%= @topic.title %></h1>
+        <div class="mt-2 flex items-center gap-2 text-sm text-neutral-500">
+          <span><%= @topic.user.name %></span>
+          <% if (level = @membership_levels[@topic.user_id]) %>
+            <%= render "shared/membership_badge", level: level, band_name: @band.name %>
+          <% end %>
+        </div>
+      </div>
+      <% if policy(@topic).destroy? %>
+        <%= button_to "Delete", community_topic_path(@band.slug, @topic), method: :delete, data: { turbo_confirm: "Delete this topic and all replies?" }, class: "text-xs text-red-300 hover:text-red-200 cursor-pointer" %>
+      <% end %>
+    </div>
+    <div class="mt-5 whitespace-pre-wrap text-neutral-300"><%= @topic.body %></div>
+    <%= render "shared/report_button", url: report_community_topic_path(@band.slug, @topic) %>
+  </article>
+
+  <section class="mt-8">
+    <h2 class="text-lg font-bold text-white mb-4"><%= pluralize(@replies.size, "Reply") %></h2>
+    <div class="space-y-3">
+      <% @replies.each do |reply| %>
+        <article id="reply-<%= reply.id %>" class="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex items-center gap-2 text-sm text-neutral-500">
+              <span><%= reply.user.name %></span>
+              <% if (level = @membership_levels[reply.user_id]) %>
+                <%= render "shared/membership_badge", level: level, band_name: @band.name %>
+              <% end %>
+            </div>
+            <% if policy(reply).destroy? %>
+              <%= button_to "Delete", community_topic_reply_path(@band.slug, @topic, reply), method: :delete, data: { turbo_confirm: "Delete this reply?" }, class: "text-xs text-red-300 hover:text-red-200 cursor-pointer" %>
+            <% end %>
+          </div>
+          <div class="mt-3 whitespace-pre-wrap text-neutral-300"><%= reply.body %></div>
+          <%= render "shared/report_button", url: report_community_reply_path(@band.slug, @topic, reply) %>
+        </article>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="mt-8 rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5">
+    <h2 class="text-lg font-bold text-white mb-4">Add a reply</h2>
+    <%= form_with model: @reply, url: community_topic_replies_path(@band.slug, @topic), class: "space-y-4" do |form| %>
+      <%= form.text_area :body, rows: 4, placeholder: "Write your reply…", class: "w-full rounded-xl bg-black/40 border border-neutral-700 text-white px-4 py-3 focus:outline-none focus:border-neutral-500" %>
+      <%= form.submit "Post reply", class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2.5 hover:bg-yellow-300 transition cursor-pointer" %>
+    <% end %>
+  </section>
+</div>

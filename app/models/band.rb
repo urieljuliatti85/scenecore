@@ -16,6 +16,7 @@ class Band < ApplicationRecord
   has_many :follows, dependent: :destroy
   has_many :followers, through: :follows, source: :user
   has_many :posts, dependent: :destroy
+  has_many :community_topics, dependent: :destroy
   has_many :events, dependent: :destroy
   has_many :ticket_batches, through: :events
   has_many :ticket_orders, through: :ticket_batches
