@@ -82,10 +82,10 @@ SceneCore defines three paid membership levels.
 
 ### Benefits
 
-- Exclusive band feed
+- Exclusive band feed through the band's posts section, with each post unlocked according to membership level
 - News before the general public
 - Behind-the-scenes photos
-- Behind-the-scenes short videos
+- Behind-the-scenes short videos — In development
 - Selected demos
 - Alternative versions of songs
 - Poll participation

@@ -117,7 +117,7 @@ Band announcements and news.
 
 ### Behind the Scenes
 
-Photos, videos and material from the band's activities.
+Photos and material from the band's activities. Short videos are in development.
 
 ### Creative Process
 

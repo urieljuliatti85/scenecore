@@ -96,9 +96,10 @@ A dollar representation must also exist wherever the interface or configuration 
 
 Benefits:
 
-- Exclusive band feed
+- Exclusive band feed through the band's posts section, with each post unlocked according to membership level
 - News ahead of the general public
-- Behind-the-scenes photos and short videos
+- Behind-the-scenes photos
+- Behind-the-scenes short videos — In development
 - Some demos and alternative versions
 - Polls about setlists, cover art, or merchandising
 - Fan badge on the profile

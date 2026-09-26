@@ -19,9 +19,7 @@
             <%= subscription.status.humanize %>
           </span>
           <% if subscription.active? %>
-            <span class="text-xs font-semibold rounded-full px-3 py-1 border <%= subscription.fan? ? "border-sky-800 text-sky-300" : subscription.supporter? ? "border-violet-800 text-violet-300" : "border-emerald-800 text-emerald-300" %>">
-              <%= subscription.level.humanize %> badge
-            </span>
+            <%= render "shared/membership_badge", level: subscription.level, band_name: subscription.band.name %>
           <% end %>
           <% if subscription.active? %>
             <%= button_to "Cancel", band_subscription_path(subscription.band), method: :delete, class: "text-sm font-medium text-red-500 hover:text-red-400 transition cursor-pointer", form: { data: { turbo_confirm: "Cancel your #{subscription.level.humanize} subscription with #{subscription.band.name}? This stops future billing." } } %>

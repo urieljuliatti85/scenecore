@@ -29,6 +29,8 @@ class PublicBandsController < ApplicationController
     # `visible_to?`/`required_level` on the record itself.
     @albums = @band.albums.published.with_attached_cover.order(created_at: :desc)
     @posts = @band.posts.published.with_attached_image.includes(comments: :user).order(created_at: :desc)
+    commenter_ids = @posts.flat_map { |post| post.comments.map(&:user_id) }.uniq
+    @comment_membership_levels = @band.memberships.active.where(user_id: commenter_ids).pluck(:user_id, :level).to_h
     @events = @band.events.published.upcoming
     @polls = @band.polls.published.order(created_at: :desc)
     @core_sessions = @band.core_sessions.published.order(:starts_at)

@@ -209,29 +209,6 @@ RSpec.describe "Public band pages", type: :request do
       expect(response.body).to include("#posts")
     end
 
-    it "links Exclusive Content to a band's gated posts" do
-      band = create(:band, :approved)
-      create(:post, :published, :supporter_only, band: band)
-
-      get public_band_path(band.slug)
-
-      doc = Nokogiri::HTML(response.body)
-      exclusive_content = doc.xpath("//a[.//span[normalize-space()='Exclusive Content']]")
-
-      expect(exclusive_content.first["href"]).to eq("#posts")
-    end
-
-    it "links Exclusive Content to membership options before a band publishes gated posts" do
-      band = create(:band, :approved)
-
-      get public_band_path(band.slug)
-
-      doc = Nokogiri::HTML(response.body)
-      exclusive_content = doc.xpath("//a[.//span[normalize-space()='Exclusive Content']]")
-
-      expect(exclusive_content.first["href"]).to eq(public_band_subscriptions_path(band.slug))
-    end
-
     it "shows the request-administrator-access control to a signed-in user with no membership" do
       band = create(:band, :approved)
       user = create(:user)
@@ -808,6 +785,43 @@ RSpec.describe "Public band pages", type: :request do
       get public_band_path(band.slug)
 
       expect(response.body).to include("Fan News")
+    end
+
+    it "uses the posts section as the exclusive feed and inherits Fan access at higher levels" do
+      band = create(:band, :approved)
+      create(:post, :published, :fan_only, band: band, title: "Fan Feed News", body: "Members can read this")
+
+      %i[fan supporter core_member].each do |level|
+        user = create(:user)
+        create(:membership, band: band, user: user, level: level)
+        sign_in user
+
+        get public_band_path(band.slug)
+
+        expect(response.body).to include("Exclusive feed")
+        expect(response.body).to include("Members can read this")
+      end
+    end
+
+    it "shows band-specific active membership badges beside comment authors" do
+      band = create(:band, :approved)
+      other_band = create(:band)
+      post_record = create(:post, :published, band: band)
+      fan = create(:user, name: "Active Fan")
+      paused_supporter = create(:user, name: "Paused Supporter")
+      other_core_member = create(:user, name: "Other Core Member")
+      create(:membership, band: band, user: fan, level: :fan)
+      create(:membership, :paused, band: band, user: paused_supporter, level: :supporter)
+      create(:membership, band: other_band, user: other_core_member, level: :core_member)
+      create(:comment, post: post_record, user: fan)
+      create(:comment, post: post_record, user: paused_supporter)
+      create(:comment, post: post_record, user: other_core_member)
+
+      get public_band_path(band.slug)
+
+      badges = Nokogiri::HTML(response.body).css(".membership-badge")
+      expect(badges.map { |badge| badge.text.strip }).to eq([ "Fan" ])
+      expect(badges.first["title"]).to eq("Fan of #{band.name}")
     end
 
     it "shows a supporter-only post to a Core Member (higher levels see lower-level content)" do

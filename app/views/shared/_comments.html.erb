@@ -5,7 +5,12 @@
         <li class="flex items-start justify-between gap-3">
           <div class="flex-1">
             <p class="text-sm text-neutral-300">
-              <span class="font-semibold text-white"><%= comment.user.name %></span>
+              <span class="inline-flex items-center gap-2">
+                <span class="font-semibold text-white"><%= comment.user.name %></span>
+                <% if (membership_level = membership_levels[comment.user_id]) %>
+                  <%= render "shared/membership_badge", level: membership_level, band_name: band.name %>
+                <% end %>
+              </span>
               <span class="block text-neutral-400"><%= comment.body %></span>
             </p>
             <%= render "shared/report_button", url: report_comment_path(band.slug, post, comment) %>

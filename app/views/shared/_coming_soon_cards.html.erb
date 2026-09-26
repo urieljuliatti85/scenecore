@@ -5,23 +5,16 @@
   # point at the band directory instead of staying dead. Cards for features
   # that do not exist yet keep their "Soon" badge rather than promising
   # something the platform cannot deliver.
-  exclusive_content_path = if band
-    @posts&.any? { |post| post.required_level.present? || !post.announcement? } ? "#posts" : public_band_subscriptions_path(band.slug)
-  else
-    discover_bands_path
-  end
-
   cards = [
     ["Music", "Albums, singles and more", band ? "#albums" : discover_bands_path],
     ["Merch", "Records, apparel and more", band && @products&.any? ? "#merch" : nil],
-    ["Exclusive Content", "Behind the scenes, interviews, and more", exclusive_content_path],
     ["Subscriptions", "Support the band and get special perks",
      band ? public_band_subscriptions_path(band.slug) : (user_signed_in? ? subscriptions_path : discover_bands_path)],
-    ["Posts", "News, updates and behind the scenes", band ? "#posts" : discover_bands_path],
+    ["Exclusive Feed", "News and posts unlocked by membership", band ? "#posts" : discover_bands_path],
     ["Tickets", "Live shows and tour dates", nil]
   ]
 %>
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
   <% cards.each do |title, description, href| %>
     <% if href %>
       <%= link_to href, class: "rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5 flex flex-col gap-3 hover:border-neutral-600 transition" do %>
