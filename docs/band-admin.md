@@ -123,9 +123,11 @@ Benefits:
 
 - All Fan benefits
 - Early releases
-- Full demos and rehearsal recordings
+- Full demos — In development
+- Rehearsal recordings
 - Songwriting and production journal
-- Exclusive videos and streams
+- Exclusive videos — In development
+- Exclusive streams — In development
 - Name in the digital credits as a supporter
 - Discount on merchandising and tickets
 - Early access to sales

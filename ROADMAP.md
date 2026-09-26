@@ -188,13 +188,17 @@ Read:
 
 # 6. Supporter Features
 
+The resumable storage, Complete Demo, and video implementation plan is recorded
+in `docs/media-storage-roadmap.md`.
+
 Implement:
 
 - Early releases
-- Complete demos
+- Complete demos — In development
 - Rehearsal recordings
 - Composition journal
-- Exclusive videos/lives
+- Exclusive videos — In development
+- Exclusive lives — In development
 - Digital credits
 - Merch discounts
 - Early sales
