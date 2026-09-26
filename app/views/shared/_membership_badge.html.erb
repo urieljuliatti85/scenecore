@@ -1,0 +1,11 @@
+<%
+  badge_classes = case level.to_s
+  when "fan" then "border-sky-800 text-sky-300"
+  when "supporter" then "border-violet-800 text-violet-300"
+  else "border-emerald-800 text-emerald-300"
+  end
+%>
+<span class="membership-badge inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide <%= badge_classes %>"
+      title="<%= level.to_s.humanize %> of <%= band_name %>">
+  <%= level.to_s.humanize %>
+</span>

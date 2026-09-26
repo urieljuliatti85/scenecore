@@ -82,7 +82,7 @@
         <% if @products.any? %>
           <%= render "hero_stat", label: "Merch", count: @products.size, anchor: "#merch" %>
         <% end %>
-        <%= render "hero_stat", label: "Posts", count: @posts.size, anchor: ("#posts" if @posts.any?) %>
+        <%= render "hero_stat", label: "Feed", count: @posts.size, anchor: ("#posts" if @posts.any?) %>
         <%= render "hero_stat", label: "Followers", count: @band.followers_count %>
       </div>
 
@@ -218,7 +218,10 @@
 
   <% if @posts.any? %>
     <div id="posts" class="mt-10 flex flex-col gap-6 scroll-mt-24">
-      <h2 class="text-lg font-semibold text-neutral-300">Posts</h2>
+      <div>
+        <h2 class="text-lg font-semibold text-neutral-300">Exclusive feed</h2>
+        <p class="mt-1 text-sm text-neutral-500">News and posts unlock according to your membership level.</p>
+      </div>
       <% @posts.each do |post| %>
         <article id="post-<%= post.id %>" class="rounded-3xl bg-gradient-to-br from-neutral-900 to-black border border-neutral-800 px-5 py-5 scroll-mt-24">
           <% if post.visible_to?(current_user, following: @following) %>
@@ -241,7 +244,7 @@
 
             <%= render "shared/report_button", url: report_post_path(@band.slug, post) %>
 
-            <%= render "shared/comments", band: @band, post: post %>
+            <%= render "shared/comments", band: @band, post: post, membership_levels: @comment_membership_levels %>
           <% else %>
             <h3 class="text-white font-semibold"><%= post.title %></h3>
             <%= render "shared/locked_content_notice", required_level: post.required_level %>
