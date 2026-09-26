@@ -109,12 +109,12 @@ The Fan membership represents the first paid level of proximity to a band.
 Everything included in Fan, plus:
 
 - Early access to releases
-- Complete demos
+- Complete demos — In development
 - Rehearsal recordings
 - Composition journal
 - Production journal
-- Exclusive videos
-- Exclusive streams
+- Exclusive videos — In development
+- Exclusive streams — In development
 - Digital supporter credits
 - Merchandise discounts
 - Ticket discounts
