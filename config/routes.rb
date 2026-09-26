@@ -245,6 +245,14 @@ Rails.application.routes.draw do
     get "/:slug/events/:id", to: "public_events#show", as: :public_event
     post "/:slug/events/:event_id/ticket-orders", to: "ticket_orders#create", as: :public_event_ticket_orders
     get "/:slug/subscriptions", to: "public_bands#subscriptions", as: :public_band_subscriptions
+    get "/:slug/community", to: "community_topics#index", as: :public_band_community
+    post "/:slug/community/topics", to: "community_topics#create", as: :community_topics
+    get "/:slug/community/topics/:id", to: "community_topics#show", as: :community_topic
+    delete "/:slug/community/topics/:id", to: "community_topics#destroy"
+    post "/:slug/community/topics/:topic_id/replies", to: "community_replies#create", as: :community_topic_replies
+    delete "/:slug/community/topics/:topic_id/replies/:id", to: "community_replies#destroy", as: :community_topic_reply
+    post "/:slug/community/topics/:topic_id/report", to: "reports#create_for_community_topic", as: :report_community_topic
+    post "/:slug/community/topics/:topic_id/replies/:reply_id/report", to: "reports#create_for_community_reply", as: :report_community_reply
     get "/:slug/credits", to: "public_bands#credits", as: :public_band_credits
     get "/:slug/messages", to: "band_direct_messages#show", as: :my_band_direct_messages
     post "/:slug/messages", to: "band_direct_messages#create"
