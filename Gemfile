@@ -65,7 +65,7 @@ gem "sentry-ruby"
 gem "sentry-rails"
 
 # Payment processing (subscriptions/Checkout/webhooks) [https://github.com/stripe/stripe-ruby]
-gem "stripe", "~> 19.6"
+gem "stripe", "~> 20.0"
 
 # Generates ticket QR codes locally. No purchaser or ticket data is sent to
 # a third-party QR service.
