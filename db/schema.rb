@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_26_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_26_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -611,13 +611,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_26_130000) do
   end
 
   create_table "ticket_batches", force: :cascade do |t|
+    t.datetime "core_member_sales_start_at"
     t.datetime "created_at", null: false
     t.bigint "event_id", null: false
+    t.datetime "fan_sales_start_at"
     t.string "name", null: false
     t.integer "price_cents", null: false
     t.integer "quantity_total", null: false
     t.datetime "sales_end_at"
     t.datetime "sales_start_at"
+    t.datetime "supporter_sales_start_at"
     t.datetime "updated_at", null: false
     t.index ["event_id"], name: "index_ticket_batches_on_event_id"
     t.check_constraint "price_cents >= 0", name: "ticket_batches_price_non_negative"
