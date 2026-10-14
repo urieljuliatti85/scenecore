@@ -52,6 +52,52 @@ RSpec.describe "Ticket orders", type: :request do
     expect(response).to have_http_status(:not_found)
   end
 
+  it "enforces the membership presale when the reservation endpoint is called directly" do
+    band = create(:band, :approved, :payouts_ready)
+    event = create(:event, :published, band: band, starts_at: 1.week.from_now)
+    batch = create(
+      :ticket_batch,
+      event: event,
+      sales_start_at: 3.days.from_now,
+      supporter_sales_start_at: 2.days.from_now,
+      core_member_sales_start_at: 1.day.from_now
+    )
+    fan = create(:user)
+    create(:membership, band: band, user: fan, level: :fan)
+    sign_in fan
+
+    expect {
+      post public_event_ticket_orders_path(band.slug, event),
+           params: { ticket_batch_id: batch.id, quantity: 1 }
+    }.not_to change(TicketOrder, :count)
+
+    expect(response).to redirect_to(public_event_path(band.slug, event))
+    expect(flash[:alert]).to eq("This ticket batch is not on sale for your membership yet.")
+  end
+
+  it "lets a Core Member reserve during the Core Member presale" do
+    band = create(:band, :approved, :payouts_ready)
+    event = create(:event, :published, band: band, starts_at: 1.week.from_now)
+    batch = create(
+      :ticket_batch,
+      event: event,
+      sales_start_at: 3.days.from_now,
+      supporter_sales_start_at: 2.days.from_now,
+      core_member_sales_start_at: 1.hour.ago
+    )
+    core_member = create(:user)
+    create(:membership, band: band, user: core_member, level: :core_member)
+    sign_in core_member
+    allow(TicketCheckoutSessionCreator).to receive(:call).and_return("https://checkout.stripe.test/session")
+
+    expect {
+      post public_event_ticket_orders_path(band.slug, event),
+           params: { ticket_batch_id: batch.id, quantity: 1 }
+    }.to change(TicketOrder, :count).by(1)
+
+    expect(response).to redirect_to("https://checkout.stripe.test/session")
+  end
+
   private
 
   def create_public_batch

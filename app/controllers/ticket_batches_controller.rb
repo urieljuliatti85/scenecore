@@ -56,6 +56,9 @@ class TicketBatchesController < ApplicationController
   end
 
   def ticket_batch_params
-    params.require(:ticket_batch).permit(:name, :price_cents, :quantity_total, :sales_start_at, :sales_end_at)
+    params.require(:ticket_batch).permit(
+      :name, :price_cents, :quantity_total, :sales_start_at, :sales_end_at,
+      :fan_sales_start_at, :supporter_sales_start_at, :core_member_sales_start_at
+    )
   end
 end

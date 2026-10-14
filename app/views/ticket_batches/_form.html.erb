@@ -24,6 +24,25 @@
     </div>
   </div>
 
+  <fieldset class="rounded-xl border border-neutral-800 p-4">
+    <legend class="px-2 text-sm font-semibold text-white">Member early access</legend>
+    <p class="text-xs text-neutral-500 mb-4">Optional presale dates. Core Member must open first, followed by Supporter, Fan, and the public sale.</p>
+    <div class="grid sm:grid-cols-3 gap-4">
+      <div>
+        <%= form.label :core_member_sales_start_at, "Core Member", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+        <%= form.datetime_local_field :core_member_sales_start_at, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+      </div>
+      <div>
+        <%= form.label :supporter_sales_start_at, "Supporter", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+        <%= form.datetime_local_field :supporter_sales_start_at, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+      </div>
+      <div>
+        <%= form.label :fan_sales_start_at, "Fan", class: "block text-sm font-medium text-neutral-300 mb-1" %>
+        <%= form.datetime_local_field :fan_sales_start_at, class: "w-full rounded-lg bg-neutral-900 border border-neutral-800 text-white px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400" %>
+      </div>
+    </div>
+  </fieldset>
+
   <div class="grid sm:grid-cols-2 gap-5">
     <div>
       <%= form.label :sales_start_at, "Sales start (optional)", class: "block text-sm font-medium text-neutral-300 mb-1" %>

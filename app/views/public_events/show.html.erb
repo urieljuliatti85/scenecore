@@ -22,7 +22,7 @@
                 <p class="text-yellow-300 mt-1"><%= number_to_currency(batch.price_cents / 100.0, unit: "US$") %></p>
                 <p class="text-xs text-neutral-500 mt-1"><%= pluralize(batch.remaining_quantity, "ticket") %> remaining</p>
               </div>
-              <% if batch.on_sale? %>
+              <% if batch.on_sale_to?(current_user) %>
                 <% if user_signed_in? %>
                   <%= form_with url: public_event_ticket_orders_path(@band.slug, @event), method: :post, class: "flex items-center gap-2" do |form| %>
                     <%= form.hidden_field :ticket_batch_id, value: batch.id %>
@@ -33,7 +33,10 @@
                   <%= link_to "Sign in to buy", new_user_session_path, class: "rounded-full bg-yellow-400 text-black font-semibold px-5 py-2 hover:bg-yellow-300 transition" %>
                 <% end %>
               <% else %>
-                <span class="text-sm text-neutral-500">Not on sale</span>
+                <% sale_starts_at = batch.sale_starts_at_for(current_user) %>
+                <span class="text-sm text-neutral-500">
+                  <%= sale_starts_at&.future? ? "Sales open #{l(sale_starts_at, format: :short)}" : "Not on sale" %>
+                </span>
               <% end %>
             </div>
           </article>

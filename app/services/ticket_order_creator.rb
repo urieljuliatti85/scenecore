@@ -18,7 +18,7 @@ class TicketOrderCreator
 
   def call
     @ticket_batch.with_lock do
-      raise Error, "This ticket batch is not on sale." unless @ticket_batch.on_sale?
+      raise Error, "This ticket batch is not on sale for your membership yet." unless @ticket_batch.on_sale_to?(@user)
       raise Error, "Choose between 1 and #{TicketBatch::MAXIMUM_PER_ORDER} tickets." unless @quantity.between?(1, TicketBatch::MAXIMUM_PER_ORDER)
       raise Error, "Only #{@ticket_batch.remaining_quantity} tickets remain." if @quantity > @ticket_batch.remaining_quantity
 
